@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hexagon Grid with Pan</title>
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+    }
+    #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+        background-color: white;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <canvas id="hexCanvas"></canvas>
+</div>
+
+<script>
+  // Исходные данные
+  const hexData = {
+      "Vector3(x=0, y=0, z=0)": {
+          "vector": { "x": 0, "y": 0, "z": 0 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=1, y=-1, z=0)": {
+          "vector": { "x": 1, "y": -1, "z": 0 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=-1, y=1, z=0)": {
+          "vector": { "x": -1, "y": 1, "z": 0 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=-1, y=0, z=1)": {
+          "vector": { "x": -1, "y": 0, "z": 1 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=1, y=0, z=-1)": {
+          "vector": { "x": 1, "y": 0, "z": -1 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=0, y=-1, z=1)": {
+          "vector": { "x": 0, "y": -1, "z": 1 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      },
+      "Vector3(x=0, y=1, z=-1)": {
+          "vector": { "x": 0, "y": 1, "z": -1 },
+          "isAvailable": false,
+          "color": "EMPTY",
+          "entity": null
+      }
+  };
+
+  // Получаем canvas и контекст
+  const canvas = document.getElementById('hexCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Настройки отображения
+  const config = {
+      hexSize: 30,
+      minHexSize: 10,
+      maxHexSize: 60,
+      showCoordinates: true,
+      backgroundColor: '#ffffff',
+      existingHexColor: '#cccccc',
+      missingHexColor: '#ffffff',
+      gridColor: '#000000'
+  };
+
+  // Состояние карты
+  const state = {
+      offsetX: 0,
+      offsetY: 0,
+      isDragging: false,
+      lastMouseX: 0,
+      lastMouseY: 0,
+      scale: 1,
+      minScale: 0.5,
+      maxScale: 3
+  };
+
+  // Размеры canvas
+  function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      renderGrid();
+  }
+
+  // Инициализация
+  function init() {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Обработчики событий мыши
+      canvas.addEventListener('mousedown', handleMouseDown);
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('mouseup', handleMouseUp);
+      canvas.addEventListener('mouseleave', handleMouseUp);
+
+      // Обработчик колесика мыши для масштабирования
+      canvas.addEventListener('wheel', handleWheel, { passive: false });
+
+      // Генерация большей сетки для демонстрации
+      generateLargerGrid();
+      renderGrid();
+  }
+
+  // Генерация большей сетки для демонстрации
+  function generateLargerGrid() {
+      const radius = 12; // Радиус сетки
+      for (let q = -radius; q <= radius; q++) {
+          for (let r = -radius; r <= radius; r++) {
+              const s = -q - r;
+              if (Math.abs(s) > radius) continue;
+
+              const key = `Vector3(x=${q}, y=${r}, z=${s})`;
+              if (!hexData[key]) {
+                  hexData[key] = {
+                      vector: { x: q, y: r, z: s },
+                      isAvailable: false,
+                      color: "EMPTY",
+                      entity: null
+                  };
+              }
+          }
+      }
+  }
+
+  // Преобразование кубических координат в экранные с учетом масштаба и смещения
+  function cubeToPixel(cube) {
+      const size = config.hexSize * state.scale;
+      const x = size * (3/2) * cube.x;
+      const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+      return {
+          x: (canvas.width / 2) + x + state.offsetX,
+          y: (canvas.height / 2) + y + state.offsetY
+      };
+  }
+
+  // Рисование шестиугольника
+  function drawHexagon(x, y, size, color) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+          const angle = 2 * Math.PI / 6 * i;
+          const xi = x + size * Math.cos(angle);
+          const yi = y + size * Math.sin(angle);
+          if (i === 0) {
+              ctx.moveTo(xi, yi);
+          } else {
+              ctx.lineTo(xi, yi);
+          }
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = config.gridColor;
+      ctx.stroke();
+  }
+
+  // Отрисовка всей сетки
+  function renderGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const size = config.hexSize * state.scale;
+      const visibleArea = calculateVisibleArea();
+
+      Object.values(hexData).forEach(item => {
+          const cube = item.vector;
+          const pixelPos = cubeToPixel(cube);
+
+          // Проверяем, находится ли шестиугольник в видимой области
+          if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
+              const exists = true; // Все шестиугольники в hexData существуют
+              drawHexagon(pixelPos.x, pixelPos.y, size,
+                         exists ? config.existingHexColor : config.missingHexColor);
+
+              if (config.showCoordinates) {
+                  ctx.fillStyle = '#000';
+                  ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
+                  ctx.fillText(`${cube.x},${cube.y},${cube.z}`,
+                              pixelPos.x - 20 * state.scale,
+                              pixelPos.y + 5 * state.scale);
+              }
+          }
+      });
+  }
+
+  // Проверка, находится ли шестиугольник в видимой области
+  function isHexInView(x, y, size, visibleArea) {
+      const hexRadius = size;
+      return x + hexRadius > visibleArea.left &&
+             x - hexRadius < visibleArea.right &&
+             y + hexRadius > visibleArea.top &&
+             y - hexRadius < visibleArea.bottom;
+  }
+
+  // Расчет видимой области
+  function calculateVisibleArea() {
+      return {
+          left: -state.offsetX,
+          right: canvas.width - state.offsetX,
+          top: -state.offsetY,
+          bottom: canvas.height - state.offsetY
+      };
+  }
+
+  // Обработчики событий мыши
+  function handleMouseDown(e) {
+      state.isDragging = true;
+      state.lastMouseX = e.clientX;
+      state.lastMouseY = e.clientY;
+      canvas.style.cursor = 'grabbing';
+  }
+
+  function handleMouseMove(e) {
+      if (state.isDragging) {
+          const dx = e.clientX - state.lastMouseX;
+          const dy = e.clientY - state.lastMouseY;
+          state.offsetX += dx;
+          state.offsetY += dy;
+          state.lastMouseX = e.clientX;
+          state.lastMouseY = e.clientY;
+          renderGrid();
+      }
+  }
+
+  function handleMouseUp() {
+      state.isDragging = false;
+      canvas.style.cursor = 'grab';
+  }
+
+  // Обработчик колесика мыши для масштабирования
+  function handleWheel(e) {
+      e.preventDefault();
+
+      // Определяем направление масштабирования
+      const delta = e.deltaY > 0 ? -1 : 1;
+      const scaleFactor = 1.1;
+
+      // Сохраняем позицию мыши относительно карты
+      const mouseX = e.clientX - canvas.offsetLeft;
+      const mouseY = e.clientY - canvas.offsetTop;
+      const worldX = (mouseX - canvas.width/2 - state.offsetX) / state.scale;
+      const worldY = (mouseY - canvas.height/2 - state.offsetY) / state.scale;
+
+      // Изменяем масштаб
+      const newScale = delta > 0 ?
+          Math.min(state.scale * scaleFactor, state.maxScale) :
+          Math.max(state.scale / scaleFactor, state.minScale);
+
+      if (newScale !== state.scale) {
+          // Корректируем смещение для сохранения позиции под курсором
+          state.offsetX = mouseX - canvas.width/2 - worldX * newScale;
+          state.offsetY = mouseY - canvas.height/2 - worldY * newScale;
+          state.scale = newScale;
+          renderGrid();
+      }
+  }
+
+  // Запуск приложения
+  init();
+</script>
+</body>
+</html>
