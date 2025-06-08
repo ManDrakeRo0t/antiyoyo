@@ -1,8 +1,6 @@
-package ru.bogatov.antiyoyo.game.engine.utils;
+package ru.bogatov.antiyoyo.game.engine.util;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class HexMapGeneratorTest {
 

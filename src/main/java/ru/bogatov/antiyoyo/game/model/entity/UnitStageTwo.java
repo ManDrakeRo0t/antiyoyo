@@ -9,11 +9,16 @@ public class UnitStageTwo extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNIT;
+        return EntityType.UNIT_2;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getBalanceChange() {
+        return -6;
+    }
+
+    @Override
+    public Integer getPrice(Integer unitsCount) {
         return 20;
     }
 

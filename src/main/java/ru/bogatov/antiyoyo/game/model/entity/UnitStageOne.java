@@ -9,11 +9,16 @@ public class UnitStageOne extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNIT;
+        return EntityType.UNIT_1;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getBalanceChange() {
+        return -2;
+    }
+
+    @Override
+    public Integer getPrice(Integer unitsCount) {
         return 10;
     }
 
@@ -34,6 +39,6 @@ public class UnitStageOne extends Entity implements Sellable, Interactable {
 
     @Override
     public Integer getDefenceRadius() {
-        return 0;
+        return 1;
     }
 }

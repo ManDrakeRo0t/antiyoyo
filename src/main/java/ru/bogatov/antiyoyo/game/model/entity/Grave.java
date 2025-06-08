@@ -9,7 +9,7 @@ public class Grave extends Entity {
 
     @Override
     public EntityType getType() {
-        return EntityType.BUILDING;
+        return EntityType.GRAVE;
     }
 
 }

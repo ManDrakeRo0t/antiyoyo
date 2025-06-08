@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 public class Field extends Entity {
     @Override
     public EntityType getType() {
-        return EntityType.BUILDING;
+        return EntityType.FIELD;
     }
 }

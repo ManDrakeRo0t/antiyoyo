@@ -9,11 +9,11 @@ public class BigTower extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.BUILDING;
+        return EntityType.BIG_TOWER;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getPrice(Integer unitsCount) {
         return 35;
     }
 

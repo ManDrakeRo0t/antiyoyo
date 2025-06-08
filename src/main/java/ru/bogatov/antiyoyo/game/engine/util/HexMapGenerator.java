@@ -1,9 +1,10 @@
-package ru.bogatov.antiyoyo.game.engine.utils;
+package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.Hex;
 import ru.bogatov.antiyoyo.game.model.HexColor;
 import ru.bogatov.antiyoyo.game.model.Vector3;
+import ru.bogatov.antiyoyo.game.model.entity.Field;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,8 @@ public class HexMapGenerator {
                 .color(HexColor.EMPTY)
                 .vector(vector)
                 .isAvailable(false)
-                .entity(null)
+                .entity(new Field())
+                .defenseLevel(0)
                 .build();
     }
 

@@ -9,11 +9,16 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNIT;
+        return EntityType.UNIT_3;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getBalanceChange() {
+        return -8;
+    }
+
+    @Override
+    public Integer getPrice(Integer unitsCount) {
         return 30;
     }
 

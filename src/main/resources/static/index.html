@@ -1,288 +1,954 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hexagon Grid with Pan</title>
-  <style>
-    body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #f0f0f0;
-    }
-    #container {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-    }
-    canvas {
-        display: block;
-        background-color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Hexagon Grid Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background-color: white;
+        }
+        #sessionInput {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: opacity 0.3s ease;
+        }
+        #sessionInput.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #sessionInput input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px;
+        }
+        #sessionInput button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #sessionInput button:hover {
+            background-color: #45a049;
+        }
+        #sessionInput button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #connectionStatus {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        #topRightPanel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            gap: 10px;
+            flex-direction: column;
+        }
+        .action-button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 100px;
+            text-align: center;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        .action-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        #controlPanel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            gap: 15px;
+            align-items: center;
+        }
+        .unit-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .unit-price {
+            font-size: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .unit-price.affordable {
+            color: #4CAF50;  /* Зеленый цвет для доступных юнитов */
+        }
+        .unit-price.unaffordable {
+            color: #f44336;  /* Красный цвет для недоступных юнитов */
+        }
+        .unit-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        .unit-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .unit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .unit-button.selected {
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        #BIG_TOWER_Btn { background-image: url('images/big_tower.png'); }
+        #TOWER_Btn { background-image: url('images/tower.png'); }
+        #FACTORY_Btn { background-image: url('images/factory.png'); }
+        #UNIT_1_Btn { background-image: url('images/unit1.png'); }
+        #UNIT_2_Btn { background-image: url('images/unit2.png'); }
+        #UNIT_3_Btn { background-image: url('images/unit3.png'); }
+        #TANK_Btn { background-image: url('images/tank.png'); }
+        #TOWN_HALL_Btn { background-image: url('images/town-hall.png'); }
+        #undoBtn { background-image: url('images/undo.png'); }
+        #balanceDisplay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+        #balanceDisplay.visible {
+            display: block;
+        }
+        .balance-change {
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .balance-change.positive {
+            color: #4CAF50;
+        }
+        .balance-change.negative {
+            color: #f44336;
+        }
+    </style>
 </head>
 <body>
-<div id="container">
-  <canvas id="hexCanvas"></canvas>
-</div>
+    <div id="sessionInput">
+        <input type="text" id="sessionId" placeholder="Enter session UUID">
+        <button onclick="connectToSession()">Connect</button>
+    </div>
+    <div id="balanceDisplay"></div>
+    <div id="connectionStatus" class="disconnected">Disconnected</div>
+    <div id="topRightPanel">
+        <button class="action-button" onclick="sendUndoMove()">Back</button>
+        <button class="action-button" onclick="endTurn()">End Turn</button>
+    </div>
+    <div id="container">
+        <canvas id="hexCanvas"></canvas>
+    </div>
+    <div id="controlPanel">
+        <div class="unit-button-container">
+            <button id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Big Tower"></button>
+            <div class="unit-price" data-unit="BIG_TOWER"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Tower"></button>
+            <div class="unit-price" data-unit="TOWER"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Factory"></button>
+            <div class="unit-price" data-unit="FACTORY"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
+            <div class="unit-price" data-unit="UNIT_1"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Unit Level 2"></button>
+            <div class="unit-price" data-unit="UNIT_2"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Unit Level 3"></button>
+            <div class="unit-price" data-unit="UNIT_3"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
+            <div class="unit-price" data-unit="TANK"></div>
+        </div>
+    </div>
 
 <script>
-  // Исходные данные
-  const hexData = {
-      "Vector3(x=0, y=0, z=0)": {
-          "vector": { "x": 0, "y": 0, "z": 0 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=1, y=-1, z=0)": {
-          "vector": { "x": 1, "y": -1, "z": 0 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=-1, y=1, z=0)": {
-          "vector": { "x": -1, "y": 1, "z": 0 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=-1, y=0, z=1)": {
-          "vector": { "x": -1, "y": 0, "z": 1 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=1, y=0, z=-1)": {
-          "vector": { "x": 1, "y": 0, "z": -1 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=0, y=-1, z=1)": {
-          "vector": { "x": 0, "y": -1, "z": 1 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      },
-      "Vector3(x=0, y=1, z=-1)": {
-          "vector": { "x": 0, "y": 1, "z": -1 },
-          "isAvailable": false,
-          "color": "EMPTY",
-          "entity": null
-      }
-  };
+    // WebSocket and STOMP client variables
+    let stompClient = null;
+    let sessionId = null;
+    let hexData = {};
+    let sendPath = null;
 
-  // Получаем canvas и контекст
-  const canvas = document.getElementById('hexCanvas');
-  const ctx = canvas.getContext('2d');
+    // Canvas setup
+    const canvas = document.getElementById('hexCanvas');
+    const ctx = canvas.getContext('2d');
 
-  // Настройки отображения
-  const config = {
-      hexSize: 30,
-      minHexSize: 10,
-      maxHexSize: 60,
-      showCoordinates: true,
-      backgroundColor: '#ffffff',
-      existingHexColor: '#cccccc',
-      missingHexColor: '#ffffff',
-      gridColor: '#000000'
-  };
+    // Configuration
+    const config = {
+        hexSize: 30,
+        minHexSize: 10,
+        maxHexSize: 60,
+        showCoordinates: false,
+        backgroundColor: '#ffffff',
+        existingHexColor: '#cccccc',
+        missingHexColor: '#ffffff',
+        gridColor: '#000000',
+        selectedHexColor: '#ffff00',  // Color for selected hex highlight
+        selectedHexBorderWidth: 3     // Border width for selected hex
+    };
 
-  // Состояние карты
-  const state = {
-      offsetX: 0,
-      offsetY: 0,
-      isDragging: false,
-      lastMouseX: 0,
-      lastMouseY: 0,
-      scale: 1,
-      minScale: 0.5,
-      maxScale: 3
-  };
+    // Map state
+    const state = {
+        currentPlayer: 0,
+        selectedUnit: null,
+        editMode: false,
+        offsetX: 0,
+        offsetY: 0,
+        isDragging: false,
+        lastMouseX: 0,
+        lastMouseY: 0,
+        scale: 1,
+        minScale: 0.5,
+        maxScale: 3,
+        selectedHex: null,
+        selectedTownHall: null
+    };
 
-  // Размеры canvas
-  function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      renderGrid();
-  }
+    // Color mapping function
+    function getColorFromName(colorName) {
+        const colorMap = {
+            'EMPTY': '#cccccc',  // серый
+            'RED': '#ff0000',    // красный
+            'BLUE': '#0000ff',   // синий
+            'GREEN': '#00ff00',  // зеленый
+            'YELLOW': '#ffff00', // желтый
+            'PURPLE': '#800080', // фиолетовый
+            'ORANGE': '#ffa500', // оранжевый
+            'BLACK': '#000000',  // черный
+            'WHITE': '#ffffff'   // белый
+        };
+        return colorMap[colorName] || config.existingHexColor;
+    }
 
-  // Инициализация
-  function init() {
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
+    // Add image preloading
+    const entityImages = {
+        'BIG_TOWER': 'images/big_tower.png',
+        'TOWER': 'images/tower.png',
+        'FACTORY': 'images/factory.png',
+        'UNIT_1': 'images/unit1.png',
+        'UNIT_2': 'images/unit2.png',
+        'UNIT_3': 'images/unit3.png',
+        'TANK': 'images/tank.png',
+        'TOWN_HALL': 'images/town-hall.png',
+        'TREE': 'images/tree.png',
+        'GRAVE': 'images/grave.png',
+        'SHIELD': 'images/shield.png'
+    };
 
-      // Обработчики событий мыши
-      canvas.addEventListener('mousedown', handleMouseDown);
-      canvas.addEventListener('mousemove', handleMouseMove);
-      canvas.addEventListener('mouseup', handleMouseUp);
-      canvas.addEventListener('mouseleave', handleMouseUp);
+    // Preload all images
+    const preloadedImages = {};
+    function preloadImages() {
+        Object.entries(entityImages).forEach(([type, path]) => {
+            const img = new Image();
+            img.src = path;
+            preloadedImages[type] = img;
+        });
+    }
 
-      // Обработчик колесика мыши для масштабирования
-      canvas.addEventListener('wheel', handleWheel, { passive: false });
+    // Entity image mapping function
+    function getEntityImage(entityType) {
+        return preloadedImages[entityType];
+    }
 
-      // Генерация большей сетки для демонстрации
-      generateLargerGrid();
-      renderGrid();
-  }
+    // WebSocket connection functions
+    function connectToSession() {
+        const sessionInput = document.getElementById('sessionId');
+        sessionId = sessionInput.value.trim();
+        
+        let sendTopic = "/topic/sessions.X.event.send"
+        let destTopic = "/topic/sessions.X.event.fetch"
+        let destPath = destTopic.replace("X", sessionId)
+        sendPath = sendTopic.replace("X", sessionId)
 
-  // Генерация большей сетки для демонстрации
-  function generateLargerGrid() {
-      const radius = 12; // Радиус сетки
-      for (let q = -radius; q <= radius; q++) {
-          for (let r = -radius; r <= radius; r++) {
-              const s = -q - r;
-              if (Math.abs(s) > radius) continue;
+        if (!sessionId) {
+            alert('Please enter a session UUID');
+            return;
+        }
 
-              const key = `Vector3(x=${q}, y=${r}, z=${s})`;
-              if (!hexData[key]) {
-                  hexData[key] = {
-                      vector: { x: q, y: r, z: s },
-                      isAvailable: false,
-                      color: "EMPTY",
-                      entity: null
-                  };
-              }
-          }
-      }
-  }
+        if (stompClient && stompClient.connected) {
+            sendGetSession()
+        } else {
+            const stompConfig = {
+                brokerURL: "ws://localhost:8080/ws",
+                reconnectDelay: 200,
+                onConnect: function (frame) {
+                    const statusDiv = document.getElementById('connectionStatus');
+                    const topRightPanel = document.getElementById('topRightPanel');
+                    statusDiv.textContent = 'Connected';
+                    statusDiv.className = 'connected';
+                    topRightPanel.style.display = 'flex';
+                    sessionInput.classList.add('hidden');
 
-  // Преобразование кубических координат в экранные с учетом масштаба и смещения
-  function cubeToPixel(cube) {
-      const size = config.hexSize * state.scale;
-      const x = size * (3/2) * cube.x;
-      const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
-      return {
-          x: (canvas.width / 2) + x + state.offsetX,
-          y: (canvas.height / 2) + y + state.offsetY
-      };
-  }
+                    const subscription = stompClient.subscribe(destPath, function (message) {
+                        const payload = JSON.parse(message.body);
+                        // console.log(payload)
+                        updateHexData(payload);
+                        renderGrid();
+                    });
 
-  // Рисование шестиугольника
-  function drawHexagon(x, y, size, color) {
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-          const angle = 2 * Math.PI / 6 * i;
-          const xi = x + size * Math.cos(angle);
-          const yi = y + size * Math.sin(angle);
-          if (i === 0) {
-              ctx.moveTo(xi, yi);
-          } else {
-              ctx.lineTo(xi, yi);
-          }
-      }
-      ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.strokeStyle = config.gridColor;
-      ctx.stroke();
-  }
+                    sendGetSession();
+                    state.selectedUnit = null;
+                    updateUnitButtons();
+                },
+                onDisconnect: function() {
+                    const statusDiv = document.getElementById('connectionStatus');
+                    const topRightPanel = document.getElementById('topRightPanel');
+                    statusDiv.textContent = 'Disconnected';
+                    statusDiv.className = 'disconnected';
+                    topRightPanel.style.display = 'none';
+                    sessionInput.classList.remove('hidden');
+                }
+            };
+            
+            stompClient = new StompJs.Client(stompConfig);
+            stompClient.activate();
+        }
+    
+    }
 
-  // Отрисовка всей сетки
-  function renderGrid() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = config.backgroundColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function onError(error) {
+        const statusDiv = document.getElementById('connectionStatus');
+        statusDiv.textContent = 'Connection Error';
+        statusDiv.className = 'disconnected';
+        console.error('WebSocket Error:', error);
+    }
 
-      const size = config.hexSize * state.scale;
-      const visibleArea = calculateVisibleArea();
+    function sendMessage(message) {
+        stompClient.publish({
+                destination: sendPath,
+                body: JSON.stringify(message)
+                
+            });
+    }
 
-      Object.values(hexData).forEach(item => {
-          const cube = item.vector;
-          const pixelPos = cubeToPixel(cube);
+    function sendGetSession() {
+        const message = {
+            type: "GET_SESSION"
+        };
+        sendMessage(message);
+    }
 
-          // Проверяем, находится ли шестиугольник в видимой области
-          if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
-              const exists = true; // Все шестиугольники в hexData существуют
-              drawHexagon(pixelPos.x, pixelPos.y, size,
-                         exists ? config.existingHexColor : config.missingHexColor);
+    // Update control panel visibility based on selected town hall
+    function updateControlPanelVisibility() {
+        const controlPanel = document.getElementById('controlPanel');
+        const sessionInput = document.getElementById('sessionInput');
+        
+        if (
+            hexData.players && 
+            hexData.players[state.currentPlayer] && 
+            hexData.players[state.currentPlayer].selectedTownHall) {
+            
+            state.selectedTownHall = hexData.players[state.currentPlayer].selectedTownHall;
+            controlPanel.style.display = 'flex';
+            sessionInput.classList.add('hidden');
+            updateUnitPrices();
+        } else {
+            state.selectedTownHall = null;
+            controlPanel.style.display = 'none';
+            if (!stompClient || !stompClient.connected) {
+                sessionInput.classList.remove('hidden');
+            }
+        }
+        
+        updateBalanceDisplay();
+    }
 
-              if (config.showCoordinates) {
-                  ctx.fillStyle = '#000';
-                  ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
-                  ctx.fillText(`${cube.x},${cube.y},${cube.z}`,
-                              pixelPos.x - 20 * state.scale,
-                              pixelPos.y + 5 * state.scale);
-              }
-          }
-      });
-  }
+    // Функция для обновления цен юнитов и состояния кнопок
+    function updateUnitPrices() {
+        if (!state.selectedTownHall || !state.selectedTownHall.prices) return;
 
-  // Проверка, находится ли шестиугольник в видимой области
-  function isHexInView(x, y, size, visibleArea) {
-      const hexRadius = size;
-      return x + hexRadius > visibleArea.left &&
-             x - hexRadius < visibleArea.right &&
-             y + hexRadius > visibleArea.top &&
-             y - hexRadius < visibleArea.bottom;
-  }
+        const balance = state.selectedTownHall.balance || 0;
+        const prices = state.selectedTownHall.prices;
 
-  // Расчет видимой области
-  function calculateVisibleArea() {
-      return {
-          left: -state.offsetX,
-          right: canvas.width - state.offsetX,
-          top: -state.offsetY,
-          bottom: canvas.height - state.offsetY
-      };
-  }
+        // Обновляем отображение цены и состояние кнопки для каждого юнита
+        Object.entries(prices).forEach(([unitType, price]) => {
+            const priceElement = document.querySelector(`.unit-price[data-unit="${unitType}"]`);
+            const button = document.getElementById(`${unitType}_Btn`);
+            
+            if (priceElement && button) {
+                // Обновляем отображение цены
+                priceElement.textContent = `${price}`;
+                
+                // Обновляем состояние кнопки и стиль отображения цены
+                const canAfford = balance >= price;
+                button.disabled = !canAfford;
+                
+                // Удаляем старые классы и добавляем новый
+                priceElement.classList.remove('affordable', 'unaffordable');
+                priceElement.classList.add(canAfford ? 'affordable' : 'unaffordable');
+            }
+        });
+    }
 
-  // Обработчики событий мыши
-  function handleMouseDown(e) {
-      state.isDragging = true;
-      state.lastMouseX = e.clientX;
-      state.lastMouseY = e.clientY;
-      canvas.style.cursor = 'grabbing';
-  }
+    // Обновляем отображение баланса
+    function updateBalanceDisplay() {
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        if (!state.selectedTownHall) {
+            balanceDisplay.classList.remove('visible');
+            return;
+        }
 
-  function handleMouseMove(e) {
-      if (state.isDragging) {
-          const dx = e.clientX - state.lastMouseX;
-          const dy = e.clientY - state.lastMouseY;
-          state.offsetX += dx;
-          state.offsetY += dy;
-          state.lastMouseX = e.clientX;
-          state.lastMouseY = e.clientY;
-          renderGrid();
-      }
-  }
+        const balance = state.selectedTownHall.balance || 0;
+        const balanceChange = state.selectedTownHall.balanceChanges || 0;
+        
+        let changeText = '';
+        if (balanceChange !== 0) {
+            const changeClass = balanceChange > 0 ? 'positive' : 'negative';
+            const changeSign = balanceChange > 0 ? '+' : '';
+            changeText = `<span class="balance-change ${changeClass}">(${changeSign}${balanceChange})</span>`;
+        }
 
-  function handleMouseUp() {
-      state.isDragging = false;
-      canvas.style.cursor = 'grab';
-  }
+        balanceDisplay.innerHTML = `Баланс: ${balance}${changeText}`;
+        balanceDisplay.classList.add('visible');
+        
+        // Обновляем цены юнитов при изменении баланса
+        updateUnitPrices();
+    }
 
-  // Обработчик колесика мыши для масштабирования
-  function handleWheel(e) {
-      e.preventDefault();
+    // Update hex data with message filtering
+    function updateHexData(data) {
+        if (!data) return;
+        
+        // Only process message if it's for current player or for all players
+        if (data.forUser !== null && data.forUser !== state.currentPlayer) {
+            return;
+        }
 
-      // Определяем направление масштабирования
-      const delta = e.deltaY > 0 ? -1 : 1;
-      const scaleFactor = 1.1;
+      
+        if (data.map) {
+            hexData = data;
+            updateControlPanelVisibility();
+        } else {
+            console.warn('Received payload does not contain map data:', data);
+        }
+    }
 
-      // Сохраняем позицию мыши относительно карты
-      const mouseX = e.clientX - canvas.offsetLeft;
-      const mouseY = e.clientY - canvas.offsetTop;
-      const worldX = (mouseX - canvas.width/2 - state.offsetX) / state.scale;
-      const worldY = (mouseY - canvas.height/2 - state.offsetY) / state.scale;
+    // Canvas functions
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        renderGrid();
+    }
 
-      // Изменяем масштаб
-      const newScale = delta > 0 ?
-          Math.min(state.scale * scaleFactor, state.maxScale) :
-          Math.max(state.scale / scaleFactor, state.minScale);
+    function init() {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        preloadImages();
+        updateControlPanelVisibility();
 
-      if (newScale !== state.scale) {
-          // Корректируем смещение для сохранения позиции под курсором
-          state.offsetX = mouseX - canvas.width/2 - worldX * newScale;
-          state.offsetY = mouseY - canvas.height/2 - worldY * newScale;
-          state.scale = newScale;
-          renderGrid();
-      }
-  }
+        // Mouse event handlers
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseleave', handleMouseUp);
+        canvas.addEventListener('wheel', handleWheel, { passive: false });
+        canvas.addEventListener('click', handleCanvasClick);
+    }
 
-  // Запуск приложения
-  init();
-</script>
+    function cubeToPixel(cube) {
+        const size = config.hexSize * state.scale;
+        const x = size * (3/2) * cube.x;
+        const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+        return {
+            x: (canvas.width / 2) + x + state.offsetX,
+            y: (canvas.height / 2) + y + state.offsetY
+        };
+    }
+
+    function drawHexagon(x, y, size, hex) {
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = 2 * Math.PI / 6 * i;
+            const xi = x + size * Math.cos(angle);
+            const yi = y + size * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(xi, yi);
+            } else {
+                ctx.lineTo(xi, yi);
+            }
+        }
+        ctx.closePath();
+        
+        // Fill with color using the color mapping function
+        let color = getColorFromName(hex.color);
+        if (hex.isAvailable === false) {
+            ctx.globalAlpha = 0.3;
+        }
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Check if this hex is selected
+        const isSelected = state.selectedHex && 
+            state.selectedHex.x === hex.vector.x && 
+            state.selectedHex.y === hex.vector.y && 
+            state.selectedHex.z === hex.vector.z;
+        
+        // Draw border
+        if (isSelected) {
+            ctx.lineWidth = config.selectedHexBorderWidth;
+            ctx.strokeStyle = config.selectedHexColor;
+        } else {
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = hex.isAvailable === false ? '#666666' : config.gridColor;
+        }
+        ctx.stroke();
+
+        // Draw entity icon if present
+        if (hex.entity && hex.entity.type) {
+            const img = getEntityImage(hex.entity.type);
+            if (img && img.complete) {
+                if (hex.isAvailable === false) {
+                    ctx.globalAlpha = 0.3;
+                }
+                const iconSize = size * 0.6;
+                // Для могилы делаем иконку немного меньше
+                const finalIconSize = hex.entity.type === 'GRAVE' ? iconSize * 0.8 : iconSize;
+                ctx.drawImage(img, 
+                    x - finalIconSize/2, 
+                    y - finalIconSize/2, 
+                    finalIconSize, 
+                    finalIconSize
+                );
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Draw shield icon if displayDefence is true
+        if (hex.displayDefence) {
+            const shieldImg = getEntityImage('SHIELD');
+            if (shieldImg && shieldImg.complete) {
+                const shieldSize = size * 1; // Shield is slightly smaller than entity
+                ctx.drawImage(shieldImg,
+                    x - shieldSize/2,
+                    y - shieldSize/2,
+                    shieldSize,
+                    shieldSize
+                );
+            }
+        }
+
+        // Draw coordinates if enabled
+        if (config.showCoordinates) {
+            ctx.fillStyle = '#000';
+            ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
+            ctx.fillText(`${hex.vector.x},${hex.vector.y},${hex.vector.z}`,
+                        x - 20 * state.scale,
+                        y + 5 * state.scale);
+        }
+    }
+
+    function renderGrid() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = config.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const size = config.hexSize * state.scale;
+        const visibleArea = calculateVisibleArea();
+
+        if (!hexData || !hexData.map) return;
+
+        Object.values(hexData.map).forEach(hex => {
+            if (!hex || !hex.vector) return; // Skip invalid hex data
+            
+            const pixelPos = cubeToPixel(hex.vector);
+            if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
+                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+            }
+        });
+    }
+
+    function isHexInView(x, y, size, visibleArea) {
+        const hexRadius = size;
+        return x + hexRadius > visibleArea.left &&
+               x - hexRadius < visibleArea.right &&
+               y + hexRadius > visibleArea.top &&
+               y - hexRadius < visibleArea.bottom;
+    }
+
+    function calculateVisibleArea() {
+        return {
+            left: -state.offsetX,
+            right: canvas.width - state.offsetX,
+            top: -state.offsetY,
+            bottom: canvas.height - state.offsetY
+        };
+    }
+
+    // Mouse event handlers
+    function handleMouseDown(e) {
+        state.isDragging = true;
+        state.lastMouseX = e.clientX;
+        state.lastMouseY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+    }
+
+    function handleMouseMove(e) {
+        if (state.isDragging) {
+            const dx = e.clientX - state.lastMouseX;
+            const dy = e.clientY - state.lastMouseY;
+            state.offsetX += dx;
+            state.offsetY += dy;
+            state.lastMouseX = e.clientX;
+            state.lastMouseY = e.clientY;
+            renderGrid();
+        }
+    }
+
+    function handleMouseUp() {
+        state.isDragging = false;
+        canvas.style.cursor = 'grab';
+    }
+
+    function handleWheel(e) {
+        e.preventDefault();
+
+        const delta = e.deltaY > 0 ? -1 : 1;
+        const scaleFactor = 1.1;
+
+        const mouseX = e.clientX - canvas.offsetLeft;
+        const mouseY = e.clientY - canvas.offsetTop;
+        const worldX = (mouseX - canvas.width/2 - state.offsetX) / state.scale;
+        const worldY = (mouseY - canvas.height/2 - state.offsetY) / state.scale;
+
+        const newScale = delta > 0 ?
+            Math.min(state.scale * scaleFactor, state.maxScale) :
+            Math.max(state.scale / scaleFactor, state.minScale);
+
+        if (newScale !== state.scale) {
+            state.offsetX = mouseX - canvas.width/2 - worldX * newScale;
+            state.offsetY = mouseY - canvas.height/2 - worldY * newScale;
+            state.scale = newScale;
+            renderGrid();
+        }
+    }
+
+    // Function to convert pixel coordinates to cubic coordinates
+    function pixelToCube(x, y) {
+        const size = config.hexSize * state.scale;
+        
+        // Adjust coordinates for canvas center and offset
+        const adjustedX = x - (canvas.width / 2) - state.offsetX;
+        const adjustedY = y - (canvas.height / 2) - state.offsetY;
+        
+        // Convert to axial coordinates
+        const q = (2/3) * adjustedX / size;
+        const r = (-1/3) * adjustedX / size + (Math.sqrt(3)/3) * adjustedY / size;
+        
+        // Convert to cube coordinates
+        let rx = Math.round(q);
+        let ry = Math.round(-q - r);
+        let rz = Math.round(r);
+        
+        // Round to nearest valid cube coordinates
+        const xDiff = Math.abs(rx - q);
+        const yDiff = Math.abs(ry - (-q - r));
+        const zDiff = Math.abs(rz - r);
+        
+        if (xDiff > yDiff && xDiff > zDiff) {
+            rx = -ry - rz;
+        } else if (yDiff > zDiff) {
+            ry = -rx - rz;
+        } else {
+            rz = -rx - ry;
+        }
+        
+        // console.log('Pixel to Cube conversion:', {
+        //     input: { x, y },
+        //     adjusted: { x: adjustedX, y: adjustedY },
+        //     size,
+        //     cube: { x: rx, y: ry, z: rz }
+        // });
+        
+        return { x: rx, y: ry, z: rz };
+    }
+
+    // Function to log current state
+    function logCurrentState() {
+        console.log('Current State:', {
+            currentPlayer: state.currentPlayer,
+            selectedUnit: state.selectedUnit,
+            editMode: state.editMode,
+            selectedHex: state.selectedHex,
+            selectedTownHall: state.selectedTownHall ? {
+                type: state.selectedTownHall.type,
+                level: state.selectedTownHall.level,
+                balance: state.selectedTownHall.balance,
+                balanceChanges: state.selectedTownHall.balanceChanges
+            } : null,
+            hexData: hexData ? {
+                currentPlayerMove: hexData.currentPlayerMove,
+                players: hexData.players ? Object.keys(hexData.players).length : 0,
+                mapSize: hexData.map ? Object.keys(hexData.map).length : 0
+            } : null
+        });
+    }
+
+    // Click handler for canvas
+    function handleCanvasClick(e) {
+        if (state.isDragging) {
+            return;
+        }
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const cubicCoords = pixelToCube(x, y);
+        const hexKey = `Vector3(x=${cubicCoords.x}, y=${cubicCoords.y}, z=${cubicCoords.z})`;
+        const hex = hexData.map[hexKey];
+        
+        if (hex) {
+            const pixelPos = cubeToPixel(hex.vector);
+            const size = config.hexSize * state.scale;
+            
+            const dx = x - pixelPos.x;
+            const dy = y - pixelPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const hexRadius = size;
+            
+            if (distance <= hexRadius) {
+                if (hex.isAvailable !== false) {
+                    onHexClick(cubicCoords);
+                    logCurrentState();
+                }
+            }
+        } else {
+            sendClickBeforeMove(null, null);
+            logCurrentState();
+        }
+    }
+
+    // Function to handle hex click
+    function onHexClick(cubicCoords) {
+        let move_sended = false;
+        if (state.selectedUnit) {
+            // If unit is selected, try to place it
+            sendUnitMove(state.selectedUnit, cubicCoords);
+            state.selectedUnit = null;
+            updateUnitButtons();
+        } else {
+            const hexKey = `Vector3(x=${cubicCoords.x}, y=${cubicCoords.y}, z=${cubicCoords.z})`;
+            const clickedHex = hexData.map[hexKey];
+
+            if (state.selectedHex) {
+                // If we already have a selected hex, try to move the unit
+                const fromHexKey = `Vector3(x=${state.selectedHex.x}, y=${state.selectedHex.y}, z=${state.selectedHex.z})`;
+                const fromHex = hexData.map[fromHexKey];
+
+                if (fromHex && fromHex.entity && fromHex.entity.type) {
+                    // Send move event if there's a unit in the selected hex
+                    if (stompClient && stompClient.connected) {
+                        const message = {
+                            type: "MOVE",
+                            move: {
+                                redactorMode: state.editMode,
+                                player: state.currentPlayer,
+                                entityType: fromHex.entity.type,
+                                to: {
+                                    x: cubicCoords.x,
+                                    y: cubicCoords.y,
+                                    z: cubicCoords.z
+                                },
+                                from: {
+                                    x: state.selectedHex.x,
+                                    y: state.selectedHex.y,
+                                    z: state.selectedHex.z
+                                }
+                            }
+                        };
+                        console.log('Sending move message:', message);
+                        sendMessage(message);
+                        move_sended = true;
+                    }
+                }
+                // Clear selection after move attempt
+                state.selectedHex = null;
+            } else {
+                // Select the new hex
+                state.selectedHex = cubicCoords;
+            }
+            
+            renderGrid();
+            if (!move_sended) {
+                sendClickBeforeMove(clickedHex, null);
+            }
+        }
+    }
+
+    function sendClickBeforeMove(hex, entityType) {
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "BEFORE_MOVE",
+                hex : hex,
+                entityType: entityType,
+                move: {
+                    redactorMode : state.editMode,
+                    player: state.currentPlayer
+                }
+            };
+            sendMessage(message);
+        }
+    }
+
+    // Function to send unit move (now only used for placing new units)
+    function sendUnitMove(entityType, cubicCoords) {
+        if (!cubicCoords) {
+            // If no coordinates provided, this is unit selection
+            state.selectedUnit = entityType;
+            sendClickBeforeMove(null, entityType);
+            updateUnitButtons();
+            logCurrentState();
+            return;
+        }
+
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "MOVE",
+                move: {
+                    redactorMode: state.editMode,
+                    player: state.currentPlayer,
+                    entityType: entityType,
+                    to: {
+                        x: cubicCoords.x,
+                        y: cubicCoords.y,
+                        z: cubicCoords.z
+                    }
+                }
+            };
+            console.log('Sending move message:', message);
+            sendMessage(message);
+            state.selectedHex = null;
+            renderGrid();
+        }
+    }
+
+    // Update unit buttons state based on selection
+    function updateUnitButtons() {
+        const buttons = document.querySelectorAll('.unit-button');
+        buttons.forEach(button => {
+            const entityType = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+            button.classList.toggle('selected', state.selectedUnit === entityType);
+        });
+    }
+
+    // Function to send undo move message
+    function sendUndoMove() {
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "UNDO_MOVE"
+            };
+            console.log('Sending undo move message:', message);
+            sendMessage(message);
+        }
+    }
+
+    // Функция для обработки окончания хода
+    function endTurn() {
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "FINISH_TURN",
+                move: {
+                    redactorMode: state.editMode,
+                    player: state.currentPlayer
+                }
+            };
+            console.log('Отправка события окончания хода:', message);
+            sendMessage(message);
+        }
+    }
+
+    // Initialize the application
+    init();
+
+    // Initialize unit buttons as disabled
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUnitButtons();
+    });
+    </script>
 </body>
 </html>

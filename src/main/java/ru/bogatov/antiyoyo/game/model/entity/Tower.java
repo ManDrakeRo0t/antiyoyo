@@ -9,11 +9,11 @@ public class Tower extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.BUILDING;
+        return EntityType.TOWER;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getPrice(Integer unitsCount) {
         return 15;
     }
 

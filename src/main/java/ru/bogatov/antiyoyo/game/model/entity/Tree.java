@@ -9,7 +9,7 @@ public class Tree extends Entity {
 
     @Override
     public EntityType getType() {
-         return EntityType.BUILDING;
+         return EntityType.TREE;
     }
 
 

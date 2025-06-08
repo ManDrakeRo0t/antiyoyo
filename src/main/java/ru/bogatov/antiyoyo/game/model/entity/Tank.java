@@ -9,11 +9,16 @@ public class Tank extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
-        return EntityType.UNIT;
+        return EntityType.TANK;
     }
 
     @Override
-    public Integer getPrice() {
+    public Integer getBalanceChange() {
+        return -10;
+    }
+
+    @Override
+    public Integer getPrice(Integer unitsCount) {
         return 40;
     }
 

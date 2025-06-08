@@ -1,19 +1,19 @@
-package ru.bogatov.antiyoyo.game.engine.utils;
+package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.*;
-import ru.bogatov.antiyoyo.game.model.entity.Sellable;
+import ru.bogatov.antiyoyo.game.model.entity.Interactable;
 
 import java.util.Objects;
+import java.util.Set;
 
 /*
-* Класс для проверки шагов
-* 1) Проверка очередности шага
-* 2) Проверка баланса
-* 3) Проверка клетки с
-* 4) Проверка клетка в
-*
-* */
+ * Класс для проверки шагов
+ * 1) Проверка очередности шаг
+ * 3) Проверка клетки с
+ * 4) Проверка клетка в
+ *
+ * */
 
 @UtilityClass
 public class MoveValidator {
@@ -25,14 +25,6 @@ public class MoveValidator {
         }
     }
 
-    public static void checkDeposit(GameSession gameSession, Move move) {
-        if (move.getFrom() == null) { // Новая покупка
-            Sellable sellable = (Sellable) move.getEntity();
-            if (gameSession.getPlayers().get(move.getPlayer()).getBalance() < sellable.getPrice()) {
-                throw new IllegalArgumentException("Need more money");
-            }
-        }
-    }
 
     public static void checkFromHex(GameSession session, Move move) {
         if (move.getFrom() != null) { // Передвижение
@@ -52,10 +44,22 @@ public class MoveValidator {
         Hex from = gameSession.getMap().get(move.getFrom());
         Hex to = gameSession.getMap().get(move.getTo());
 
+        Set<Vector3> availableHexes;
+
         if (from == null) { // Новая покупка
-
+            availableHexes = HexCalculator.getAvailableHexesForNewEntity(
+                    gameSession.getPlayers().get(gameSession.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
+                    gameSession.getMap(),
+                    gameSession.getPlayers().get(move.getPlayer()).getColor(),
+                    (Interactable) EntityUtils.fromType(move.getEntityType()));
         } else { // Передвижение
+            availableHexes = HexCalculator.getAvailableHexesForExistingEntity(
+                    gameSession.getMap(), from
+            );
+        }
 
+        if (!availableHexes.contains(to.getVector())) {
+            throw new IllegalArgumentException("Can't move to not available hex");
         }
     }
 

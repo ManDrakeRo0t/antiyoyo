@@ -8,9 +8,17 @@ services:
     ports:
       - '27017'
   rabbitmq:
-    image: 'rabbitmq:latest'
+    image: pcloud/rabbitmq-stomp
+    hostname: rabbitmq
     environment:
-      - 'RABBITMQ_DEFAULT_PASS=secret'
-      - 'RABBITMQ_DEFAULT_USER=myuser'
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: secret
     ports:
-      - '5672'
+      - "5672:5672"
+      - "15672:15672"
+      - "61613:61613"
+    volumes:
+      - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
+
+volumes:
+  rabbitmq:

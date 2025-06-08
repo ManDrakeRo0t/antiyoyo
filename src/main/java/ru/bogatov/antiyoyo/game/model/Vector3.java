@@ -1,12 +1,12 @@
 package ru.bogatov.antiyoyo.game.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 @Data
 @EqualsAndHashCode
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Vector3 {
 
     private Integer x;

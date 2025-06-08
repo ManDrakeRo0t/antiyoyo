@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: antiyoyo
+
+  rabbitmq:
+    host: localhost
+    username: myuser
+    password: secret
+

@@ -1,11 +1,10 @@
 package ru.bogatov.antiyoyo.game;
 
-import ru.bogatov.antiyoyo.game.engine.utils.HexMapGenerator;
+import ru.bogatov.antiyoyo.game.engine.util.HexMapGenerator;
 import ru.bogatov.antiyoyo.game.model.Hex;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 public class Main {
 
