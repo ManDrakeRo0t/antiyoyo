@@ -37,7 +37,8 @@ public class SnapshotUtils {
                 hex.getColor(),
                 hex.getEntity().getType(),
                 hex.getEntity() instanceof TownHall townHall ? townHall.getBalance() : null,
-                hex.getDefenseLevel()
+                hex.getDefenseLevel(),
+                hex.getEntity().getMovedOnThisTurn()
         );
     }
 
@@ -55,6 +56,7 @@ public class SnapshotUtils {
                 townHall.setBalance(snapshot.getBalance());
             }
         }
+        hex.getEntity().setMovedOnThisTurn(snapshot.getIsMoved());
         return hex;
     }
 

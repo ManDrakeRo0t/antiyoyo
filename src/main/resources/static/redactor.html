@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Level Editor - Antiyoyo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #808080;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Top Menu */
+        .top-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+        }
+
+        .menu-section {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .menu-section label {
+            font-weight: bold;
+            margin-right: 5px;
+            white-space: nowrap;
+        }
+
+        .menu-section input {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .menu-section button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .menu-section button:hover {
+            opacity: 0.8;
+        }
+
+        /* Tool buttons */
+        .tool-button {
+            width: 40px;
+            height: 40px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #555;
+            transition: all 0.3s ease;
+        }
+
+        .tool-button:hover {
+            transform: scale(1.1);
+        }
+
+        .tool-button.selected {
+            border-color: #4CAF50;
+            background-color: #4CAF50;
+        }
+
+        .tool-button.delete {
+            background-color: #f44336;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-button.delete-hex {
+            background-color: #ff5722;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1002;
+            border-radius: 5px;
+            padding: 10px;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 5px;
+        }
+
+        /* Color buttons */
+        .color-button {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-button:hover {
+            transform: scale(1.2);
+        }
+
+        .color-button.selected {
+            border-color: #4CAF50;
+            border-width: 3px;
+        }
+
+        /* Canvas container */
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            margin-top: 80px;
+        }
+
+        canvas {
+            display: block;
+            background-color: #808080;
+        }
+
+        /* Back button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 1001;
+        }
+
+        .back-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Save/Load buttons */
+        .file-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .file-button {
+            padding: 8px 15px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .file-button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Назад</button>
+    
+    <div class="top-menu">
+        <div class="menu-section">
+            <label>Название:</label>
+            <input type="text" id="levelName" placeholder="Введите название">
+        </div>
+        
+        <div class="menu-section">
+            <label>Размер:</label>
+            <input type="number" id="mapSize" value="5" min="1" max="20">
+            <button onclick="generateMap()">Создать</button>
+        </div>
+        
+        <div class="menu-section">
+            <label>Инструменты:</label>
+            <button class="tool-button delete selected" onclick="selectTool('delete')" title="Удалить юнита">×</button>
+            <button class="tool-button delete-hex" onclick="selectTool('deleteHex')" title="Удалить гексагон">⊟</button>
+            <button class="tool-button" onclick="selectTool('color')" title="Цвет" style="background-color: #cccccc;">C</button>
+        </div>
+        
+        <div class="menu-section dropdown">
+            <label>Цвета:</label>
+            <button class="tool-button" style="background-color: #cccccc;">🎨</button>
+            <div class="dropdown-content">
+                <div class="dropdown-grid">
+                    <div class="color-button selected" style="background-color: #cccccc;" onclick="selectColor('EMPTY')" title="Пусто"></div>
+                    <div class="color-button" style="background-color: #ff0000;" onclick="selectColor('RED')" title="Красный"></div>
+                    <div class="color-button" style="background-color: #0000ff;" onclick="selectColor('BLUE')" title="Синий"></div>
+                    <div class="color-button" style="background-color: #00ff00;" onclick="selectColor('GREEN')" title="Зеленый"></div>
+                    <div class="color-button" style="background-color: #ffff00;" onclick="selectColor('YELLOW')" title="Желтый"></div>
+                    <div class="color-button" style="background-color: #800080;" onclick="selectColor('PURPLE')" title="Фиолетовый"></div>
+                    <div class="color-button" style="background-color: #ffa500;" onclick="selectColor('ORANGE')" title="Оранжевый"></div>
+                    <div class="color-button" style="background-color: #000000;" onclick="selectColor('BLACK')" title="Черный"></div>
+                    <div class="color-button" style="background-color: #ffffff;" onclick="selectColor('WHITE')" title="Белый"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="menu-section dropdown">
+            <label>Юниты:</label>
+            <button class="tool-button" style="background-image: url('images/unit1.png');">⚔️</button>
+            <div class="dropdown-content">
+                <div class="dropdown-grid">
+                    <button class="tool-button" onclick="selectTool('BIG_TOWER')" title="Большая башня" style="background-image: url('images/big_tower.png');"></button>
+                    <button class="tool-button" onclick="selectTool('TOWER')" title="Башня" style="background-image: url('images/tower.png');"></button>
+                    <button class="tool-button" onclick="selectTool('FACTORY')" title="Фабрика" style="background-image: url('images/factory.png');"></button>
+                    <button class="tool-button" onclick="selectTool('UNIT_1')" title="Юнит 1" style="background-image: url('images/unit1.png');"></button>
+                    <button class="tool-button" onclick="selectTool('UNIT_2')" title="Юнит 2" style="background-image: url('images/unit2.png');"></button>
+                    <button class="tool-button" onclick="selectTool('UNIT_3')" title="Юнит 3" style="background-image: url('images/unit3.png');"></button>
+                    <button class="tool-button" onclick="selectTool('TANK')" title="Танк" style="background-image: url('images/tank.png');"></button>
+                    <button class="tool-button" onclick="selectTool('TOWN_HALL')" title="Ратуша" style="background-image: url('images/town-hall.png');"></button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="menu-section file-buttons">
+            <button class="file-button" onclick="saveMap()">Сохранить</button>
+            <button class="file-button" onclick="loadMap()">Загрузить</button>
+        </div>
+    </div>
+
+    <div id="container">
+        <canvas id="hexCanvas"></canvas>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('hexCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuration
+        const config = {
+            hexSize: 30,
+            minHexSize: 10,
+            maxHexSize: 60,
+            backgroundColor: '#ffffff',
+            gridColor: '#000000',
+            selectedHexColor: '#ffff00',
+            selectedHexBorderWidth: 3
+        };
+
+        // Editor state
+        const state = {
+            selectedTool: 'delete',
+            selectedColor: 'EMPTY',
+            selectedEntity: null,
+            offsetX: 0,
+            offsetY: 0,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            scale: 1,
+            minScale: 0.5,
+            maxScale: 3,
+            isMouseDown: false
+        };
+
+        // Map data
+        let mapData = {};
+
+        // Color mapping function
+        function getColorFromName(colorName) {
+            const colorMap = {
+                'EMPTY': '#cccccc',
+                'RED': '#ff0000',
+                'BLUE': '#0000ff',
+                'GREEN': '#00ff00',
+                'YELLOW': '#ffff00',
+                'PURPLE': '#800080',
+                'ORANGE': '#ffa500',
+                'BLACK': '#000000',
+                'WHITE': '#ffffff'
+            };
+            return colorMap[colorName] || config.backgroundColor;
+        }
+
+        // Entity images
+        const entityImages = {
+            'BIG_TOWER': 'images/big_tower.png',
+            'TOWER': 'images/tower.png',
+            'FACTORY': 'images/factory.png',
+            'UNIT_1': 'images/unit1.png',
+            'UNIT_2': 'images/unit2.png',
+            'UNIT_3': 'images/unit3.png',
+            'TANK': 'images/tank.png',
+            'TOWN_HALL': 'images/town-hall.png',
+            'TREE': 'images/tree.png',
+            'GRAVE': 'images/grave.png'
+        };
+
+        // Preload images
+        const preloadedImages = {};
+        function preloadImages() {
+            Object.entries(entityImages).forEach(([type, path]) => {
+                const img = new Image();
+                img.src = path;
+                preloadedImages[type] = img;
+            });
+        }
+
+        function getEntityImage(entityType) {
+            return preloadedImages[entityType];
+        }
+
+        // Tool selection
+        function selectTool(tool) {
+            state.selectedTool = tool;
+            state.selectedEntity = tool;
+            
+            // Update UI
+            document.querySelectorAll('.tool-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        // Color selection
+        function selectColor(color) {
+            state.selectedColor = color;
+            state.selectedTool = 'color';
+            
+            // Update UI
+            document.querySelectorAll('.color-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            document.querySelectorAll('.tool-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector('.tool-button.delete').classList.add('selected');
+        }
+
+        // Generate map
+        function generateMap() {
+            const size = parseInt(document.getElementById('mapSize').value);
+            mapData = {};
+            
+            for (let x = -size; x <= size; x++) {
+                for (let y = -size; y <= size; y++) {
+                    for (let z = -size; z <= size; z++) {
+                        if (x + y + z === 0) {
+                            const hexKey = `Vector3(x=${x}, y=${y}, z=${z})`;
+                            mapData[hexKey] = {
+                                vector: { x, y, z },
+                                color: 'EMPTY',
+                                entity: {
+                                    type: 'FIELD'
+                                }
+                            };
+                        }
+                    }
+                }
+            }
+            
+            renderGrid();
+        }
+
+        // Canvas functions
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 80; // Account for top menu
+            renderGrid();
+        }
+
+        function cubeToPixel(cube) {
+            const size = config.hexSize * state.scale;
+            const x = size * (3/2) * cube.x;
+            const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+            return {
+                x: (canvas.width / 2) + x + state.offsetX,
+                y: (canvas.height / 2) + y + state.offsetY
+            };
+        }
+
+        function pixelToCube(x, y) {
+            const size = config.hexSize * state.scale;
+            
+            const adjustedX = x - (canvas.width / 2) - state.offsetX;
+            const adjustedY = y - (canvas.height / 2) - state.offsetY;
+            
+            const q = (2/3) * adjustedX / size;
+            const r = (-1/3) * adjustedX / size + (Math.sqrt(3)/3) * adjustedY / size;
+            
+            let rx = Math.round(q);
+            let ry = Math.round(-q - r);
+            let rz = Math.round(r);
+            
+            const xDiff = Math.abs(rx - q);
+            const yDiff = Math.abs(ry - (-q - r));
+            const zDiff = Math.abs(rz - r);
+            
+            if (xDiff > yDiff && xDiff > zDiff) {
+                rx = -ry - rz;
+            } else if (yDiff > zDiff) {
+                ry = -rx - rz;
+            } else {
+                rz = -rx - ry;
+            }
+            
+            return { x: rx, y: ry, z: rz };
+        }
+
+        function drawHexagon(x, y, size, hex) {
+            // Don't draw hexagons with AIR entity type
+            if (hex.entity && hex.entity.type === 'AIR') {
+                return;
+            }
+
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const xi = x + size * Math.cos(angle);
+                const yi = y + size * Math.sin(angle);
+                if (i === 0) {
+                    ctx.moveTo(xi, yi);
+                } else {
+                    ctx.lineTo(xi, yi);
+                }
+            }
+            ctx.closePath();
+            
+            // Fill with color
+            ctx.fillStyle = getColorFromName(hex.color);
+            ctx.fill();
+            
+            // Draw border
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = config.gridColor;
+            ctx.stroke();
+
+            // Draw entity icon if present
+            if (hex.entity && hex.entity.type && hex.entity.type !== 'FIELD' && hex.entity.type !== 'AIR') {
+                const img = getEntityImage(hex.entity.type);
+                if (img && img.complete) {
+                    const iconSize = size * 0.6;
+                    ctx.drawImage(img, 
+                        x - iconSize/2, 
+                        y - iconSize/2, 
+                        iconSize, 
+                        iconSize
+                    );
+                }
+            }
+        }
+
+        function renderGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = config.backgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const size = config.hexSize * state.scale;
+
+            Object.values(mapData).forEach(hex => {
+                if (!hex || !hex.vector) return;
+                
+                const pixelPos = cubeToPixel(hex.vector);
+                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+            });
+        }
+
+        // Mouse event handlers
+        function handleMouseDown(e) {
+            if (e.button === 0) { // Left click
+                state.isMouseDown = true;
+                handleHexClick(e);
+            } else if (e.button === 1 || e.button === 2) { // Middle or right click
+                state.isDragging = true;
+                state.lastMouseX = e.clientX;
+                state.lastMouseY = e.clientY;
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (state.isDragging) {
+                const dx = e.clientX - state.lastMouseX;
+                const dy = e.clientY - state.lastMouseY;
+                state.offsetX += dx;
+                state.offsetY += dy;
+                state.lastMouseX = e.clientX;
+                state.lastMouseY = e.clientY;
+                renderGrid();
+            } else if (state.isMouseDown) {
+                handleHexClick(e);
+            }
+        }
+
+        function handleMouseUp() {
+            state.isDragging = false;
+            state.isMouseDown = false;
+            canvas.style.cursor = 'grab';
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+
+            const delta = e.deltaY > 0 ? -1 : 1;
+            const scaleFactor = 1.1;
+
+            const mouseX = e.clientX - canvas.offsetLeft;
+            const mouseY = e.clientY - canvas.offsetTop;
+            const worldX = (mouseX - canvas.width/2 - state.offsetX) / state.scale;
+            const worldY = (mouseY - canvas.height/2 - state.offsetY) / state.scale;
+
+            const newScale = delta > 0 ?
+                Math.min(state.scale * scaleFactor, state.maxScale) :
+                Math.max(state.scale / scaleFactor, state.minScale);
+
+            if (newScale !== state.scale) {
+                state.offsetX = mouseX - canvas.width/2 - worldX * newScale;
+                state.offsetY = mouseY - canvas.height/2 - worldY * newScale;
+                state.scale = newScale;
+                renderGrid();
+            }
+        }
+
+        function handleHexClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const cubicCoords = pixelToCube(x, y);
+            const hexKey = `Vector3(x=${cubicCoords.x}, y=${cubicCoords.y}, z=${cubicCoords.z})`;
+            
+            if (mapData[hexKey]) {
+                const pixelPos = cubeToPixel(mapData[hexKey].vector);
+                const size = config.hexSize * state.scale;
+                
+                const dx = x - pixelPos.x;
+                const dy = y - pixelPos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const hexRadius = size;
+                
+                if (distance <= hexRadius) {
+                    applyTool(hexKey);
+                }
+            } else {
+                // Create new hexagon if clicking on empty space and placing entity or using color tool
+                if ((state.selectedTool !== 'delete' && state.selectedTool !== 'deleteHex') || state.selectedTool === 'color') {
+                    if (state.selectedTool === 'color' || (state.selectedEntity && entityImages[state.selectedEntity])) {
+                        mapData[hexKey] = {
+                            vector: cubicCoords,
+                            color: state.selectedTool === 'color' ? state.selectedColor : 'EMPTY',
+                            entity: { type: state.selectedTool === 'color' ? 'FIELD' : state.selectedEntity }
+                        };
+                        renderGrid();
+                    }
+                }
+            }
+        }
+
+        function applyTool(hexKey) {
+            const hex = mapData[hexKey];
+            
+            switch (state.selectedTool) {
+                case 'delete':
+                    // Remove entity but keep hex
+                    hex.entity = { type: 'FIELD' };
+                    break;
+                    
+                case 'deleteHex':
+                    // Delete hexagon by setting entity type to AIR
+                    hex.entity = { type: 'AIR' };
+                    break;
+                    
+                case 'color':
+                    hex.color = state.selectedColor;
+                    // If hex was AIR, restore it to FIELD when coloring
+                    if (hex.entity.type === 'AIR') {
+                        hex.entity = { type: 'FIELD' };
+                    }
+                    break;
+                    
+                default:
+                    // Entity placement - only if hex is not AIR
+                    if (state.selectedEntity && entityImages[state.selectedEntity] && hex.entity.type !== 'AIR') {
+                        hex.entity = { type: state.selectedEntity };
+                    }
+                    break;
+            }
+            
+            renderGrid();
+        }
+
+        // File operations
+        async function saveMap() {
+            const levelName = document.getElementById('levelName').value || 'unnamed_level';
+            
+            // Convert map data from object format to array format
+            const mapArray = Object.values(mapData)
+                .filter(hex => hex.entity.type !== 'AIR')
+                .map(hex => ({
+                    vector: hex.vector,
+                    color: hex.color,
+                    entity: hex.entity.type // Convert from object to string
+                }));
+            
+            const data = {
+                name: levelName,
+                map: mapArray
+            };
+            
+            const response = await fetch(`http://localhost:8080/api/maps`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("Карта сохранена")
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.error);
+                }
+
+            // const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            // const url = URL.createObjectURL(blob);
+            // const a = document.createElement('a');
+            // a.href = url;
+            // a.download = `${levelName}.json`;
+            // a.click();
+            // URL.revokeObjectURL(url);
+        }
+
+        function loadMap() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            
+                            // Handle both old object format and new array format
+                            if (Array.isArray(data.map)) {
+                                // New array format
+                                mapData = {};
+                                data.map.forEach(hex => {
+                                    const hexKey = `Vector3(x=${hex.vector.x}, y=${hex.vector.y}, z=${hex.vector.z})`;
+                                    // Handle both string and object entity formats
+                                    const entity = typeof hex.entity === 'string' 
+                                        ? { type: hex.entity } 
+                                        : hex.entity;
+                                    mapData[hexKey] = {
+                                        vector: hex.vector,
+                                        color: hex.color,
+                                        entity: entity
+                                    };
+                                });
+                            } else {
+                                // Old object format
+                                mapData = data.map;
+                            }
+                            
+                            document.getElementById('levelName').value = data.name || '';
+                            renderGrid();
+                        } catch (error) {
+                            alert('Ошибка загрузки файла');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            preloadImages();
+
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Prevent context menu
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Generate initial map
+            generateMap();
+        }
+
+        // Start the editor
+        init();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maps - Antiyoyo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .back-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Maps List */
+        .maps-container {
+            margin-top: 100px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .maps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .map-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .map-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .map-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .map-info {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .map-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .preview-button {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .preview-button:hover {
+            background-color: #1976D2;
+        }
+
+        .create-game-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .create-game-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Map Preview Canvas */
+        .map-preview-container {
+            width: 800px;
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+            background-color: white;
+        }
+
+        .map-preview-canvas {
+            display: block;
+            background-color: white;
+        }
+
+        /* Session ID Modal */
+        .session-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2001;
+        }
+
+        .session-modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .session-id {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Карты</h1>
+        <button class="back-button" onclick="goBack()">← Назад</button>
+    </div>
+
+    <div class="maps-container">
+        <div id="mapsList" class="loading">
+            Загрузка карт...
+        </div>
+    </div>
+
+    <!-- Map Preview Modal -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="mapModalTitle" class="modal-title">Превью карты</h2>
+                <button class="close-button" onclick="closeMapModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="map-preview-container">
+                    <canvas id="mapPreviewCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session ID Modal -->
+    <div id="sessionModal" class="session-modal">
+        <div class="session-modal-content">
+            <h2>Игра создана!</h2>
+            <p>ID сессии:</p>
+            <div id="sessionId" class="session-id"></div>
+            <button class="action-button create-game-button" onclick="closeSessionModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        let maps = [];
+        let currentMapData = null;
+        let mapCanvas = null;
+        let mapCtx = null;
+
+        // Map preview state
+        const mapState = {
+            offsetX: 0,
+            offsetY: 0,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            scale: 1,
+            minScale: 0.5,
+            maxScale: 3
+        };
+
+        const config = {
+            hexSize: 25,
+            backgroundColor: '#ffffff',
+            gridColor: '#000000'
+        };
+
+        // Entity images
+        const entityImages = {
+            'BIG_TOWER': 'images/big_tower.png',
+            'TOWER': 'images/tower.png',
+            'FACTORY': 'images/factory.png',
+            'UNIT_1': 'images/unit1.png',
+            'UNIT_2': 'images/unit2.png',
+            'UNIT_3': 'images/unit3.png',
+            'TANK': 'images/tank.png',
+            'TOWN_HALL': 'images/town-hall.png',
+            'TREE': 'images/tree.png',
+            'GRAVE': 'images/grave.png'
+        };
+
+        // Preload images
+        const preloadedImages = {};
+        function preloadImages() {
+            Object.entries(entityImages).forEach(([type, path]) => {
+                const img = new Image();
+                img.src = path;
+                preloadedImages[type] = img;
+            });
+        }
+
+        function getEntityImage(entityType) {
+            return preloadedImages[entityType];
+        }
+
+        // Load maps on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            preloadImages();
+            loadMaps();
+        });
+
+        async function loadMaps() {
+            try {
+                const response = await fetch('http://localhost:8080/api/maps');
+                if (response.ok) {
+                    maps = await response.json();
+                    displayMaps();
+                } else {
+                    document.getElementById('mapsList').innerHTML = 'Ошибка загрузки карт';
+                }
+            } catch (error) {
+                console.error('Error loading maps:', error);
+                document.getElementById('mapsList').innerHTML = 'Ошибка соединения с сервером';
+            }
+        }
+
+        function displayMaps() {
+            const mapsList = document.getElementById('mapsList');
+            
+            if (maps.length === 0) {
+                mapsList.innerHTML = '<p>Карты не найдены</p>';
+                return;
+            }
+
+            const mapsGrid = document.createElement('div');
+            mapsGrid.className = 'maps-grid';
+
+            maps.forEach(map => {
+                const mapCard = document.createElement('div');
+                mapCard.className = 'map-card';
+                mapCard.innerHTML = `
+                    <h3>${map.name}</h3>
+                    <div class="map-info">
+                        <div>ID: ${map.id}</div>
+                        <div>Игроков: ${map.playersCount}</div>
+                    </div>
+                    <div class="map-actions">
+                        <button class="action-button preview-button" onclick="previewMap('${map.id}', '${map.name}')">
+                            Превью
+                        </button>
+                        <button class="action-button create-game-button" onclick="createGame('${map.id}')">
+                            Создать игру
+                        </button>
+                    </div>
+                `;
+                mapsGrid.appendChild(mapCard);
+            });
+
+            mapsList.innerHTML = '';
+            mapsList.appendChild(mapsGrid);
+        }
+
+        async function previewMap(mapId, mapName) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/maps/${mapId}`);
+                if (response.ok) {
+                    currentMapData = await response.json();
+                    document.getElementById('mapModalTitle').textContent = `Превью: ${mapName}`;
+                    document.getElementById('mapModal').style.display = 'flex';
+                    
+                    // Initialize canvas
+                    setTimeout(() => {
+                        initMapPreview();
+                    }, 100);
+                } else {
+                    alert('Ошибка загрузки карты');
+                }
+            } catch (error) {
+                console.error('Error loading map:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        function initMapPreview() {
+            mapCanvas = document.getElementById('mapPreviewCanvas');
+            mapCtx = mapCanvas.getContext('2d');
+            
+            // Reset state
+            mapState.offsetX = 0;
+            mapState.offsetY = 0;
+            mapState.scale = 1;
+            
+            resizeMapCanvas();
+            renderMapPreview();
+            
+            // Add event listeners
+            mapCanvas.addEventListener('mousedown', handleMapMouseDown);
+            mapCanvas.addEventListener('mousemove', handleMapMouseMove);
+            mapCanvas.addEventListener('mouseup', handleMapMouseUp);
+            mapCanvas.addEventListener('mouseleave', handleMapMouseUp);
+            mapCanvas.addEventListener('wheel', handleMapWheel, { passive: false });
+        }
+
+        function resizeMapCanvas() {
+            const container = mapCanvas.parentElement;
+            mapCanvas.width = container.clientWidth;
+            mapCanvas.height = container.clientHeight;
+        }
+
+        function renderMapPreview() {
+            if (!mapCtx || !currentMapData || !currentMapData.map) return;
+
+            mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+            mapCtx.fillStyle = config.backgroundColor;
+            mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+            const size = config.hexSize * mapState.scale;
+
+            currentMapData.map.forEach(hex => {
+                if (!hex || !hex.vector) return;
+                
+                const pixelPos = cubeToPixel(hex.vector);
+                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+            });
+        }
+
+        function cubeToPixel(cube) {
+            const size = config.hexSize * mapState.scale;
+            const x = size * (3/2) * cube.x;
+            const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+            return {
+                x: (mapCanvas.width / 2) + x + mapState.offsetX,
+                y: (mapCanvas.height / 2) + y + mapState.offsetY
+            };
+        }
+
+        function drawHexagon(x, y, size, hex) {
+            mapCtx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const xi = x + size * Math.cos(angle);
+                const yi = y + size * Math.sin(angle);
+                if (i === 0) {
+                    mapCtx.moveTo(xi, yi);
+                } else {
+                    mapCtx.lineTo(xi, yi);
+                }
+            }
+            mapCtx.closePath();
+            
+            // Fill with color
+            const colorMap = {
+                'EMPTY': '#cccccc',
+                'RED': '#ff0000',
+                'BLUE': '#0000ff',
+                'GREEN': '#00ff00',
+                'YELLOW': '#ffff00',
+                'PURPLE': '#800080',
+                'ORANGE': '#ffa500',
+                'BLACK': '#000000',
+                'WHITE': '#ffffff'
+            };
+            
+            mapCtx.fillStyle = colorMap[hex.color] || config.backgroundColor;
+            mapCtx.fill();
+            
+            // Draw border
+            mapCtx.lineWidth = 1;
+            mapCtx.strokeStyle = config.gridColor;
+            mapCtx.stroke();
+
+            // Draw entity icon if present
+            if (hex.entity && hex.entity !== 'FIELD') {
+                const img = getEntityImage(hex.entity);
+                if (img && img.complete) {
+                    const iconSize = size * 0.6;
+                    mapCtx.drawImage(img, 
+                        x - iconSize/2, 
+                        y - iconSize/2, 
+                        iconSize, 
+                        iconSize
+                    );
+                }
+            }
+        }
+
+        // Mouse event handlers for map preview
+        function handleMapMouseDown(e) {
+            if (e.button === 1 || e.button === 2) { // Middle or right click
+                mapState.isDragging = true;
+                mapState.lastMouseX = e.clientX;
+                mapState.lastMouseY = e.clientY;
+                mapCanvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMapMouseMove(e) {
+            if (mapState.isDragging) {
+                const dx = e.clientX - mapState.lastMouseX;
+                const dy = e.clientY - mapState.lastMouseY;
+                mapState.offsetX += dx;
+                mapState.offsetY += dy;
+                mapState.lastMouseX = e.clientX;
+                mapState.lastMouseY = e.clientY;
+                renderMapPreview();
+            }
+        }
+
+        function handleMapMouseUp() {
+            mapState.isDragging = false;
+            mapCanvas.style.cursor = 'grab';
+        }
+
+        function handleMapWheel(e) {
+            e.preventDefault();
+
+            const delta = e.deltaY > 0 ? -1 : 1;
+            const scaleFactor = 1.1;
+
+            const mouseX = e.clientX - mapCanvas.offsetLeft;
+            const mouseY = e.clientY - mapCanvas.offsetTop;
+            const worldX = (mouseX - mapCanvas.width/2 - mapState.offsetX) / mapState.scale;
+            const worldY = (mouseY - mapCanvas.height/2 - mapState.offsetY) / mapState.scale;
+
+            const newScale = delta > 0 ?
+                Math.min(mapState.scale * scaleFactor, mapState.maxScale) :
+                Math.max(mapState.scale / scaleFactor, mapState.minScale);
+
+            if (newScale !== mapState.scale) {
+                mapState.offsetX = mouseX - mapCanvas.width/2 - worldX * newScale;
+                mapState.offsetY = mouseY - mapCanvas.height/2 - worldY * newScale;
+                mapState.scale = newScale;
+                renderMapPreview();
+            }
+        }
+
+        async function createGame(mapId) {
+            try {
+                const response = await fetch('http://localhost:8080/api/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ mapId: mapId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('sessionId').textContent = data.sessionId;
+                    document.getElementById('sessionModal').style.display = 'flex';
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.error || 'Ошибка создания игры');
+                }
+            } catch (error) {
+                console.error('Error creating game:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').style.display = 'none';
+            currentMapData = null;
+            
+            // Remove event listeners
+            if (mapCanvas) {
+                mapCanvas.removeEventListener('mousedown', handleMapMouseDown);
+                mapCanvas.removeEventListener('mousemove', handleMapMouseMove);
+                mapCanvas.removeEventListener('mouseup', handleMapMouseUp);
+                mapCanvas.removeEventListener('mouseleave', handleMapMouseUp);
+                mapCanvas.removeEventListener('wheel', handleMapWheel);
+            }
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Prevent context menu on canvas
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>

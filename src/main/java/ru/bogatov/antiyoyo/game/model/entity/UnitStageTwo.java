@@ -41,4 +41,5 @@ public class UnitStageTwo extends Entity implements Sellable, Interactable {
     public Integer getDefenceRadius() {
         return 1;
     }
+
 }

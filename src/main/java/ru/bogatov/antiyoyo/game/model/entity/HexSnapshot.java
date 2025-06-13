@@ -15,4 +15,5 @@ public class HexSnapshot {
     EntityType entityType;
     Integer balance;
     Integer defenseLevel;
+    Boolean isMoved;
 }

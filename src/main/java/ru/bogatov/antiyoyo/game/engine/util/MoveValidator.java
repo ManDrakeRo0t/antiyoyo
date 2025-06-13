@@ -61,6 +61,9 @@ public class MoveValidator {
         if (!availableHexes.contains(to.getVector())) {
             throw new IllegalArgumentException("Can't move to not available hex");
         }
+        if (from == to) {
+            throw new IllegalArgumentException("Can't move to not available hex");
+        }
     }
 
 }

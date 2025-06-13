@@ -1,8 +1,11 @@
 package ru.bogatov.antiyoyo.game.model.entity;
 
+import lombok.Data;
+
+@Data
 public abstract class Entity {
 
-    private boolean shouldInteract;
+    private Boolean movedOnThisTurn;
 
     public abstract EntityType getType();
 

@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hexagon Grid Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background-color: white;
+        }
+        #sessionInput {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: opacity 0.3s ease;
+        }
+        #sessionInput.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #sessionInput input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px;
+        }
+        #sessionInput button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #sessionInput button:hover {
+            background-color: #45a049;
+        }
+        #sessionInput button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #connectionStatus {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        #topRightPanel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            gap: 10px;
+            flex-direction: column;
+        }
+        .action-button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 100px;
+            text-align: center;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        .action-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        #controlPanel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            gap: 15px;
+            align-items: center;
+        }
+        .unit-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .unit-price {
+            font-size: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .unit-price.affordable {
+            color: #4CAF50;  /* Зеленый цвет для доступных юнитов */
+        }
+        .unit-price.unaffordable {
+            color: #f44336;  /* Красный цвет для недоступных юнитов */
+        }
+        .unit-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        .unit-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .unit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .unit-button.selected {
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        #BIG_TOWER_Btn { background-image: url('images/big_tower.png'); }
+        #TOWER_Btn { background-image: url('images/tower.png'); }
+        #FACTORY_Btn { background-image: url('images/factory.png'); }
+        #UNIT_1_Btn { background-image: url('images/unit1.png'); }
+        #UNIT_2_Btn { background-image: url('images/unit2.png'); }
+        #UNIT_3_Btn { background-image: url('images/unit3.png'); }
+        #TANK_Btn { background-image: url('images/tank.png'); }
+        #TOWN_HALL_Btn { background-image: url('images/town-hall.png'); }
+        #undoBtn { background-image: url('images/undo.png'); }
+        #balanceDisplay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+        #balanceDisplay.visible {
+            display: block;
+        }
+        .balance-change {
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .balance-change.positive {
+            color: #4CAF50;
+        }
+        .balance-change.negative {
+            color: #f44336;
+        }
+        /* Waiting for players styles */
+        .waiting-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .waiting-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+        }
+        .waiting-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .waiting-info {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        .player-count {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        /* Color selection panel */
+        .color-selection-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .color-selection-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+        }
+        .color-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .color-select-button {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .color-select-button:hover {
+            transform: scale(1.1);
+            border-color: #4CAF50;
+        }
+        .color-select-button.selected {
+            border-color: #4CAF50;
+            border-width: 4px;
+        }
+        .color-select-button::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #333;
+            white-space: nowrap;
+        }
+        .join-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        .join-button:hover {
+            background-color: #45a049;
+        }
+        .join-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        .bouncing-entity {
+            animation: bounce 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="sessionInput">
+        <input type="text" id="sessionId" placeholder="Enter session UUID">
+        <button onclick="connectToSession()">Connect</button>
+    </div>
+    <div id="balanceDisplay"></div>
+    <div id="connectionStatus" class="disconnected">Disconnected</div>
+    <div id="topRightPanel">
+        <button class="action-button" onclick="sendUndoMove()">Back</button>
+        <button class="action-button" onclick="endTurn()">End Turn</button>
+    </div>
+    <div id="container">
+        <canvas id="hexCanvas"></canvas>
+    </div>
+    <div id="controlPanel">
+        <div class="unit-button-container">
+            <button id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Big Tower"></button>
+            <div class="unit-price" data-unit="BIG_TOWER"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Tower"></button>
+            <div class="unit-price" data-unit="TOWER"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Factory"></button>
+            <div class="unit-price" data-unit="FACTORY"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
+            <div class="unit-price" data-unit="UNIT_1"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Unit Level 2"></button>
+            <div class="unit-price" data-unit="UNIT_2"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Unit Level 3"></button>
+            <div class="unit-price" data-unit="UNIT_3"></div>
+        </div>
+        <div class="unit-button-container">
+            <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
+            <div class="unit-price" data-unit="TANK"></div>
+        </div>
+    </div>
+
+    <!-- Waiting for players overlay -->
+    <div id="waitingOverlay" class="waiting-overlay" style="display: none;">
+        <div class="waiting-content">
+            <h2 class="waiting-title">Ждем подключения игроков</h2>
+            <div class="waiting-info">
+                Подключено: <span id="connectedPlayers" class="player-count">0</span> / <span id="totalPlayers" class="player-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color selection panel -->
+    <div id="colorSelectionPanel" class="color-selection-panel" style="display: none;">
+        <h3 class="color-selection-title">Выберите цвет</h3>
+        <div class="color-buttons">
+            <!-- Color buttons will be created dynamically -->
+        </div>
+        <button id="joinButton" class="join-button" onclick="joinSession()" disabled>Присоединиться</button>
+    </div>
+
+<script>
+    // WebSocket and STOMP client variables
+    let stompClient = null;
+    let sessionId = null;
+    let hexData = {};
+    let sendPath = null;
+    let currentUser = null;
+    let selectedColor = null;
+    let isGameReady = false;
+
+    // Canvas setup
+    const canvas = document.getElementById('hexCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Configuration
+    const config = {
+        hexSize: 30,
+        minHexSize: 10,
+        maxHexSize: 60,
+        showCoordinates: false,
+        backgroundColor: '#ffffff',
+        existingHexColor: '#cccccc',
+        missingHexColor: '#ffffff',
+        gridColor: '#000000',
+        selectedHexColor: '#ffff00',  // Color for selected hex highlight
+        selectedHexBorderWidth: 3     // Border width for selected hex
+    };
+
+    // Map state
+    const state = {
+        currentPlayer: 0,
+        selectedUnit: null,
+        editMode: false,
+        offsetX: 0,
+        offsetY: 0,
+        isDragging: false,
+        lastMouseX: 0,
+        lastMouseY: 0,
+        scale: 1,
+        minScale: 0.5,
+        maxScale: 3,
+        selectedHex: null,
+        selectedTownHall: null,
+        hasBouncingEntities: false
+    };
+
+    // Color mapping function
+    function getColorFromName(colorName) {
+        const colorMap = {
+            'EMPTY': '#cccccc',  // серый
+            'RED': '#ff0000',    // красный
+            'BLUE': '#0000ff',   // синий
+            'GREEN': '#00ff00',  // зеленый
+            'YELLOW': '#ffff00', // желтый
+            'PURPLE': '#800080', // фиолетовый
+            'ORANGE': '#ffa500', // оранжевый
+            'BLACK': '#000000',  // черный
+            'WHITE': '#ffffff'   // белый
+        };
+        return colorMap[colorName] || config.existingHexColor;
+    }
+
+    // Add image preloading
+    const entityImages = {
+        'BIG_TOWER': 'images/big_tower.png',
+        'TOWER': 'images/tower.png',
+        'FACTORY': 'images/factory.png',
+        'UNIT_1': 'images/unit1.png',
+        'UNIT_2': 'images/unit2.png',
+        'UNIT_3': 'images/unit3.png',
+        'TANK': 'images/tank.png',
+        'TOWN_HALL': 'images/town-hall.png',
+        'TREE': 'images/tree.png',
+        'GRAVE': 'images/grave.png',
+        'SHIELD': 'images/shield.png'
+    };
+
+    // Preload all images
+    const preloadedImages = {};
+    function preloadImages() {
+        Object.entries(entityImages).forEach(([type, path]) => {
+            const img = new Image();
+            img.src = path;
+            preloadedImages[type] = img;
+        });
+    }
+
+    // Entity image mapping function
+    function getEntityImage(entityType) {
+        return preloadedImages[entityType];
+    }
+
+    // WebSocket connection functions
+    function connectToSession() {
+        const sessionInput = document.getElementById('sessionId');
+        sessionId = sessionInput.value.trim();
+        
+        let sendTopic = "/topic/sessions.X.event.send"
+        let destTopic = "/topic/sessions.X.event.fetch"
+        let destPath = destTopic.replace("X", sessionId)
+        sendPath = sendTopic.replace("X", sessionId)
+
+        if (!sessionId) {
+            alert('Please enter a session UUID');
+            return;
+        }
+
+        if (stompClient && stompClient.connected) {
+            sendGetSession()
+        } else {
+            const stompConfig = {
+                brokerURL: "ws://localhost:8080/ws",
+                reconnectDelay: 200,
+                onConnect: function (frame) {
+                    const statusDiv = document.getElementById('connectionStatus');
+                    const topRightPanel = document.getElementById('topRightPanel');
+                    statusDiv.textContent = 'Connected';
+                    statusDiv.className = 'connected';
+                    topRightPanel.style.display = 'flex';
+                    sessionInput.classList.add('hidden');
+
+                    const subscription = stompClient.subscribe(destPath, function (message) {
+                        const payload = JSON.parse(message.body);
+                        // console.log(payload)
+                        updateHexData(payload);
+                        renderGrid();
+                    });
+
+                    sendGetSession();
+                    state.selectedUnit = null;
+                    updateUnitButtons();
+                },
+                onDisconnect: function() {
+                    const statusDiv = document.getElementById('connectionStatus');
+                    const topRightPanel = document.getElementById('topRightPanel');
+                    statusDiv.textContent = 'Disconnected';
+                    statusDiv.className = 'disconnected';
+                    topRightPanel.style.display = 'none';
+                    sessionInput.classList.remove('hidden');
+                }
+            };
+            
+            stompClient = new StompJs.Client(stompConfig);
+            stompClient.activate();
+        }
+    
+    }
+
+    function onError(error) {
+        const statusDiv = document.getElementById('connectionStatus');
+        statusDiv.textContent = 'Connection Error';
+        statusDiv.className = 'disconnected';
+        console.error('WebSocket Error:', error);
+    }
+
+    function sendMessage(message) {
+        stompClient.publish({
+                destination: sendPath,
+                body: JSON.stringify(message)
+                
+            });
+    }
+
+    function sendGetSession() {
+        const message = {
+            type: "GET_SESSION"
+        };
+        sendMessage(message);
+    }
+
+    // Update control panel visibility based on selected town hall
+    function updateControlPanelVisibility() {
+        const controlPanel = document.getElementById('controlPanel');
+        const sessionInput = document.getElementById('sessionInput');
+        
+        if (
+            hexData.players && 
+            hexData.players[state.currentPlayer] && 
+            hexData.players[state.currentPlayer].selectedTownHall) {
+            
+            state.selectedTownHall = hexData.players[state.currentPlayer].selectedTownHall;
+            controlPanel.style.display = 'flex';
+            sessionInput.classList.add('hidden');
+            updateUnitPrices();
+            updateUnitButtons();
+        } else {
+            state.selectedTownHall = null;
+            controlPanel.style.display = 'none';
+            if (!stompClient || !stompClient.connected) {
+                sessionInput.classList.remove('hidden');
+            }
+        }
+        
+        updateBalanceDisplay();
+    }
+
+    // Функция для обновления цен юнитов и состояния кнопок
+    function updateUnitPrices() {
+        if (!state.selectedTownHall || !state.selectedTownHall.prices) return;
+
+        const balance = state.selectedTownHall.balance || 0;
+        const prices = state.selectedTownHall.prices;
+
+        // Обновляем отображение цены и состояние кнопки для каждого юнита
+        Object.entries(prices).forEach(([unitType, price]) => {
+            const priceElement = document.querySelector(`.unit-price[data-unit="${unitType}"]`);
+            const button = document.getElementById(`${unitType}_Btn`);
+            
+            if (priceElement && button) {
+                // Обновляем отображение цены
+                priceElement.textContent = `${price}`;
+                
+                // Обновляем состояние кнопки и стиль отображения цены
+                const canAfford = balance >= price;
+                button.disabled = !canAfford;
+                
+                // Удаляем старые классы и добавляем новый
+                priceElement.classList.remove('affordable', 'unaffordable');
+                priceElement.classList.add(canAfford ? 'affordable' : 'unaffordable');
+            }
+        });
+    }
+
+    // Обновляем отображение баланса
+    function updateBalanceDisplay() {
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        if (!state.selectedTownHall) {
+            balanceDisplay.classList.remove('visible');
+            return;
+        }
+
+        const balance = state.selectedTownHall.balance || 0;
+        const balanceChange = state.selectedTownHall.balanceChanges || 0;
+        
+        let changeText = '';
+        if (balanceChange !== 0) {
+            const changeClass = balanceChange > 0 ? 'positive' : 'negative';
+            const changeSign = balanceChange > 0 ? '+' : '';
+            changeText = `<span class="balance-change ${changeClass}">(${changeSign}${balanceChange})</span>`;
+        }
+
+        balanceDisplay.innerHTML = `Баланс: ${balance}${changeText}`;
+        balanceDisplay.classList.add('visible');
+        
+        // Обновляем цены юнитов при изменении баланса
+        updateUnitPrices();
+    }
+
+    // Update hex data with message filtering
+    function updateHexData(data) {
+        if (!data) return;
+        
+        // Only process message if it's for current player or for all players
+        if (data.forUser !== null && data.forUser !== state.currentPlayer) {
+            return;
+        }
+
+      
+        if (data.map) {
+            hexData = data;
+            updateControlPanelVisibility();
+            checkPlayerStatus();
+            updateUnitButtons();
+            renderGrid(); // Trigger render to start animation if needed
+        } else {
+            console.warn('Received payload does not contain map data:', data);
+        }
+    }
+
+    // Load current user from localStorage
+    function loadCurrentUser() {
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+            try {
+                currentUser = JSON.parse(userData);
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+                localStorage.removeItem('userData');
+                window.location.href = 'index.html';
+            }
+        } else {
+            window.location.href = 'index.html';
+        }
+    }
+
+    // Check player status and show appropriate UI
+    function checkPlayerStatus() {
+        if (!hexData.players) return;
+
+        const players = hexData.players;
+        const totalPlayers = Object.keys(players).length;
+        const connectedPlayers = Object.values(players).filter(player => player.userId !== null).length;
+        const hasUnconnectedPlayers = Object.values(players).some(player => player.userId === null);
+        
+        // Find the player number for the current user
+        let currentPlayerNumber = null;
+        Object.entries(players).forEach(([playerNumber, player]) => {
+            if (player.userId === currentUser.id) {
+                currentPlayerNumber = parseInt(playerNumber);
+            }
+        });
+        
+        // Update currentPlayer if found
+        if (currentPlayerNumber !== null) {
+            state.currentPlayer = currentPlayerNumber;
+        }
+        
+        // Check if current user is already in the game
+        const currentUserInGame = Object.values(players).some(player => player.userId === currentUser.id);
+
+        // Update player count display
+        document.getElementById('connectedPlayers').textContent = connectedPlayers;
+        document.getElementById('totalPlayers').textContent = totalPlayers;
+
+        if (hasUnconnectedPlayers || !currentUserInGame) {
+            // Show waiting overlay or color selection
+            showWaitingUI(currentUserInGame, hasUnconnectedPlayers);
+            isGameReady = false;
+        } else {
+            // All players connected and current user is in game
+            hideWaitingUI();
+            isGameReady = true;
+        }
+    }
+
+    // Show appropriate waiting UI
+    function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
+        const waitingOverlay = document.getElementById('waitingOverlay');
+        const colorSelectionPanel = document.getElementById('colorSelectionPanel');
+        const controlPanel = document.getElementById('controlPanel');
+        const topRightPanel = document.getElementById('topRightPanel');
+
+        // Hide game controls
+        controlPanel.style.display = 'none';
+        topRightPanel.style.display = 'none';
+
+        if (currentUserInGame) {
+            // User is in game but waiting for others
+            waitingOverlay.style.display = 'flex';
+            colorSelectionPanel.style.display = 'none';
+        } else {
+            // User needs to join - show available colors
+            waitingOverlay.style.display = 'none';
+            colorSelectionPanel.style.display = 'block';
+            updateAvailableColors();
+        }
+    }
+
+    // Hide waiting UI and show game controls
+    function hideWaitingUI() {
+        const waitingOverlay = document.getElementById('waitingOverlay');
+        const colorSelectionPanel = document.getElementById('colorSelectionPanel');
+        
+        waitingOverlay.style.display = 'none';
+        colorSelectionPanel.style.display = 'none';
+        // topRightPanel visibility is now controlled by updateUnitButtons based on turn
+    }
+
+    // Update available colors based on players structure
+    function updateAvailableColors() {
+        if (!hexData.players) return;
+
+        const colorButtonsContainer = document.querySelector('.color-buttons');
+        colorButtonsContainer.innerHTML = ''; // Clear existing buttons
+
+        // Get colors only from players where userId is null (available slots)
+        const availableColors = Object.values(hexData.players)
+            .filter(player => player.userId === null)
+            .map(player => player.color);
+
+        // Color mapping for display
+        const colorMap = {
+            'YELLOW': { bg: '#ffff00', name: 'Желтый' },
+            'ORANGE': { bg: '#ffa500', name: 'Оранжевый' },
+            'RED': { bg: '#ff0000', name: 'Красный' },
+            'BLUE': { bg: '#0000ff', name: 'Синий' },
+            'GREEN': { bg: '#00ff00', name: 'Зеленый' },
+            'PURPLE': { bg: '#800080', name: 'Фиолетовый' }
+        };
+
+        // Create color buttons for each available color
+        availableColors.forEach(color => {
+            if (colorMap[color]) {
+                const colorButton = document.createElement('div');
+                colorButton.className = 'color-select-button';
+                colorButton.style.backgroundColor = colorMap[color].bg;
+                colorButton.setAttribute('data-color', colorMap[color].name);
+                colorButton.onclick = () => selectColor(color);
+                colorButtonsContainer.appendChild(colorButton);
+            }
+        });
+
+        // Reset selection
+        selectedColor = null;
+        document.getElementById('joinButton').disabled = true;
+        document.getElementById('joinButton').textContent = 'Присоединиться';
+    }
+
+    // Select color for joining
+    function selectColor(color) {
+        selectedColor = color;
+        
+        // Update UI
+        document.querySelectorAll('.color-select-button').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        event.target.classList.add('selected');
+        
+        // Enable join button
+        document.getElementById('joinButton').disabled = false;
+    }
+
+    // Join session with selected color
+    async function joinSession() {
+        if (!selectedColor || !currentUser || !sessionId) {
+            alert('Пожалуйста, выберите цвет');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/api/sessions/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    userId: currentUser.id,
+                    color: selectedColor
+                })
+            });
+
+            if (response.ok) {
+                // Color selection will be hidden when next update comes
+                document.getElementById('joinButton').disabled = true;
+                document.getElementById('joinButton').textContent = 'Присоединяемся...';
+            } else {
+                const errorData = await response.json();
+                alert(errorData.error || 'Ошибка присоединения к игре');
+            }
+        } catch (error) {
+            console.error('Error joining session:', error);
+            alert('Ошибка соединения с сервером');
+        }
+    }
+
+    // Canvas functions
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        renderGrid();
+    }
+
+    function init() {
+        loadCurrentUser();
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        preloadImages();
+        updateControlPanelVisibility();
+
+        // Mouse event handlers
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseleave', handleMouseUp);
+        canvas.addEventListener('wheel', handleWheel, { passive: false });
+        canvas.addEventListener('click', handleCanvasClick);
+
+        // Keyboard event handlers
+        document.addEventListener('keydown', handleKeyDown);
+    }
+
+    function cubeToPixel(cube) {
+        const size = config.hexSize * state.scale;
+        const x = size * (3/2) * cube.x;
+        const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+        return {
+            x: (canvas.width / 2) + x + state.offsetX,
+            y: (canvas.height / 2) + y + state.offsetY
+        };
+    }
+
+    function drawHexagon(x, y, size, hex) {
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = 2 * Math.PI / 6 * i;
+            const xi = x + size * Math.cos(angle);
+            const yi = y + size * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(xi, yi);
+            } else {
+                ctx.lineTo(xi, yi);
+            }
+        }
+        ctx.closePath();
+        
+        // Fill with color using the color mapping function
+        let color = getColorFromName(hex.color);
+        if (hex.isAvailable === false) {
+            ctx.globalAlpha = 0.3;
+        }
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Check if this hex is selected
+        const isSelected = state.selectedHex && 
+            state.selectedHex.x === hex.vector.x && 
+            state.selectedHex.y === hex.vector.y && 
+            state.selectedHex.z === hex.vector.z;
+        
+        // Draw border
+        if (isSelected) {
+            ctx.lineWidth = config.selectedHexBorderWidth;
+            ctx.strokeStyle = config.selectedHexColor;
+        } else {
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = hex.isAvailable === false ? '#666666' : config.gridColor;
+        }
+        ctx.stroke();
+
+        // Draw entity icon if present
+        if (hex.entity && hex.entity.type) {
+            const img = getEntityImage(hex.entity.type);
+            if (img && img.complete) {
+                if (hex.isAvailable === false) {
+                    ctx.globalAlpha = 0.3;
+                }
+                const iconSize = size * 0.6;
+                // Для могилы делаем иконку немного меньше
+                const finalIconSize = hex.entity.type === 'GRAVE' ? iconSize * 0.8 : iconSize;
+                
+                // Apply bouncing effect if entity hasn't moved this turn
+                let yOffset = 0;
+                if (hex.entity.movedOnThisTurn === false) {
+                    // Create bouncing effect using sine wave
+                    const time = Date.now() * 0.007; // Speed of bounce
+                    yOffset = Math.sin(time) * 3; // Amplitude of bounce
+                }
+                
+                ctx.drawImage(img, 
+                    x - finalIconSize/2, 
+                    y - finalIconSize/2 + yOffset, 
+                    finalIconSize, 
+                    finalIconSize
+                );
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Draw shield icon if displayDefence is true
+        if (hex.displayDefence) {
+            const shieldImg = getEntityImage('SHIELD');
+            if (shieldImg && shieldImg.complete) {
+                const shieldSize = size * 1; // Shield is slightly smaller than entity
+                ctx.drawImage(shieldImg,
+                    x - shieldSize/2,
+                    y - shieldSize/2,
+                    shieldSize,
+                    shieldSize
+                );
+            }
+        }
+
+        // Draw coordinates if enabled
+        if (config.showCoordinates) {
+            ctx.fillStyle = '#000';
+            ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
+            ctx.fillText(`${hex.vector.x},${hex.vector.y},${hex.vector.z}`,
+                        x - 20 * state.scale,
+                        y + 5 * state.scale);
+        }
+    }
+
+    function renderGrid() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = config.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const size = config.hexSize * state.scale;
+        const visibleArea = calculateVisibleArea();
+
+        if (!hexData || !hexData.map) return;
+
+        // Check if there are bouncing entities
+        state.hasBouncingEntities = false;
+        Object.values(hexData.map).forEach(hex => {
+            if (hex && hex.entity && hex.entity.movedOnThisTurn === false) {
+                state.hasBouncingEntities = true;
+            }
+        });
+
+        Object.values(hexData.map).forEach(hex => {
+            if (!hex || !hex.vector) return; // Skip invalid hex data
+            
+            const pixelPos = cubeToPixel(hex.vector);
+            if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
+                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+            }
+        });
+
+        // Continue animation if there are bouncing entities
+        if (state.hasBouncingEntities) {
+            requestAnimationFrame(renderGrid);
+        }
+    }
+
+    function isHexInView(x, y, size, visibleArea) {
+        const hexRadius = size;
+        return x + hexRadius > visibleArea.left &&
+               x - hexRadius < visibleArea.right &&
+               y + hexRadius > visibleArea.top &&
+               y - hexRadius < visibleArea.bottom;
+    }
+
+    function calculateVisibleArea() {
+        return {
+            left: -state.offsetX,
+            right: canvas.width - state.offsetX,
+            top: -state.offsetY,
+            bottom: canvas.height - state.offsetY
+        };
+    }
+
+    // Function to check if it's the current player's turn
+    function isPlayerTurn() {
+        return hexData && hexData.currentPlayerMove === state.currentPlayer;
+    }
+
+    // Function to check if interaction is allowed (game ready and player's turn)
+    function isInteractionAllowed() {
+        return isGameReady && isPlayerTurn();
+    }
+
+    // Mouse event handlers
+    function handleMouseDown(e) {
+        if (!isInteractionAllowed()) return;
+        
+        state.isDragging = true;
+        state.lastMouseX = e.clientX;
+        state.lastMouseY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+    }
+
+    function handleMouseMove(e) {
+        if (state.isDragging && isInteractionAllowed()) {
+            const dx = e.clientX - state.lastMouseX;
+            const dy = e.clientY - state.lastMouseY;
+            state.offsetX += dx;
+            state.offsetY += dy;
+            state.lastMouseX = e.clientX;
+            state.lastMouseY = e.clientY;
+            renderGrid();
+        }
+    }
+
+    function handleMouseUp() {
+        state.isDragging = false;
+        canvas.style.cursor = 'grab';
+    }
+
+    function handleWheel(e) {
+        if (!isInteractionAllowed()) return;
+        
+        e.preventDefault();
+
+        const delta = e.deltaY > 0 ? -1 : 1;
+        const scaleFactor = 1.1;
+
+        const mouseX = e.clientX - canvas.offsetLeft;
+        const mouseY = e.clientY - canvas.offsetTop;
+        const worldX = (mouseX - canvas.width/2 - state.offsetX) / state.scale;
+        const worldY = (mouseY - canvas.height/2 - state.offsetY) / state.scale;
+
+        const newScale = delta > 0 ?
+            Math.min(state.scale * scaleFactor, state.maxScale) :
+            Math.max(state.scale / scaleFactor, state.minScale);
+
+        if (newScale !== state.scale) {
+            state.offsetX = mouseX - canvas.width/2 - worldX * newScale;
+            state.offsetY = mouseY - canvas.height/2 - worldY * newScale;
+            state.scale = newScale;
+            renderGrid();
+        }
+    }
+
+    // Function to convert pixel coordinates to cubic coordinates
+    function pixelToCube(x, y) {
+        const size = config.hexSize * state.scale;
+        
+        // Adjust coordinates for canvas center and offset
+        const adjustedX = x - (canvas.width / 2) - state.offsetX;
+        const adjustedY = y - (canvas.height / 2) - state.offsetY;
+        
+        // Convert to axial coordinates
+        const q = (2/3) * adjustedX / size;
+        const r = (-1/3) * adjustedX / size + (Math.sqrt(3)/3) * adjustedY / size;
+        
+        // Convert to cube coordinates
+        let rx = Math.round(q);
+        let ry = Math.round(-q - r);
+        let rz = Math.round(r);
+        
+        // Round to nearest valid cube coordinates
+        const xDiff = Math.abs(rx - q);
+        const yDiff = Math.abs(ry - (-q - r));
+        const zDiff = Math.abs(rz - r);
+        
+        if (xDiff > yDiff && xDiff > zDiff) {
+            rx = -ry - rz;
+        } else if (yDiff > zDiff) {
+            ry = -rx - rz;
+        } else {
+            rz = -rx - ry;
+        }
+        
+        // console.log('Pixel to Cube conversion:', {
+        //     input: { x, y },
+        //     adjusted: { x: adjustedX, y: adjustedY },
+        //     size,
+        //     cube: { x: rx, y: ry, z: rz }
+        // });
+        
+        return { x: rx, y: ry, z: rz };
+    }
+
+    // Function to log current state
+    function logCurrentState() {
+        console.log('Current State:', {
+            currentPlayer: state.currentPlayer,
+            selectedUnit: state.selectedUnit,
+            editMode: state.editMode,
+            selectedHex: state.selectedHex,
+            selectedTownHall: state.selectedTownHall ? {
+                type: state.selectedTownHall.type,
+                level: state.selectedTownHall.level,
+                balance: state.selectedTownHall.balance,
+                balanceChanges: state.selectedTownHall.balanceChanges
+            } : null,
+            hexData: hexData ? {
+                currentPlayerMove: hexData.currentPlayerMove,
+                players: hexData.players ? Object.keys(hexData.players).length : 0,
+                mapSize: hexData.map ? Object.keys(hexData.map).length : 0
+            } : null
+        });
+    }
+
+    // Click handler for canvas
+    function handleCanvasClick(e) {
+        if (state.isDragging || !isInteractionAllowed()) {
+            return;
+        }
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const cubicCoords = pixelToCube(x, y);
+        const hexKey = `Vector3(x=${cubicCoords.x}, y=${cubicCoords.y}, z=${cubicCoords.z})`;
+        const hex = hexData.map[hexKey];
+        
+        if (hex) {
+            const pixelPos = cubeToPixel(hex.vector);
+            const size = config.hexSize * state.scale;
+            
+            const dx = x - pixelPos.x;
+            const dy = y - pixelPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const hexRadius = size;
+            
+            if (distance <= hexRadius) {
+                if (hex.isAvailable !== false) {
+                    onHexClick(cubicCoords);
+                    logCurrentState();
+                }
+            }
+        } else {
+            sendClickBeforeMove(null, null);
+            logCurrentState();
+        }
+    }
+
+    // Function to handle hex click
+    function onHexClick(cubicCoords) {
+        let move_sended = false;
+        if (state.selectedUnit) {
+            // If unit is selected, try to place it
+            sendUnitMove(state.selectedUnit, cubicCoords);
+            state.selectedUnit = null;
+            updateUnitButtons();
+        } else {
+            const hexKey = `Vector3(x=${cubicCoords.x}, y=${cubicCoords.y}, z=${cubicCoords.z})`;
+            const clickedHex = hexData.map[hexKey];
+
+            if (state.selectedHex) {
+                // If we already have a selected hex, try to move the unit
+                const fromHexKey = `Vector3(x=${state.selectedHex.x}, y=${state.selectedHex.y}, z=${state.selectedHex.z})`;
+                const fromHex = hexData.map[fromHexKey];
+
+                if (fromHex && fromHex.entity && fromHex.entity.type) {
+                    // Send move event if there's a unit in the selected hex
+                    if (stompClient && stompClient.connected) {
+                        const message = {
+                            type: "MOVE",
+                            move: {
+                                redactorMode: state.editMode,
+                                player: state.currentPlayer,
+                                entityType: fromHex.entity.type,
+                                to: {
+                                    x: cubicCoords.x,
+                                    y: cubicCoords.y,
+                                    z: cubicCoords.z
+                                },
+                                from: {
+                                    x: state.selectedHex.x,
+                                    y: state.selectedHex.y,
+                                    z: state.selectedHex.z
+                                }
+                            }
+                        };
+                        console.log('Sending move message:', message);
+                        sendMessage(message);
+                        move_sended = true;
+                    }
+                }
+                // Clear selection after move attempt
+                state.selectedHex = null;
+            } else {
+                // Select the new hex
+                state.selectedHex = cubicCoords;
+            }
+            
+            renderGrid();
+            if (!move_sended) {
+                sendClickBeforeMove(clickedHex, null);
+            }
+        }
+    }
+
+    function sendClickBeforeMove(hex, entityType) {
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "BEFORE_MOVE",
+                hex : hex,
+                entityType: entityType,
+                move: {
+                    redactorMode : state.editMode,
+                    player: state.currentPlayer
+                }
+            };
+            sendMessage(message);
+        }
+    }
+
+    // Function to send unit move (now only used for placing new units)
+    function sendUnitMove(entityType, cubicCoords) {
+        if (!isInteractionAllowed()) return;
+        
+        if (!cubicCoords) {
+            // If no coordinates provided, this is unit selection
+            state.selectedUnit = entityType;
+            sendClickBeforeMove(null, entityType);
+            updateUnitButtons();
+            logCurrentState();
+            return;
+        }
+
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "MOVE",
+                move: {
+                    redactorMode: state.editMode,
+                    player: state.currentPlayer,
+                    entityType: entityType,
+                    to: {
+                        x: cubicCoords.x,
+                        y: cubicCoords.y,
+                        z: cubicCoords.z
+                    }
+                }
+            };
+            console.log('Sending move message:', message);
+            sendMessage(message);
+            state.selectedHex = null;
+            renderGrid();
+        }
+    }
+
+    // Update unit buttons state based on selection
+    function updateUnitButtons() {
+        const buttons = document.querySelectorAll('.unit-button');
+        const topRightPanel = document.getElementById('topRightPanel');
+        
+        // Show/hide topRightPanel based on whether it's the player's turn
+        if (isInteractionAllowed()) {
+            topRightPanel.style.display = 'flex';
+        } else {
+            topRightPanel.style.display = 'none';
+        }
+        
+        buttons.forEach(button => {
+            const entityType = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+            button.classList.toggle('selected', state.selectedUnit === entityType);
+            
+            // Disable buttons if it's not the player's turn
+            if (!isInteractionAllowed()) {
+                button.disabled = true;
+            } else {
+                // Re-enable buttons if it is the player's turn (but keep affordability check)
+                const priceElement = document.querySelector(`.unit-price[data-unit="${entityType}"]`);
+                if (priceElement) {
+                    const price = parseInt(priceElement.textContent);
+                    const balance = state.selectedTownHall ? (state.selectedTownHall.balance || 0) : 0;
+                    button.disabled = balance < price;
+                }
+            }
+        });
+    }
+
+    // Function to send undo move message
+    function sendUndoMove() {
+        if (!isInteractionAllowed()) return;
+        
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "UNDO_MOVE"
+            };
+            console.log('Sending undo move message:', message);
+            sendMessage(message);
+        }
+    }
+
+    // Функция для обработки окончания хода
+    function endTurn() {
+        if (!isInteractionAllowed()) return;
+        
+        if (stompClient && stompClient.connected) {
+            const message = {
+                type: "FINISH_TURN",
+                move: {
+                    redactorMode: state.editMode,
+                    player: state.currentPlayer
+                }
+            };
+            console.log('Отправка события окончания хода:', message);
+            sendMessage(message);
+        }
+    }
+
+    // Keyboard event handler
+    function handleKeyDown(e) {
+        if (!isInteractionAllowed()) return;
+        
+        if (e.key === 'Escape') {
+            state.selectedHex = null;
+            sendClickBeforeMove(null, null);
+        }
+    }
+
+    // Initialize the application
+    init();
+
+    // Initialize unit buttons as disabled
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUnitButtons();
+    });
+    </script>
+</body>
+</html>

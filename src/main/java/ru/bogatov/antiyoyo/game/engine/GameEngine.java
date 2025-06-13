@@ -1,8 +1,6 @@
 package ru.bogatov.antiyoyo.game.engine;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -11,7 +9,6 @@ import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
 
-import java.awt.*;
 import java.util.*;
 
 import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.findTownHallWithRegion;
@@ -31,7 +28,7 @@ public class GameEngine {
         saveState(session);
 
         applyMove(session, move);
-
+        MapUtils.restoreAvailability(session);
     }
 
     public void endMove(GameSession session) {
@@ -43,6 +40,7 @@ public class GameEngine {
        MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
                .forEach(region -> MapUtils.updateRegionAfterMove(session.getMap(), region));
        // change player
+        MapUtils.restoreMap(session);
         session.setCurrentPlayerMove(session.getCurrentPlayerMove() + 1 > session.getPlayers().size() - 1 ? 0 : session.getCurrentPlayerMove() + 1);
     }
 
@@ -132,7 +130,10 @@ public class GameEngine {
                 townHallEntity.setBalance(townHallEntity.getBalance() - townHallEntity.getPrices().get(move.getEntityType()));
             }
         }
-        setEntity(session, to, EntityUtils.fromType(move.getEntityType()), session.getPlayers().get(move.getPlayer()).getColor());
+        setEntity(session,
+                to,
+                EntityUtils.fromType(move.getEntityType()),
+                session.getPlayers().get(move.getPlayer()).getColor());
 
         if (townHall != null && !move.getRedactorMode()) {
             updateTownHallEconomy(session.getMap(), townHall);
@@ -155,9 +156,12 @@ public class GameEngine {
 
         hex.setColor(newColor);
         if (hex.getEntity() instanceof Interactable old && entity instanceof Interactable toPlace) {
+            Boolean isMovedPrevious = hex.getEntity().getMovedOnThisTurn();
             hex.setEntity(mergeUnit(old, toPlace));
+            hex.getEntity().setMovedOnThisTurn(isMovedPrevious);
         } else {
             hex.setEntity(entity);
+            hex.getEntity().setMovedOnThisTurn(MapUtils.moveableUnits.contains(entity.getClass()) ? true : null);
         }
 
         if (entity instanceof Interactable interactable) {
@@ -213,5 +217,16 @@ public class GameEngine {
         });
     }
 
+    public Pair<Integer, Set<HexColor>> validateSessionAndGetPlayersCount(GameSession gameSession) {
+        Pair<Integer, Set<HexColor>> playersCount = MapUtils.getPlayersCount(gameSession.getMap());
+        if (playersCount.getFirst() <= 1) {
+            throw new IllegalArgumentException("Игроков не достаточно");
+        }
+        if (gameSession.getMap().isEmpty()) {
+            throw new IllegalArgumentException("Карта пуста");
+        }
+        MapUtils.validateAllHexAreAvailable(gameSession.getMap());
+        return playersCount;
+    }
 
 }

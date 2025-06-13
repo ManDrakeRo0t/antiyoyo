@@ -11,6 +11,8 @@ import ru.bogatov.antiyoyo.game.model.entity.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.bogatov.antiyoyo.game.engine.util.HexCalculator.getNeighborsInRadius;
+
 @UtilityClass
 public class MapUtils {
 
@@ -24,11 +26,18 @@ public class MapUtils {
             EntityType.FACTORY, new Factory()
     );
 
+    public static final Set<Class<? extends Entity>> moveableUnits = Set.of(
+            UnitStageTwo.class,
+            UnitStageOne.class,
+            UnitStageThree.class,
+            Tank.class
+    );
+
     public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
         map.values().forEach(hex -> {
             if (selfColor == hex.getColor() && hex.getEntity() instanceof Interactable interactable) {
                 if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class) {
-                    HexCalculator.getNeighborsInRadius(map, 1, hex, false)
+                    getNeighborsInRadius(map, 1, hex, false)
                             .stream()
                             .filter(neighbor -> neighbor.getColor() == selfColor)
                             .forEach(neighbor -> neighbor.setDisplayDefence(true));
@@ -40,12 +49,6 @@ public class MapUtils {
     public static void updateRegionAfterMove(Map<Vector3, Hex> map, Pair<TownHall, Set<Hex>> region) {
         Random random = new Random();
 
-        Set<Class<? extends Entity>> unitsCanDie = Set.of(
-                UnitStageTwo.class,
-                UnitStageOne.class,
-                UnitStageThree.class,
-                Tank.class);
-
         TownHall townHall = region.getFirst();
         Set<Hex> territory = region.getSecond();
 
@@ -56,7 +59,7 @@ public class MapUtils {
                 hex.setEntity(new Tree());
             }
             if (hex.getEntity() instanceof Field) {
-                if (random.nextInt(10) <= 1) {
+                if (random.nextInt(100) <= 5) {
                     hex.setEntity(new Tree());
                 }
             }
@@ -65,16 +68,19 @@ public class MapUtils {
                         .stream()
                         .filter(n -> n.getEntity() instanceof Field)
                         .forEach(n -> {
-                            if (random.nextInt(10) <= 3) {
+                            if (random.nextInt(100) <= 15) {
                                 n.setEntity(new Tree());
                             }
                         });
+            }
+            if (hex.getEntity() instanceof Interactable && moveableUnits.contains(hex.getEntity().getClass())) {
+                hex.getEntity().setMovedOnThisTurn(false);
             }
         });
 
         if (townHall.getBalance() < 0) {
             territory.forEach(hex -> {
-                if (unitsCanDie.contains(hex.getEntity().getClass())) {
+                if (moveableUnits.contains(hex.getEntity().getClass())) {
                     hex.setEntity(new Grave());
                 }
             });
@@ -110,7 +116,7 @@ public class MapUtils {
     }
 
     private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
-        return HexCalculator.getNeighborsInRadius(map, 1, root, false)
+        return getNeighborsInRadius(map, 1, root, false)
                 .stream()
                 .filter(hex -> hex.getColor() == selfColor)
                 .collect(Collectors.toSet());
@@ -161,7 +167,6 @@ public class MapUtils {
         }
     }
 
-
     public static Hex findPlaceForTownHall(Map<Vector3, Hex> map, Set<Hex> region) {
         boolean isFactoryExists = hasEntityType(region, Factory.class);
         if (isFactoryExists) {
@@ -205,8 +210,29 @@ public class MapUtils {
         session.getPlayers().values().forEach(player -> {
             player.setSelectedTownHall(null);
         });
+        restoreAvailability(session);
+    }
+
+    public static void restoreDefence(GameSession session) {
         session.getMap().values().forEach(hex -> {
-            hex.setIsAvailable(true);
+            if (hex.getEntity() instanceof Interactable interactable) {
+                Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(session.getMap(), interactable.getDefenceRadius(), hex, false);
+                toUpdate.forEach(hexToUpdate ->
+                        hexToUpdate.setDefenseLevel(
+                                MapUtils.calculateDefenseLevel(session.getMap(), hexToUpdate))
+                );
+            }
+        });
+
+    }
+
+    public static void restoreAvailability(GameSession session) {
+        session.getMap().values().forEach(hex -> {
+            if (hex.getEntity().getMovedOnThisTurn() != null && Boolean.TRUE.equals(hex.getEntity().getMovedOnThisTurn())) {
+                hex.setIsAvailable(false);
+            } else {
+                hex.setIsAvailable(true);
+            }
             hex.setDisplayDefence(false);
         });
     }
@@ -216,5 +242,39 @@ public class MapUtils {
                 .filter(hex -> hex.getEntity() instanceof TownHall && hex.getColor() == color)
                 .map(townHall -> findTownHallWithRegion(map, color, townHall))
                 .collect(Collectors.toSet());
+    }
+
+    public static Pair<Integer, Set<HexColor>>  getPlayersCount(Map<Vector3, Hex> map) {
+        Set<HexColor> colors = new HashSet<>();
+        map.values().forEach(hex -> colors.add(hex.getColor()));
+        colors.remove(HexColor.EMPTY);
+        Set<HexColor> playersColors =  colors.stream().filter(color -> !getAllRegionsByColor(map, color).isEmpty())
+                        .collect(Collectors.toSet());
+        return Pair.of(playersColors.size(), playersColors);
+    }
+
+    public static void validateAllHexAreAvailable(Map<Vector3, Hex> map) {
+        Vector3 start = map.keySet().stream().toList().getFirst();
+
+        Set<Vector3> visited = new HashSet<>();
+
+        Queue<Vector3> toVisit = new ArrayDeque<>();
+        toVisit.add(start);
+
+        while (!toVisit.isEmpty()) {
+            Vector3 root = toVisit.poll();
+            if (!visited.contains(root)) {
+                var toCheck = getNeighborsInRadius(map, 1, Hex.builder().vector(root).build(), false).stream().map(Hex::getVector).collect(Collectors.toSet());
+                toCheck.removeAll(visited);
+                toCheck.removeAll(toVisit);
+                toVisit.addAll(toCheck);
+                visited.add(root);
+            }
+        }
+
+        if (!visited.containsAll(map.values().stream().map(Hex::getVector).collect(Collectors.toSet()))) {
+            throw new IllegalArgumentException("Не все клетки можно посетить");
+        }
+
     }
 }

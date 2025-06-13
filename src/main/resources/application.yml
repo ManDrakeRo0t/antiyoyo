@@ -1,4 +1,6 @@
 spring:
+
+
   application:
     name: antiyoyo
 
@@ -6,4 +8,11 @@ spring:
     host: localhost
     username: myuser
     password: secret
+
+  data:
+    mongodb:
+      host: localhost
+      database: mydatabase
+      username: root
+      password: secret
 

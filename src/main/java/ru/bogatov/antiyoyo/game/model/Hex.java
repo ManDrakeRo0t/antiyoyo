@@ -1,8 +1,6 @@
 package ru.bogatov.antiyoyo.game.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -31,11 +29,11 @@ public class Hex {
 
 }
 
- class IgnoreDeserializer extends JsonDeserializer<Object> {
+class IgnoreDeserializer extends JsonDeserializer<Object> {
 
 
-     @Override
-     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
-         return null;
-     }
- }
+    @Override
+    public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+        return null;
+    }
+}

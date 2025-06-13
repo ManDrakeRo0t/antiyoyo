@@ -1,7 +1,6 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import ru.bogatov.antiyoyo.game.model.Hex;
 import ru.bogatov.antiyoyo.game.model.HexColor;
@@ -167,7 +166,15 @@ public class HexCalculator {
     }
 
     private static boolean canMoveToSelfHex(Hex to, HexColor selfColor, Interactable entity) {
-        return isSameColor(to, selfColor) && (canUpgradeUnit(to.getEntity(), entity) || (to.getEntity() instanceof Tree || to.getEntity() instanceof Field));
+        return isSameColor(to, selfColor) &&
+                (canUpgradeUnit(to.getEntity(), entity) || canPlaceEntity(entity, to));
+    }
+
+    private static boolean canPlaceEntity(Interactable entity, Hex to) {
+        if (MapUtils.moveableUnits.contains(entity.getClass())) {
+            return to.getEntity() instanceof Tree || to.getEntity() instanceof Field;
+        }
+        return to.getEntity() instanceof Field;
     }
 
     private static boolean canMoveToEnemyHex(Hex to, HexColor selfColor, Interactable entity) {

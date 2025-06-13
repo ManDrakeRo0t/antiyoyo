@@ -6,20 +6,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.bogatov.antiyoyo.game.engine.GameEngine;
-import ru.bogatov.antiyoyo.game.engine.util.HexMapGenerator;
-import ru.bogatov.antiyoyo.game.model.GameSession;
-import ru.bogatov.antiyoyo.game.model.HexColor;
-import ru.bogatov.antiyoyo.game.model.Player;
-import ru.bogatov.antiyoyo.game.model.Vector3;
-import ru.bogatov.antiyoyo.game.model.entity.TownHall;
-import ru.bogatov.antiyoyo.server.domain.EventType;
+import ru.bogatov.antiyoyo.game.engine.util.EntityUtils;
+import ru.bogatov.antiyoyo.game.engine.util.MapUtils;
+import ru.bogatov.antiyoyo.game.engine.util.Pair;
+import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
+import ru.bogatov.antiyoyo.server.domain.GameMap;
+import ru.bogatov.antiyoyo.server.dto.SessionCreateRequest;
+import ru.bogatov.antiyoyo.server.dto.SessionJoinRequest;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
-import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+
 
 @Service
 @Slf4j
@@ -29,6 +30,12 @@ public class GameService {
     private final GameEngine gameEngine = new GameEngine();
     private final SessionRepository sessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final GameMapService gameMapService;
+
+
+    public void validateGameMap(GameMap gameMap) {
+        gameEngine.validateSessionAndGetPlayersCount(createSessionFromMap(gameMap));
+    }
 
     @SneakyThrows
     public void handleEvent(String sessionId, GameEvent event) {
@@ -37,50 +44,76 @@ public class GameService {
         GameSession session = sessionRepository.getSession(UUID.fromString(sessionId));
 
         if (session == null) {
-            session = createSession(UUID.fromString(sessionId));
-            sessionRepository.saveSession(session);
+            throw new IllegalArgumentException("Session not found");
         }
 
-        if (Objects.requireNonNull(event.getType()) == EventType.FINISH_TURN) {
-            gameEngine.endMove(session);
-            messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId), session);
-            return;
-        }
-
-//        log.info("Session : {}", session);
-//        log.info("Event : {}", event);
-
-        if (Objects.requireNonNull(event.getType()) == EventType.UNDO_MOVE) {
-            gameEngine.undoMove(session);
-            messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId), session);
-            return;
-        }
-
-        if (Objects.requireNonNull(event.getType()) == EventType.MOVE) {
-            gameEngine.makeMove(session, event.getMove());
-        }
-
-        if (Objects.requireNonNull(event.getType()) == EventType.BEFORE_MOVE) {
-          gameEngine.handleBeforeMoveClick(session, event);
-          messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId), session);
-          return;
+        switch (event.getType()) {
+            case MOVE -> gameEngine.makeMove(session, event.getMove());
+            case UNDO_MOVE -> gameEngine.undoMove(session);
+            case BEFORE_MOVE -> gameEngine.handleBeforeMoveClick(session, event);
+            case FINISH_TURN -> gameEngine.endMove(session);
+            case GET_SESSION -> {
+            }
         }
 
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId), session);
+
     }
 
-    public GameSession createSession(UUID id) {
-        GameSession session = new GameSession();
-        session.setId(id);
-        session.setPlayers(Map.of(0, new Player(UUID.randomUUID(), HexColor.RED, null)));
-        session.setName("Test");
-        session.setCurrentPlayerMove(0);
-        session.setStartTime(OffsetDateTime.now());
-        session.setMap(HexMapGenerator.generateEmptyMap(5));
-        session.getMap().get(Vector3.from(0,0,0)).setColor(HexColor.RED);
-        session.getMap().get(Vector3.from(2,-2,0)).setColor(HexColor.RED);
-        session.getMap().get(Vector3.from(0,0,0)).setEntity(new TownHall(20, 0));
-        session.getMap().get(Vector3.from(2,-2,0)).setEntity(new TownHall(2, 0));
+    public GameSession createSession(SessionCreateRequest request) {
+
+        GameMap gameMap = gameMapService.getById(request.getMapId());
+
+        GameSession gameSession = createSessionFromMap(gameMap);
+        sessionRepository.saveSession(gameSession);
+        return gameSession;
+    }
+
+    public GameSession joinSession(SessionJoinRequest request) {
+
+        GameSession session = sessionRepository.getSession(request.getSessionId());
+
+        Player player = session.getPlayers()
+                .values().stream()
+                .filter(p -> p.getColor() == request.getColor()).findFirst().orElse(null);
+        if (player.getUserId() == null) {
+            player.setUserId(request.getUserId());
+        }
+        messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", session.getId().toString()), session);
         return session;
+    }
+
+    public GameSession createSessionFromMap(GameMap gameMap) {
+        GameSession gameSession = new GameSession();
+        gameSession.setId(UUID.randomUUID());
+        gameSession.setName("Session :" + gameMap.getName());
+        gameSession.setCurrentPlayerMove(0);
+        gameSession.setPlayers(new HashMap<>());
+        Map<Vector3, Hex> map = new HashMap<>();
+        gameMap.getMap().forEach(h -> {
+            map.put(h.getVector(), Hex.builder()
+                    .color(h.getColor())
+                    .isAvailable(true)
+                    .vector(h.getVector())
+                    .displayDefence(false)
+                    .defenseLevel(0)
+                    .entity(EntityUtils.fromType(h.getEntity()))
+                    .build());
+        });
+        gameSession.setMap(map);
+        Pair<Integer, Set<HexColor>> playerCount = gameEngine.validateSessionAndGetPlayersCount(gameSession);
+        gameMap.setPlayersCount(playerCount.getFirst());
+        final int[] counter = {0};
+        playerCount.getSecond().forEach(color -> {
+            gameSession.getPlayers().put(counter[0], new Player(null, color, null));
+            counter[0]++;
+            MapUtils.getAllRegionsByColor(gameSession.getMap(), color)
+                    .forEach(MapUtils::updateTownHallEconomy);
+        });
+
+        // change player
+        MapUtils.restoreMap(gameSession);
+        MapUtils.restoreDefence(gameSession);
+        return gameSession;
     }
 }
