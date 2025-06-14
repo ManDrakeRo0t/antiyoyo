@@ -315,6 +315,55 @@
         .bouncing-entity {
             animation: bounce 1s infinite;
         }
+        
+        /* Game status messages */
+        .game-status-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        .game-status-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+        }
+        .game-status-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .destroyed-message {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .winner-message {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        /* Current turn indicator */
+        .current-turn-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            z-index: 1001;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -381,7 +430,46 @@
         <button id="joinButton" class="join-button" onclick="joinSession()" disabled>Присоединиться</button>
     </div>
 
+    <!-- Game status overlay -->
+    <div id="gameStatusOverlay" class="game-status-overlay" style="display: none;">
+        <div class="game-status-content">
+            <h2 id="gameStatusTitle" class="game-status-title"></h2>
+        </div>
+    </div>
+
+    <!-- Current turn indicator -->
+    <div id="currentTurnIndicator" class="current-turn-indicator">
+        Ходит: <span id="currentTurnColor"></span>
+    </div>
+
 <script>
+    // Backend host management
+    let backendHost = 'localhost';
+    
+    // Initialize backend host from localStorage
+    function initializeBackendHost() {
+        const storedHost = localStorage.getItem('backendHost');
+        if (!storedHost) {
+            localStorage.setItem('backendHost', 'localhost');
+            backendHost = 'localhost';
+        } else {
+            backendHost = storedHost;
+        }
+    }
+    
+    // Get backend URL for API calls
+    function getBackendUrl() {
+        return `http://${backendHost}:8080`;
+    }
+    
+    // Get WebSocket URL
+    function getWebSocketUrl() {
+        return `ws://${backendHost}:8080/ws`;
+    }
+    
+    // Initialize backend host on page load
+    initializeBackendHost();
+    
     // WebSocket and STOMP client variables
     let stompClient = null;
     let sessionId = null;
@@ -401,9 +489,9 @@
         minHexSize: 10,
         maxHexSize: 60,
         showCoordinates: false,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#babdc2',
         existingHexColor: '#cccccc',
-        missingHexColor: '#ffffff',
+        missingHexColor: '#4b8bde',
         gridColor: '#000000',
         selectedHexColor: '#ffff00',  // Color for selected hex highlight
         selectedHexBorderWidth: 3     // Border width for selected hex
@@ -492,7 +580,7 @@
             sendGetSession()
         } else {
             const stompConfig = {
-                brokerURL: "ws://localhost:8080/ws",
+                brokerURL: getWebSocketUrl(),
                 reconnectDelay: 200,
                 onConnect: function (frame) {
                     const statusDiv = document.getElementById('connectionStatus');
@@ -643,6 +731,8 @@
             hexData = data;
             updateControlPanelVisibility();
             checkPlayerStatus();
+            checkGameStatus(); // Check for winner or destroyed player
+            updateCurrentTurnIndicator(); // Update current turn display
             updateUnitButtons();
             renderGrid(); // Trigger render to start animation if needed
         } else {
@@ -704,6 +794,100 @@
             hideWaitingUI();
             isGameReady = true;
         }
+    }
+
+    // Check game status (winner, destroyed player)
+    function checkGameStatus() {
+        if (!hexData.players) return;
+
+        const players = hexData.players;
+        
+        // Check if current player is destroyed
+        if (state.currentPlayer !== null && players[state.currentPlayer]) {
+            const currentPlayer = players[state.currentPlayer];
+            if (currentPlayer.illuminated === true) {
+                showDestroyedMessage();
+                return;
+            }
+        }
+        
+        // Check if game has a winner
+        if (hexData.winnerId !== null && hexData.winnerId !== undefined) {
+            const winnerPlayer = Object.values(players).find(player => player.userId === hexData.winnerId);
+            if (winnerPlayer) {
+                showWinnerMessage(winnerPlayer.color);
+                return;
+            }
+        }
+        
+        // If no special status, hide game status overlay
+        hideGameStatusOverlay();
+    }
+
+    // Show destroyed player message
+    function showDestroyedMessage() {
+        const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+        const gameStatusTitle = document.getElementById('gameStatusTitle');
+        
+        gameStatusTitle.textContent = 'Вы уничтожены';
+        gameStatusTitle.className = 'game-status-title destroyed-message';
+        gameStatusOverlay.style.display = 'flex';
+    }
+
+    // Show winner message
+    function showWinnerMessage(winnerColor) {
+        const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+        const gameStatusTitle = document.getElementById('gameStatusTitle');
+        
+        const colorNames = {
+            'YELLOW': 'Желтый',
+            'ORANGE': 'Оранжевый',
+            'RED': 'Красный',
+            'BLUE': 'Синий',
+            'GREEN': 'Зеленый',
+            'PURPLE': 'Фиолетовый'
+        };
+        
+        const colorName = colorNames[winnerColor] || winnerColor;
+        gameStatusTitle.textContent = `Победил ${colorName}`;
+        gameStatusTitle.className = 'game-status-title winner-message';
+        gameStatusOverlay.style.display = 'flex';
+    }
+
+    // Hide game status overlay
+    function hideGameStatusOverlay() {
+        const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+        gameStatusOverlay.style.display = 'none';
+    }
+
+    // Update current turn indicator
+    function updateCurrentTurnIndicator() {
+        const currentTurnIndicator = document.getElementById('currentTurnIndicator');
+        const currentTurnColorSpan = document.getElementById('currentTurnColor');
+        
+        if (!hexData.players || hexData.currentPlayerMove === null || hexData.currentPlayerMove === undefined) {
+            currentTurnIndicator.style.display = 'none';
+            return;
+        }
+        
+        const currentPlayer = hexData.players[hexData.currentPlayerMove];
+        if (!currentPlayer) {
+            currentTurnIndicator.style.display = 'none';
+            return;
+        }
+        
+        const colorNames = {
+            'YELLOW': 'Желтый',
+            'ORANGE': 'Оранжевый',
+            'RED': 'Красный',
+            'BLUE': 'Синий',
+            'GREEN': 'Зеленый',
+            'PURPLE': 'Фиолетовый'
+        };
+        
+        const colorName = colorNames[currentPlayer.color] || currentPlayer.color;
+        currentTurnColorSpan.textContent = colorName;
+        currentTurnIndicator.style.display = 'block';
     }
 
     // Show appropriate waiting UI
@@ -801,7 +985,7 @@
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/sessions/join', {
+            const response = await fetch(`${getBackendUrl()}/api/sessions/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

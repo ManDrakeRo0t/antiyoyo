@@ -13,5 +13,6 @@ public class Player {
     private UUID userId;
     private HexColor color;
     private TownHall selectedTownHall;
+    private boolean isIlluminated;
 
 }

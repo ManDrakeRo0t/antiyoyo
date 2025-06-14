@@ -152,6 +152,38 @@
             text-decoration: underline;
             margin-left: 10px;
         }
+        
+        /* Main menu welcome and logout styles */
+        .menu-welcome {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .welcome-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+        }
+        .menu-logout-btn {
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .menu-logout-btn:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -173,6 +205,10 @@
 
     <!-- Main Menu -->
     <div id="mainMenu" class="main-menu" style="display: none;">
+        <div class="menu-welcome">
+            <span class="welcome-text">Привет, <span id="menuUserLogin"></span>!</span>
+            <button class="menu-logout-btn" onclick="logout()">Выйти из аккаунта</button>
+        </div>
         <h1 class="game-title">Antiyoyo</h1>
         <div class="menu-buttons">
             <button class="menu-button" onclick="openEditor()">Редактор</button>
@@ -187,8 +223,33 @@
         <button class="logout-btn" onclick="logout()">Выйти</button>
     </div>
 
-    <div id="sessionInput">
+    <div id="sessionInput" style="display: none;">
+        <!-- Session input content would go here if needed -->
+    </div>
+
     <script>
+        // Backend host management
+        let backendHost = 'localhost';
+        
+        // Initialize backend host from localStorage
+        function initializeBackendHost() {
+            const storedHost = localStorage.getItem('backendHost');
+            if (!storedHost) {
+                localStorage.setItem('backendHost', 'localhost');
+                backendHost = 'localhost';
+            } else {
+                backendHost = storedHost;
+            }
+        }
+        
+        // Get backend URL for API calls
+        function getBackendUrl() {
+            return `http://${backendHost}:8080`;
+        }
+        
+        // Initialize backend host on page load
+        initializeBackendHost();
+        
         // Authentication and localStorage management
         let currentUser = null;
         let isAuthMode = false; // true for register, false for login
@@ -213,36 +274,52 @@
 
         // Show authentication modal
         function showAuthModal() {
-            document.getElementById('authModal').style.display = 'flex';
-            document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('sessionInput').style.display = 'none';
-            document.getElementById('container').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'none';
+            const authModal = document.getElementById('authModal');
+            const mainMenu = document.getElementById('mainMenu');
+            const sessionInput = document.getElementById('sessionInput');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (authModal) authModal.style.display = 'flex';
+            if (mainMenu) mainMenu.style.display = 'none';
+            if (sessionInput) sessionInput.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'none';
+            
             resetAuthForm();
         }
 
         // Show main menu
         function showMainMenu() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('mainMenu').style.display = 'flex';
-            document.getElementById('sessionInput').style.display = 'none';
-            document.getElementById('container').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'block';
+            const authModal = document.getElementById('authModal');
+            const mainMenu = document.getElementById('mainMenu');
+            const sessionInput = document.getElementById('sessionInput');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (authModal) authModal.style.display = 'none';
+            if (mainMenu) mainMenu.style.display = 'flex';
+            if (sessionInput) sessionInput.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'block';
         }
 
         // Show game interface
         function showGameInterface() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('sessionInput').style.display = 'block';
-            document.getElementById('container').style.display = 'block';
-            document.getElementById('userInfo').style.display = 'block';
+            const authModal = document.getElementById('authModal');
+            const mainMenu = document.getElementById('mainMenu');
+            const sessionInput = document.getElementById('sessionInput');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (authModal) authModal.style.display = 'none';
+            if (mainMenu) mainMenu.style.display = 'none';
+            if (sessionInput) sessionInput.style.display = 'block';
+            if (userInfo) userInfo.style.display = 'block';
         }
 
         // Reset authentication form
         function resetAuthForm() {
-            document.getElementById('authForm').reset();
-            document.getElementById('authError').style.display = 'none';
+            const authForm = document.getElementById('authForm');
+            const authError = document.getElementById('authError');
+            
+            if (authForm) authForm.reset();
+            if (authError) authError.style.display = 'none';
             updateAuthUI();
         }
 
@@ -253,13 +330,13 @@
             const switchBtn = document.getElementById('authSwitchBtn');
 
             if (isAuthMode) {
-                title.textContent = 'Регистрация';
-                submitBtn.textContent = 'Зарегистрироваться';
-                switchBtn.textContent = 'Уже есть аккаунт?';
+                if (title) title.textContent = 'Регистрация';
+                if (submitBtn) submitBtn.textContent = 'Зарегистрироваться';
+                if (switchBtn) switchBtn.textContent = 'Уже есть аккаунт?';
             } else {
-                title.textContent = 'Вход';
-                submitBtn.textContent = 'Войти';
-                switchBtn.textContent = 'Создать аккаунт';
+                if (title) title.textContent = 'Вход';
+                if (submitBtn) submitBtn.textContent = 'Войти';
+                if (switchBtn) switchBtn.textContent = 'Создать аккаунт';
             }
         }
 
@@ -274,10 +351,18 @@
         async function handleAuthSubmit(event) {
             event.preventDefault();
             
-            const login = document.getElementById('loginInput').value;
-            const password = document.getElementById('passwordInput').value;
+            const loginInput = document.getElementById('loginInput');
+            const passwordInput = document.getElementById('passwordInput');
             const submitBtn = document.getElementById('authSubmitBtn');
             const errorDiv = document.getElementById('authError');
+
+            if (!loginInput || !passwordInput || !submitBtn || !errorDiv) {
+                console.error('Required authentication elements not found');
+                return;
+            }
+
+            const login = loginInput.value;
+            const password = passwordInput.value;
 
             if (!login || !password) {
                 showAuthError('Пожалуйста, заполните все поля');
@@ -290,7 +375,7 @@
 
             try {
                 const endpoint = isAuthMode ? '/api/register' : '/api/login';
-                const response = await fetch(`http://localhost:8080${endpoint}`, {
+                const response = await fetch(`${getBackendUrl()}${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -320,14 +405,20 @@
         // Show authentication error
         function showAuthError(message) {
             const errorDiv = document.getElementById('authError');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
         }
 
         // Update user info display
         function updateUserInfo() {
             if (currentUser) {
-                document.getElementById('userLogin').textContent = currentUser.login;
+                const userLogin = document.getElementById('userLogin');
+                const menuUserLogin = document.getElementById('menuUserLogin');
+                
+                if (userLogin) userLogin.textContent = currentUser.login;
+                if (menuUserLogin) menuUserLogin.textContent = currentUser.login;
             }
         }
 
@@ -356,11 +447,16 @@
 
         // Initialize unit buttons as disabled
         document.addEventListener('DOMContentLoaded', function() {
-           
-            
             // Add authentication event listeners
-            document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
-            document.getElementById('authSwitchBtn').addEventListener('click', switchAuthMode);
+            const authForm = document.getElementById('authForm');
+            const authSwitchBtn = document.getElementById('authSwitchBtn');
+            
+            if (authForm) {
+                authForm.addEventListener('submit', handleAuthSubmit);
+            }
+            if (authSwitchBtn) {
+                authSwitchBtn.addEventListener('click', switchAuthMode);
+            }
             
             // Check authentication status on page load
             checkAuthStatus();

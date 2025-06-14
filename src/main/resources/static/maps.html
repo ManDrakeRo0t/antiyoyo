@@ -270,6 +270,29 @@
     </div>
 
     <script>
+        // Backend host management
+        let backendHost = 'localhost';
+        
+        // Initialize backend host from localStorage
+        function initializeBackendHost() {
+            const storedHost = localStorage.getItem('backendHost');
+            if (!storedHost) {
+                localStorage.setItem('backendHost', 'localhost');
+                backendHost = 'localhost';
+            } else {
+                backendHost = storedHost;
+            }
+        }
+        
+        // Get backend URL for API calls
+        function getBackendUrl() {
+            return `http://${backendHost}:8080`;
+        }
+        
+        // Initialize backend host on page load
+        initializeBackendHost();
+        
+        // Global variables
         let maps = [];
         let currentMapData = null;
         let mapCanvas = null;
@@ -329,7 +352,7 @@
 
         async function loadMaps() {
             try {
-                const response = await fetch('http://localhost:8080/api/maps');
+                const response = await fetch(`${getBackendUrl()}/api/maps`);
                 if (response.ok) {
                     maps = await response.json();
                     displayMaps();
@@ -380,7 +403,7 @@
 
         async function previewMap(mapId, mapName) {
             try {
-                const response = await fetch(`http://localhost:8080/api/maps/${mapId}`);
+                const response = await fetch(`${getBackendUrl()}/api/maps/${mapId}`);
                 if (response.ok) {
                     currentMapData = await response.json();
                     document.getElementById('mapModalTitle').textContent = `Превью: ${mapName}`;
@@ -554,7 +577,7 @@
 
         async function createGame(mapId) {
             try {
-                const response = await fetch('http://localhost:8080/api/sessions', {
+                const response = await fetch(`${getBackendUrl()}/api/sessions`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

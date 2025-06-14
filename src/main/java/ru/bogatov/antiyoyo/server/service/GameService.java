@@ -105,7 +105,7 @@ public class GameService {
         gameMap.setPlayersCount(playerCount.getFirst());
         final int[] counter = {0};
         playerCount.getSecond().forEach(color -> {
-            gameSession.getPlayers().put(counter[0], new Player(null, color, null));
+            gameSession.getPlayers().put(counter[0], new Player(null, color, null, false));
             counter[0]++;
             MapUtils.getAllRegionsByColor(gameSession.getMap(), color)
                     .forEach(MapUtils::updateTownHallEconomy);

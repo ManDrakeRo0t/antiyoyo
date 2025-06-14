@@ -40,8 +40,22 @@ public class GameEngine {
        MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
                .forEach(region -> MapUtils.updateRegionAfterMove(session.getMap(), region));
        // change player
+        MapUtils.checkPlayersCount(session);
         MapUtils.restoreMap(session);
-        session.setCurrentPlayerMove(session.getCurrentPlayerMove() + 1 > session.getPlayers().size() - 1 ? 0 : session.getCurrentPlayerMove() + 1);
+        chanePlayerOrder(session);
+    }
+
+    public void chanePlayerOrder(GameSession session) {
+        session.setCurrentPlayerMove(findNextPlayer(session.getPlayers(), session.getCurrentPlayerMove()));
+    }
+
+    private Integer findNextPlayer(Map<Integer, Player> players, Integer currentPlayer) {
+        Integer expectedNext = currentPlayer + 1 > players.size() - 1 ? 0 : currentPlayer + 1;
+        if (!players.get(expectedNext).isIlluminated()) {
+            return expectedNext;
+        } else {
+            return findNextPlayer(players, expectedNext);
+        }
     }
 
     public void undoMove(GameSession session) throws JsonProcessingException {
@@ -109,7 +123,6 @@ public class GameEngine {
     private void validateMove(GameSession session, Move move) {
 
             MoveValidator.checkPlayerOrder(session, move);
-            //MoveValidator.checkDeposit(session, move);
             MoveValidator.checkFromHex(session, move);
             MoveValidator.checkToHex(session, move);
 
@@ -120,7 +133,15 @@ public class GameEngine {
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
 
-        Hex townHall = HexCalculator.foundTownHallById(session.getMap(), session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid());
+        var selectedTownHall = session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall();
+        Hex townHall = null;
+        if (selectedTownHall != null) {
+            townHall = HexCalculator.foundTownHallById(
+                    session.getMap(),
+                    selectedTownHall.getUuid()
+            );
+        }
+
 
         if (from != null) {
             setEntity(session, from, new Field(), from.getColor());
@@ -139,6 +160,8 @@ public class GameEngine {
             updateTownHallEconomy(session.getMap(), townHall);
         }
 
+
+
     }
 
     private Entity mergeUnit(Interactable old, Interactable toPlace) {
@@ -154,8 +177,11 @@ public class GameEngine {
 
         HexColor oldColor = hex.getColor();
 
-        hex.setColor(newColor);
-        if (hex.getEntity() instanceof Interactable old && entity instanceof Interactable toPlace) {
+        if (hex.getEntity() instanceof Interactable old
+                && entity instanceof Interactable toPlace
+                && hex.getColor() == newColor
+                && MapUtils.moveableUnits.contains(entity.getClass())
+        ) {
             Boolean isMovedPrevious = hex.getEntity().getMovedOnThisTurn();
             hex.setEntity(mergeUnit(old, toPlace));
             hex.getEntity().setMovedOnThisTurn(isMovedPrevious);
@@ -163,13 +189,11 @@ public class GameEngine {
             hex.setEntity(entity);
             hex.getEntity().setMovedOnThisTurn(MapUtils.moveableUnits.contains(entity.getClass()) ? true : null);
         }
-
-        if (entity instanceof Interactable interactable) {
-            Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(session.getMap(), interactable.getDefenceRadius(), hex, false);
-            toUpdate.forEach(hexToUpdate ->
-                    hexToUpdate.setDefenseLevel(
-                            MapUtils.calculateDefenseLevel(session.getMap(), hexToUpdate))
-            );
+        hex.setColor(newColor);
+        if (hex.getEntity() instanceof Interactable interactable) {
+            MapUtils.updateDefenseLevel(session.getMap(), hex, interactable.getLevel(), newColor);
+        } else {
+            MapUtils.updateDefenseLevel(session.getMap(), hex, 0, newColor);
         }
 
         if (entity instanceof TownHall) {
@@ -202,6 +226,8 @@ public class GameEngine {
                         Hex placeForTownHall = MapUtils.findPlaceForTownHall(session.getMap(), region.getSecond());
                         if (placeForTownHall != null) {
                             setEntity(session, placeForTownHall, new TownHall(0,0), placeForTownHall.getColor());
+                        } else {
+                            MapUtils.killInRegion(session, region.getSecond());
                         }
                     }
                 } catch (IllegalArgumentException ex) {

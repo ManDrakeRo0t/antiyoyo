@@ -2,14 +2,12 @@ package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 
-import ru.bogatov.antiyoyo.game.model.GameSession;
-import ru.bogatov.antiyoyo.game.model.Hex;
-import ru.bogatov.antiyoyo.game.model.HexColor;
-import ru.bogatov.antiyoyo.game.model.Vector3;
+import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static ru.bogatov.antiyoyo.game.engine.util.HexCalculator.getNeighborsInRadius;
 
@@ -26,6 +24,7 @@ public class MapUtils {
             EntityType.FACTORY, new Factory()
     );
 
+    // aka upgradeable dieable
     public static final Set<Class<? extends Entity>> moveableUnits = Set.of(
             UnitStageTwo.class,
             UnitStageOne.class,
@@ -57,10 +56,12 @@ public class MapUtils {
         territory.forEach(hex -> {
             if (hex.getEntity() instanceof Grave) {
                 hex.setEntity(new Tree());
+                updateDefenseLevel(map, hex, 0, hex.getColor());
             }
             if (hex.getEntity() instanceof Field) {
                 if (random.nextInt(100) <= 5) {
                     hex.setEntity(new Tree());
+                    updateDefenseLevel(map, hex, 0, hex.getColor());
                 }
             }
             if (hex.getEntity() instanceof Tree) {
@@ -82,6 +83,7 @@ public class MapUtils {
             territory.forEach(hex -> {
                 if (moveableUnits.contains(hex.getEntity().getClass())) {
                     hex.setEntity(new Grave());
+                    updateDefenseLevel(map, hex, 0, hex.getColor());
                 }
             });
         }
@@ -142,11 +144,11 @@ public class MapUtils {
     }
 
     public static boolean hasEntityType(Set<Hex> region, Class<? extends Entity> clazz) {
-        return region.stream().anyMatch(hex -> clazz.isAssignableFrom(hex.getClass()));
+        return region.stream().anyMatch(hex -> clazz.isAssignableFrom(hex.getEntity().getClass()));
     }
 
     public static Hex findFirstWithType(Set<Hex> region, Class<? extends Entity> clazz) {
-        return region.stream().filter(hex -> clazz.isAssignableFrom(hex.getClass())).findFirst().orElse(null);
+        return region.stream().filter(hex -> clazz.isAssignableFrom(hex.getEntity().getClass())).findFirst().orElse(null);
     }
 
     public static void updateTownHallEconomy(Map<Vector3, Hex> map, Hex townHall) {
@@ -178,31 +180,34 @@ public class MapUtils {
             }
             return placeNearFactory;
         } else {
-            Hex hexToReplace = findFirstWithType(region, Field.class);
-            if (hexToReplace == null) {
-                hexToReplace = findFirstWithType(region, Grave.class);
-            }
-            if (hexToReplace == null) {
-                hexToReplace = findFirstWithType(region, UnitStageOne.class);
-            }
-            if (hexToReplace == null) {
-                hexToReplace = findFirstWithType(region, UnitStageTwo.class);
-            }
-            return hexToReplace;
+            return findFirstWithType(region, Field.class);
         }
     }
 
     public void updatePricesForTownHall(Pair<TownHall, Set<Hex>> region) {
-        region.getFirst().setPrices(
-                sellableEntities.entrySet().stream().map(entry -> {
-                    int count = 0;
-                    if (EntityType.FACTORY == entry.getKey()) {
-                        count = (int) region.getSecond()
-                                .stream().filter(hex -> hex.getEntity() instanceof Factory)
-                                .count();
-                    }
-                    return Map.entry(entry.getKey(), entry.getValue().getPrice(count));
-                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        if (region.getFirst() != null) {
+            region.getFirst().setPrices(
+                    sellableEntities.entrySet().stream().map(entry -> {
+                        int count = 0;
+                        if (EntityType.FACTORY == entry.getKey()) {
+                            count = (int) region.getSecond()
+                                    .stream().filter(hex -> hex.getEntity() instanceof Factory)
+                                    .count();
+                        }
+                        return Map.entry(entry.getKey(), entry.getValue().getPrice(count));
+                    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
+        }
+    }
+
+    public static void updateDefenseLevel(Map<Vector3, Hex> map, Hex hex, Integer defenceLevel, HexColor selfColor) {
+        hex.setDefenseLevel(defenceLevel);
+        Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
+        toUpdate.forEach(hexToUpdate -> {
+            if (hexToUpdate.getColor() == selfColor) {
+                hexToUpdate.setDefenseLevel(
+                        MapUtils.calculateDefenseLevel(map, hexToUpdate));
+            }}
         );
     }
 
@@ -216,11 +221,7 @@ public class MapUtils {
     public static void restoreDefence(GameSession session) {
         session.getMap().values().forEach(hex -> {
             if (hex.getEntity() instanceof Interactable interactable) {
-                Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(session.getMap(), interactable.getDefenceRadius(), hex, false);
-                toUpdate.forEach(hexToUpdate ->
-                        hexToUpdate.setDefenseLevel(
-                                MapUtils.calculateDefenseLevel(session.getMap(), hexToUpdate))
-                );
+                MapUtils.updateDefenseLevel(session.getMap(), hex, interactable.getLevel(), hex.getColor());
             }
         });
 
@@ -244,12 +245,37 @@ public class MapUtils {
                 .collect(Collectors.toSet());
     }
 
+    public static void checkPlayersCount(GameSession session) {
+        Pair<Integer, Set<HexColor>> playerCount = getPlayersCount(session.getMap());
+        Integer activePlayers = Math.toIntExact(session.getPlayers().values()
+                .stream().filter(player -> !player.isIlluminated()).count());
+        if (!Objects.equals(playerCount.getFirst(), activePlayers)) {
+            Set<HexColor> leftColors = playerCount.getSecond();
+            if (leftColors.size() == 1) {
+                Player winner = session.getPlayers().values().stream()
+                        .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
+                                .findFirst().orElse(null);
+                session.setWinnerId(winner == null ? null : winner.getUserId());
+            } else {
+                session.getPlayers().values().forEach(player -> {
+                    if (!leftColors.contains(player.getColor())) {
+                        player.setIlluminated(true);
+                    }
+                });
+            }
+        }
+    }
+
     public static Pair<Integer, Set<HexColor>>  getPlayersCount(Map<Vector3, Hex> map) {
         Set<HexColor> colors = new HashSet<>();
         map.values().forEach(hex -> colors.add(hex.getColor()));
         colors.remove(HexColor.EMPTY);
-        Set<HexColor> playersColors =  colors.stream().filter(color -> !getAllRegionsByColor(map, color).isEmpty())
-                        .collect(Collectors.toSet());
+        Set<HexColor> playersColors =  colors.stream()
+                .filter(color -> {
+                    var regions = getAllRegionsByColor(map, color);
+                    return !regions.isEmpty() && regions.stream().anyMatch(r -> r.getFirst() != null);
+                })
+                .collect(Collectors.toSet());
         return Pair.of(playersColors.size(), playersColors);
     }
 
@@ -276,5 +302,14 @@ public class MapUtils {
             throw new IllegalArgumentException("Не все клетки можно посетить");
         }
 
+    }
+
+    public static void killInRegion(GameSession session, Set<Hex> region) {
+        region.stream()
+                .filter(hex -> moveableUnits.contains(hex.getEntity().getClass()))
+                .forEach(hex -> {
+                    hex.setEntity(new Grave());
+                    updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
+                });
     }
 }

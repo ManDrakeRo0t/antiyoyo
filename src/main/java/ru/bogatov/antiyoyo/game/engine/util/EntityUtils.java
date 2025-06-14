@@ -16,8 +16,9 @@ public class EntityUtils {
             case BIG_TOWER -> new BigTower();
             case FACTORY -> new Factory();
             case FIELD -> new Field();
+            case TREE -> new Tree();
+            case GRAVE -> new Grave();
             case TOWN_HALL -> new TownHall(10,0);
-            default -> throw new RuntimeException("Not supported type");
         };
     }
 
