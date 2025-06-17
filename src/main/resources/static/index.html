@@ -2,235 +2,452 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Wars</title>
     <style>
-        .bouncing-entity {
-            animation: bounce 1s infinite;
+        @font-face {
+            font-family: 'Castlefire';
+            src: url('fonts/Castlefire.ttf') format('truetype'),
+                 url('fonts/Castlefire.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
         }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #dcdcdc; /* Light grey from mockup */
+            font-family: 'Castlefire', sans-serif; /* Default font for entire body */
+        }
+
+        #mainContentWrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('ui-elements/background.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center center;
+            padding: 2vw;
+            box-sizing: border-box;
+        }
+
         /* Authentication Modal Styles */
         .auth-modal {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 2000;
         }
+
         .auth-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            width: 400px;
-            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            max-width: 400px;
+            /* Removed position: relative and top: -5vh; rely on flexbox for positioning */
+            padding: 5vw;
+            box-sizing: border-box;
+            height: 80vh;
+            max-height: 600px;
         }
-        .auth-container h2 {
+
+        .game-logo {
+            margin-top: 10vh;
+            width: clamp(100px, 20vw, 150px);
+            height: auto;
+            margin-bottom: 0; /* Removed margin-bottom */
+        }
+
+        .game-title {
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(40px, 9vw, 80px);
+            color: black;
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-top: 1vh; /* Adjusted margin-top */
+            margin-bottom: 1vh; /* Adjusted margin-bottom */
+            letter-spacing: 2px;
         }
+
+        .auth-container h2 {
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(25px, 6vw, 50px); /* Adjusted font size */
+            text-align: center;
+            margin-bottom: 2vh; /* Adjusted margin */
+            color: black;
+        }
+
         .auth-form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 1.5vh; /* Adjusted gap */
+            width: 100%;
         }
+
         .auth-form input {
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            padding: 0;
+            border: none;
+            background-image: url('ui-elements/input.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: clamp(40px, 7vh, 55px); /* Adjusted height */
+            text-align: center;
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(16px, 3vw, 28px); /* Adjusted font size */
+            color: black;
+            box-sizing: border-box;
         }
+
+        .auth-form input::placeholder {
+            color: #555;
+        }
+
         .auth-form input:focus {
             outline: none;
-            border-color: #4CAF50;
         }
+
         .auth-form button {
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 0;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            width: clamp(180px, 65vw, 250px); /* Adjusted width */
+            height: clamp(35px, 6vh, 60px); /* Adjusted height */
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(16px, 3.5vw, 30px); /* Adjusted font size */
+            color: black;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: transform 0.1s ease;
+            margin: 0 auto;
+            border-radius: 20px; /* Adjusted border-radius */
+            overflow: hidden;
         }
+        .auth-form button:active {
+            transform: translateY(2px);
+        }
+
+        /* Specific button styles */
+        #authSubmitBtn.enter-button {
+            background-image: url('ui-elements/yellow-button.png');
+        }
+        #authSubmitBtn.signup-button {
+            background-image: url('ui-elements/yellow-button.png');
+        }
+        #authSwitchButton.signup-button {
+            background-image: url('ui-elements/gray-button.png');
+        }
+        #authSwitchButton.back-button {
+            background-image: url('ui-elements/orange-button.png');
+        }
+
         .auth-form button:hover {
-            background-color: #45a049;
+            filter: brightness(1.1);
         }
         .auth-form button:disabled {
-            background-color: #ccc;
+            opacity: 0.7;
             cursor: not-allowed;
+            filter: grayscale(1);
         }
+
         .auth-switch {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 1.5vh; /* Adjusted margin-top */
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
         .auth-switch button {
             background: none;
             border: none;
-            color: #4CAF50;
+            color: black;
+            text-decoration: none;
+            font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
+            width: clamp(160px, 60vw, 220px); /* Adjusted width */
+            height: clamp(30px, 5vh, 50px); /* Adjusted height */
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
             cursor: pointer;
-            text-decoration: underline;
-            font-size: 14px;
+            border-radius: 20px; /* Adjusted border-radius */
+            overflow: hidden;
         }
-        .auth-switch button:hover {
-            color: #45a049;
-        }
+
         .auth-error {
             color: #f44336;
             text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: 1vh;
+            font-size: clamp(12px, 2.5vw, 14px);
         }
+
         /* Main Menu Styles */
         .main-menu {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1500;
-        }
-        .game-title {
-            font-size: 4rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            margin-bottom: 50px;
-            text-align: center;
+            padding: 2vw;
+            box-sizing: border-box;
         }
         .menu-buttons {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 0.5vh; /* Adjusted gap */
             align-items: center;
+            margin-top: 5vh;
+            width: 100%;
         }
         .menu-button {
-            padding: 15px 40px;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #333;
+            padding: 0;
             border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            width: clamp(160px, 65vw, 120px);
+            height: clamp(30px, 5vh, 50px); /* Adjusted height */
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
+            color: black;
             cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 200px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease;
+            margin: 0 auto;
+            border-radius: 20px; /* Adjusted border-radius */
+            overflow: hidden;
+        }
+        .menu-button:active {
+            transform: translateY(2px);
         }
         .menu-button:hover {
-            background-color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            filter: brightness(1.1);
         }
-        .user-info {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 1000;
-        }
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #f44336;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-left: 10px;
-        }
-        
-        /* Main menu welcome and logout styles */
-        .menu-welcome {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+        /* Specific main menu button styles */
+        #playButton { background-image: url('ui-elements/yellow-button.png'); }
+        #lobbiesButton, #rankingButton, #accountButton { background-image: url('ui-elements/gray-button.png'); }
+        #leaveButton { background-image: url('ui-elements/orange-button.png'); }
+
+        .menu-icons {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            gap: 0.5vw; /* Adjusted gap */
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            margin-top: auto;
+            padding-bottom: 3.5vh; /* Adjusted padding */
         }
-        .welcome-text {
-            font-size: 16px;
-            color: #333;
-            font-weight: bold;
-        }
-        .menu-logout-btn {
-            padding: 8px 16px;
-            background-color: #f44336;
-            color: white;
+
+        .menu-icon-button {
+            padding: 0;
             border: none;
-            border-radius: 5px;
+            background-color: transparent;
+            /* Removed background-size: 100% 100%; to avoid conflict */
+            background-repeat: no-repeat;
+            width: clamp(20px, 4vw, 40px); /* Adjusted size */
+            height: clamp(20px, 4vw, 40px); /* Adjusted size */
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
+            transition: transform 0.1s ease;
+            border-radius: 50%;
+            overflow: hidden;
         }
-        .menu-logout-btn:hover {
-            background-color: #d32f2f;
+        /* Specific menu icon button styles */
+        #questionIcon { background-image: url('ui-elements/question.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
+        #dollarIcon { background-image: url('ui-elements/dollar.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
+        #settingsIcon { background-image: url('ui-elements/settings.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
+
+        .menu-icon-button:active {
+            transform: translateY(2px);
+        }
+        .menu-icon-button:hover {
+            filter: brightness(1.1);
+        }
+
+        .menu-welcome {
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(14px, 3vw, 30px); /* Adjusted font size */
+            color: black;
+            text-align: center;
+            margin-bottom: 2vh; /* Adjusted margin */
+        }
+
+        .menu-user-login {
+            font-family: 'Castlefire', sans-serif;
+            font-size: clamp(25px, 6vw, 50px); /* Adjusted font size */
+            color: black;
+            text-align: center;
+            margin-top: 0; /* Adjusted margin */
+            margin-bottom: 3vh; /* Adjusted margin */
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 4vw;
+                height: 90vh;
+            }
+            .game-logo {
+                width: clamp(80px, 18vw, 120px);
+                margin-bottom: 0; /* Adjusted for smaller screens */
+            }
+            .game-title {
+                font-size: clamp(25px, 7vw, 70px); /* Adjusted font size */
+                margin-top: 1vh; /* Adjusted for smaller screens */
+                margin-bottom: 1vh; /* Adjusted for smaller screens */
+            }
+            .auth-container h2 {
+                font-size: clamp(20px, 5vw, 45px); /* Adjusted font size */
+                margin-bottom: 1.5vh; /* Adjusted for smaller screens */
+            }
+            .auth-form input {
+                height: clamp(35px, 6vh, 55px); /* Adjusted height */
+                font-size: clamp(14px, 2.8vw, 28px); /* Adjusted font size */
+            }
+            .auth-form button,
+            .auth-switch button {
+                width: clamp(160px, 60vw, 220px);
+                height: clamp(35px, 6vh, 60px); /* Adjusted height */
+                font-size: clamp(16px, 3.5vw, 35px); /* Adjusted font size */
+            }
+            .auth-switch {
+                margin-top: 0.8vh;
+            }
+            .menu-buttons {
+                gap: 0.8vh; /* Adjusted gap */
+                margin-top: 2.5vh; /* Adjusted for smaller screens */
+            }
+            .menu-button {
+                width: clamp(140px, 55vw, 200px); /* Adjusted width */
+                height: clamp(30px, 5vh, 50px); /* Adjusted height */
+                font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
+            }
+            .menu-icons {
+                gap: 0.8vw; /* Adjusted gap */
+                padding-bottom: 2vh; /* Adjusted padding */
+            }
+            .menu-icon-button {
+                width: clamp(20px, 4vw, 40px); /* Adjusted size */
+                height: clamp(20px, 4vw, 40px); /* Adjusted size */
+            }
+            .menu-welcome {
+                font-size: clamp(16px, 3.5vw, 40px); /* Adjusted font size */
+            }
+        }
+
+        @media (max-width: 480px) {
+            #mainContentWrapper {
+                padding: 1vw;
+            }
+            .auth-container {
+                width: 95%;
+                padding: 3vw;
+                height: 95vh;
+            }
+            .game-logo {
+                width: clamp(70px, 15vw, 100px);
+                margin-bottom: 0; /* Adjusted for very small screens */
+            }
+            .game-title {
+                font-size: clamp(18px, 5vw, 60px); /* Adjusted font size */
+                margin-top: 0.5vh; /* Adjusted for very small screens */
+                margin-bottom: 0.5vh; /* Adjusted for very small screens */
+            }
+            .auth-container h2 {
+                font-size: clamp(14px, 3.5vw, 40px); /* Adjusted font size */
+                margin-bottom: 0.8vh; /* Adjusted for very small screens */
+            }
+            .auth-form input {
+                height: clamp(25px, 4.5vh, 50px); /* Adjusted height */
+                font-size: clamp(10px, 2vw, 25px); /* Adjusted font size */
+            }
+            .auth-form button,
+            .auth-switch button,
+            .menu-button {
+                width: clamp(100px, 45vw, 200px); /* Adjusted width */
+                height: clamp(25px, 4.5vh, 50px); /* Adjusted height */
+                font-size: clamp(12px, 2.5vw, 25px); /* Adjusted font size */
+            }
+            .auth-switch {
+                margin-top: 0.3vh;
+            }
+            .menu-buttons {
+                gap: 0.3vh; /* Adjusted gap */
+                margin-top: 1.5vh; /* Adjusted for very small screens */
+            }
+            .menu-icons {
+                gap: 0.3vw; /* Adjusted gap */
+                padding-bottom: 0.8vh; /* Adjusted padding */
+            }
+            .menu-icon-button {
+                width: clamp(18px, 3.5vw, 40px); /* Adjusted size */
+                height: clamp(18px, 3.5vw, 40px); /* Adjusted size */
+            }
+            .menu-welcome {
+                font-size: clamp(14px, 3vw, 30px); /* Adjusted font size */
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Authentication Modal -->
-    <div id="authModal" class="auth-modal" style="display: none;">
-        <div class="auth-container">
-            <h2 id="authTitle">Вход</h2>
-            <form class="auth-form" id="authForm">
-                <input type="text" id="loginInput" placeholder="Логин" required>
-                <input type="password" id="passwordInput" placeholder="Пароль" required>
-                <button type="submit" id="authSubmitBtn">Войти</button>
-                <div class="auth-error" id="authError" style="display: none;"></div>
-            </form>
-            <div class="auth-switch">
-                <button type="button" id="authSwitchBtn">Создать аккаунт</button>
+    <div id="mainContentWrapper">
+        <!-- Authentication Modal -->
+        <div id="authModal" class="auth-modal" style="display: none;">
+            <div class="auth-container">
+                <img src="ui-elements/logo.png" alt="World Wars Logo" class="game-logo">
+                <h2 class="game-title">World Wars</h2>
+                <h3 id="authTitle">Log in</h3>
+                <form class="auth-form" id="authForm">
+                    <input type="text" id="loginInput" placeholder="Login" required>
+                    <input type="password" id="passwordInput" placeholder="Password" required>
+                    <button type="submit" id="authSubmitBtn" class="enter-button">ENTER</button>
+                    <div class="auth-error" id="authError" style="display: none;"></div>
+                </form>
+                <div class="auth-switch">
+                    <button type="button" id="authSwitchButton" class="signup-button">SIGN UP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="mainMenu" class="main-menu" style="display: none;">
+            <img src="ui-elements/logo.png" alt="World Wars Logo" class="game-logo">
+            <h1 class="game-title">World Wars</h1>
+            <div class="menu-welcome" id="menuWelcome">
+                <span class="welcome-text">Hello, <span id="menuUserLogin"></span>!</span>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-button" id="playButton">PLAY</button>
+                <button class="menu-button" id="lobbiesButton">LOBBIES</button>
+                <button class="menu-button" id="rankingButton">RANKING</button>
+                <button class="menu-button" id="accountButton">ACCOUNT</button>
+                <button class="menu-button" id="leaveButton">LEAVE</button>
+            </div>
+            <div class="menu-icons">
+                <button class="menu-icon-button" id="questionIcon"></button>
+                <button class="menu-icon-button" id="dollarIcon"></button>
+                <button class="menu-icon-button" id="settingsIcon"></button>
             </div>
         </div>
     </div>
-
-    <!-- Main Menu -->
-    <div id="mainMenu" class="main-menu" style="display: none;">
-        <div class="menu-welcome">
-            <span class="welcome-text">Привет, <span id="menuUserLogin"></span>!</span>
-            <button class="menu-logout-btn" onclick="logout()">Выйти из аккаунта</button>
-        </div>
-        <h1 class="game-title">Antiyoyo</h1>
-        <div class="menu-buttons">
-            <button class="menu-button" onclick="openEditor()">Редактор</button>
-            <button class="menu-button" onclick="openGame()">Играть</button>
-            <button class="menu-button" onclick="createRoom()">Создать комнату</button>
-        </div>
-    </div>
-
-    <!-- User Info -->
-    <div id="userInfo" class="user-info" style="display: none;">
-        <span id="userLogin"></span>
-        <button class="logout-btn" onclick="logout()">Выйти</button>
-    </div>
-
-    <div id="sessionInput" style="display: none;">
-        <!-- Session input content would go here if needed -->
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script>
         // Backend host management
         let backendHost = 'localhost';
-        
+
         // Initialize backend host from localStorage
         function initializeBackendHost() {
             const storedHost = localStorage.getItem('backendHost');
@@ -241,15 +458,15 @@
                 backendHost = storedHost;
             }
         }
-        
+
         // Get backend URL for API calls
         function getBackendUrl() {
             return `http://${backendHost}:8080`;
         }
-        
+
         // Initialize backend host on page load
         initializeBackendHost();
-        
+
         // Authentication and localStorage management
         let currentUser = null;
         let isAuthMode = false; // true for register, false for login
@@ -276,13 +493,9 @@
         function showAuthModal() {
             const authModal = document.getElementById('authModal');
             const mainMenu = document.getElementById('mainMenu');
-            const sessionInput = document.getElementById('sessionInput');
-            const userInfo = document.getElementById('userInfo');
             
             if (authModal) authModal.style.display = 'flex';
             if (mainMenu) mainMenu.style.display = 'none';
-            if (sessionInput) sessionInput.style.display = 'none';
-            if (userInfo) userInfo.style.display = 'none';
             
             resetAuthForm();
         }
@@ -291,26 +504,16 @@
         function showMainMenu() {
             const authModal = document.getElementById('authModal');
             const mainMenu = document.getElementById('mainMenu');
-            const sessionInput = document.getElementById('sessionInput');
-            const userInfo = document.getElementById('userInfo');
             
             if (authModal) authModal.style.display = 'none';
             if (mainMenu) mainMenu.style.display = 'flex';
-            if (sessionInput) sessionInput.style.display = 'none';
-            if (userInfo) userInfo.style.display = 'block';
         }
 
-        // Show game interface
+        // Show game interface (not used directly for main menu, but kept for context)
         function showGameInterface() {
-            const authModal = document.getElementById('authModal');
-            const mainMenu = document.getElementById('mainMenu');
-            const sessionInput = document.getElementById('sessionInput');
-            const userInfo = document.getElementById('userInfo');
-            
-            if (authModal) authModal.style.display = 'none';
-            if (mainMenu) mainMenu.style.display = 'none';
-            if (sessionInput) sessionInput.style.display = 'block';
-            if (userInfo) userInfo.style.display = 'block';
+            // This function is likely for switching to the game.html
+            // For now, it won't do anything here as the game is on a separate page.
+            console.log("Switching to game interface (not implemented in index.html)");
         }
 
         // Reset authentication form
@@ -327,16 +530,32 @@
         function updateAuthUI() {
             const title = document.getElementById('authTitle');
             const submitBtn = document.getElementById('authSubmitBtn');
-            const switchBtn = document.getElementById('authSwitchBtn');
+            const switchBtn = document.getElementById('authSwitchButton'); // Changed ID
 
             if (isAuthMode) {
-                if (title) title.textContent = 'Регистрация';
-                if (submitBtn) submitBtn.textContent = 'Зарегистрироваться';
-                if (switchBtn) switchBtn.textContent = 'Уже есть аккаунт?';
+                if (title) title.textContent = 'REGISTRATION';
+                if (submitBtn) {
+                    submitBtn.textContent = 'ENTER';
+                    submitBtn.classList.remove('enter-button');
+                    submitBtn.classList.add('signup-button');
+                }
+                if (switchBtn) {
+                    switchBtn.textContent = 'BACK'; // Changed text to "Назад"
+                    switchBtn.classList.remove('signup-button');
+                    switchBtn.classList.add('back-button');
+                }
             } else {
-                if (title) title.textContent = 'Вход';
-                if (submitBtn) submitBtn.textContent = 'Войти';
-                if (switchBtn) switchBtn.textContent = 'Создать аккаунт';
+                if (title) title.textContent = 'SIGN IN';
+                if (submitBtn) {
+                    submitBtn.textContent = 'ENTER';
+                    submitBtn.classList.remove('signup-button');
+                    submitBtn.classList.add('enter-button');
+                }
+                if (switchBtn) {
+                    switchBtn.textContent = 'SIGN UP'; // Changed text to "Зарегистрироваться"
+                    switchBtn.classList.remove('back-button');
+                    switchBtn.classList.add('signup-button');
+                }
             }
         }
 
@@ -374,7 +593,7 @@
             errorDiv.style.display = 'none';
 
             try {
-                const endpoint = isAuthMode ? '/api/register' : '/api/login';
+                const endpoint = isAuthMode ? '/api/register' : '/api/login'; // Corrected endpoint as per new JS
                 const response = await fetch(`${getBackendUrl()}${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -398,7 +617,7 @@
                 showAuthError('Ошибка соединения с сервером');
             } finally {
                 submitBtn.disabled = false;
-                updateAuthUI();
+                updateAuthUI(); // Ensure button text is restored after loading
             }
         }
 
@@ -414,10 +633,8 @@
         // Update user info display
         function updateUserInfo() {
             if (currentUser) {
-                const userLogin = document.getElementById('userLogin');
                 const menuUserLogin = document.getElementById('menuUserLogin');
                 
-                if (userLogin) userLogin.textContent = currentUser.login;
                 if (menuUserLogin) menuUserLogin.textContent = currentUser.login;
             }
         }
@@ -443,23 +660,32 @@
         }
 
         // Initialize the application
-        
-
-        // Initialize unit buttons as disabled
         document.addEventListener('DOMContentLoaded', function() {
             // Add authentication event listeners
             const authForm = document.getElementById('authForm');
-            const authSwitchBtn = document.getElementById('authSwitchBtn');
-            
+            const authSwitchButton = document.getElementById('authSwitchButton'); // Updated ID
+
             if (authForm) {
                 authForm.addEventListener('submit', handleAuthSubmit);
             }
-            if (authSwitchBtn) {
-                authSwitchBtn.addEventListener('click', switchAuthMode);
+            if (authSwitchButton) {
+                authSwitchButton.addEventListener('click', switchAuthMode);
             }
-            
+
             // Check authentication status on page load
             checkAuthStatus();
+
+            // Link new menu buttons to existing functions
+            document.getElementById('playButton').addEventListener('click', openGame);
+            document.getElementById('lobbiesButton').addEventListener('click', createRoom); // Assuming lobbies maps to createRoom
+            document.getElementById('rankingButton').addEventListener('click', function() { alert('Ranking clicked!'); }); // Placeholder
+            document.getElementById('accountButton').addEventListener('click', function() { alert('Account clicked!'); }); // Placeholder
+            document.getElementById('leaveButton').addEventListener('click', logout);
+
+            // Link new icon buttons
+            document.getElementById('questionIcon').addEventListener('click', function() { alert('Help clicked!'); });
+            document.getElementById('dollarIcon').addEventListener('click', function() { alert('Shop clicked!'); });
+            document.getElementById('settingsIcon').addEventListener('click', function() { alert('Settings clicked!'); });
         });
     </script>
 </body>

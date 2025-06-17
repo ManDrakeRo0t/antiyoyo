@@ -117,8 +117,8 @@
             transform: translateX(-50%);
             z-index: 1000;
             padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
+            background-color: #F7E5A7;
+            border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: none;
             gap: 15px;
@@ -150,7 +150,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #f0f0f0;
+            background-color: #F7E5A7;
             transition: all 0.3s ease;
         }
         .unit-button:hover {
@@ -489,7 +489,7 @@
         minHexSize: 10,
         maxHexSize: 60,
         showCoordinates: false,
-        backgroundColor: '#babdc2',
+        backgroundColor: '#F7E5A7',
         existingHexColor: '#cccccc',
         missingHexColor: '#4b8bde',
         gridColor: '#000000',
@@ -662,7 +662,9 @@
                     const statusDiv = document.getElementById('connectionStatus');
                     const topRightPanel = document.getElementById('topRightPanel');
                     statusDiv.textContent = 'Connected';
+                
                     statusDiv.className = 'connected';
+                    statusDiv.display = 'none'
                     topRightPanel.style.display = 'flex';
                     sessionInput.classList.add('hidden');
 
