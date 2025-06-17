@@ -93,7 +93,7 @@ public class GameEngine {
             Pair<TownHall, Set<Hex>> result = MapUtils.findTownHallWithRegion(session.getMap(), selfColor, event.getHex());
             session.getPlayers().get(session.getCurrentPlayerMove()).setSelectedTownHall(result.getFirst());
             MapUtils.updatePricesForTownHall(result);
-
+            updateTownHallEconomy(result);
             Hex hex = session.getMap().get(event.getHex().getVector());
             Entity entity = hex.getEntity();
 
@@ -176,6 +176,7 @@ public class GameEngine {
     private void setEntity(GameSession session, Hex hex, Entity entity, HexColor newColor) {
 
         HexColor oldColor = hex.getColor();
+        Entity oldEntity = hex.getEntity();
 
         if (hex.getEntity() instanceof Interactable old
                 && entity instanceof Interactable toPlace
@@ -201,7 +202,10 @@ public class GameEngine {
         }
 
         if (oldColor != newColor) {
-            validateTownHallsAndRegions(session);
+            if (oldEntity instanceof Interactable) {
+                MapUtils.updateDefenseLevelForColor(session.getMap(), hex, oldColor);
+            }
+            validateTownHallsAndRegions(session, oldEntity, oldColor);
         }
 
     }
@@ -214,7 +218,12 @@ public class GameEngine {
         return session.getMap().get(vector);
     }
 
-    private void validateTownHallsAndRegions(GameSession session) {
+    private void validateTownHallsAndRegions(GameSession session, Entity oldEntity, HexColor oldColor) {
+        Integer oldBalance = 0;
+        Set<TownHall> createdTownHall = new HashSet<>();
+        if (oldEntity instanceof TownHall townHall) {
+            oldBalance = townHall.getBalance();
+        }
         Set<Hex> validated = new HashSet<>();
         session.getMap().values().forEach(hex -> {
             if (hex.getColor() != HexColor.EMPTY && !validated.contains(hex)) {
@@ -225,7 +234,11 @@ public class GameEngine {
                     } else {
                         Hex placeForTownHall = MapUtils.findPlaceForTownHall(session.getMap(), region.getSecond());
                         if (placeForTownHall != null) {
-                            setEntity(session, placeForTownHall, new TownHall(0,0), placeForTownHall.getColor());
+                            TownHall townHall = new TownHall(0,0);
+                            if (placeForTownHall.getColor() == oldColor) {
+                                createdTownHall.add(townHall);
+                            }
+                            setEntity(session, placeForTownHall, townHall, placeForTownHall.getColor());
                         } else {
                             MapUtils.killInRegion(session, region.getSecond());
                         }
@@ -241,6 +254,10 @@ public class GameEngine {
                 }
             }
         });
+        if (!createdTownHall.isEmpty()) {
+            Integer balancePerTownHall = oldBalance / createdTownHall.size();
+            createdTownHall.forEach(townHall -> townHall.setBalance(balancePerTownHall));
+        }
     }
 
     public Pair<Integer, Set<HexColor>> validateSessionAndGetPlayersCount(GameSession gameSession) {

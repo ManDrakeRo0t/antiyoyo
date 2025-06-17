@@ -95,9 +95,9 @@ public class HexCalculator {
                             available.add(hex);
                     }
 
-                    if (root.getSecond().getColor() != hex.getColor() &&
+                    if (root.getSecond().getColor() != hex.getColor() && root.getSecond().getColor() == selfColor &&
                             hex.getColor() != selfColor &&
-                            rootPath + 1 <= entity.getAttackRadius()) {
+                            rootPath + 1 <= entity.getMoveRadius()) {
                             available.add(hex);
                     }
                 });
@@ -178,7 +178,7 @@ public class HexCalculator {
     }
 
     private static boolean canMoveToEnemyHex(Hex to, HexColor selfColor, Interactable entity) {
-        return !isSameColor(to, selfColor) && to.getDefenseLevel() <= entity.getLevel();
+        return !isSameColor(to, selfColor) && (to.getDefenseLevel() < entity.getLevel() || entity.getLevel() == 4);
     }
 
 }

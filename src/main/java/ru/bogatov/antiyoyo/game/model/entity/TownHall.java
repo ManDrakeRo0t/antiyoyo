@@ -27,7 +27,7 @@ public class TownHall extends Entity implements Interactable {
 
     @Override
     public Integer getLevel() {
-        return 2;
+        return 1;
     }
 
     @Override

@@ -494,11 +494,16 @@
         missingHexColor: '#4b8bde',
         gridColor: '#000000',
         selectedHexColor: '#ffff00',  // Color for selected hex highlight
-        selectedHexBorderWidth: 3     // Border width for selected hex
+        selectedHexBorderWidth: 3,     // Border width for selected hex
+        // Grass pattern colors - different shades of green
+        grassColors: [
+            '#3CB371'
+        ]
     };
 
     // Map state
     const state = {
+        currentColor: null,
         currentPlayer: 0,
         selectedUnit: null,
         editMode: false,
@@ -518,7 +523,7 @@
     // Color mapping function
     function getColorFromName(colorName) {
         const colorMap = {
-            'EMPTY': '#cccccc',  // серый
+            'EMPTY': '#3CB371',  // серый
             'RED': '#ff0000',    // красный
             'BLUE': '#0000ff',   // синий
             'GREEN': '#00ff00',  // зеленый
@@ -529,6 +534,77 @@
             'WHITE': '#ffffff'   // белый
         };
         return colorMap[colorName] || config.existingHexColor;
+    }
+
+    // Function to get random grass color for pattern
+    function getRandomGrassColor() {
+        const randomIndex = Math.floor(Math.random() * config.grassColors.length);
+        return config.grassColors[randomIndex];
+    }
+
+    // Function to get deterministic grass color based on hex coordinates
+    function getGrassColorForHex(hex) {
+        // Use hex coordinates to generate a consistent color
+        const hash = Math.abs(hex.vector.x * 73856093 + hex.vector.y * 19349663 + hex.vector.z * 83492791);
+        const index = hash % config.grassColors.length;
+        return config.grassColors[index];
+    }
+
+
+
+    // Function to draw territory borders only on specific sides
+    function drawTerritoryBorders(x, y, size, hex, hexData) {
+        if (!hex.color || hex.color === 'EMPTY') return;
+
+        // Порядок соседей для вашей системы!
+        const neighbors = [
+            { x: hex.vector.x,     y: hex.vector.y + 1, z: hex.vector.z - 1 }, // 0: top
+            { x: hex.vector.x + 1, y: hex.vector.y,     z: hex.vector.z - 1 }, // 1: top-right
+            { x: hex.vector.x + 1, y: hex.vector.y - 1, z: hex.vector.z },     // 2: bottom-right
+            { x: hex.vector.x,     y: hex.vector.y - 1, z: hex.vector.z + 1 }, // 3: bottom
+            { x: hex.vector.x - 1, y: hex.vector.y,     z: hex.vector.z + 1 }, // 4: bottom-left
+            { x: hex.vector.x - 1, y: hex.vector.y + 1, z: hex.vector.z }      // 5: top-left
+        ];
+
+        const borderColor = getColorFromName(hex.color);
+        const borderWidth = 3;
+        ctx.lineWidth = borderWidth;
+        ctx.strokeStyle = borderColor;
+        ctx.lineCap = 'round';
+        //console.log("Клетка : " + hex.vector.x + " " + hex.vector.y + " " + hex.vector.z)
+        //console.log(hex)
+
+        for (let i = 0; i < 6; i++) {
+            const neighbor = neighbors[i];
+            const neighborKey = `Vector3(x=${neighbor.x}, y=${neighbor.y}, z=${neighbor.z})`;
+            const neighborHex = hexData.map[neighborKey];
+            //console.log("Сосед : " + i)
+            //console.log(neighbor)
+
+            if (!neighborHex || neighborHex.color !== hex.color) {
+                // ВАЖНО: используем pointy-topped углы!
+                
+                const angle1 = (2 * Math.PI / 6 * i) - (2 * Math.PI / 3);
+                const angle2 = (2 * Math.PI / 6 * ((i + 1) % 6) ) - (2 * Math.PI / 3);
+                //console.log("Рисую границу : " + i + " Углы " + angle1 + " , " + angle2)
+                const x1 = x + (size * 0.95) * Math.cos(angle1);
+                const y1 = y + (size * 0.95) * Math.sin(angle1);
+                const x2 = x + (size * 0.95) * Math.cos(angle2);
+                const y2 = y + (size * 0.95) * Math.sin(angle2);
+
+                ctx.beginPath();
+                // if (i == 0) {
+                //     ctx.strokeStyle = "#ffffff";
+                // } else if (i == 1) {
+                //     ctx.strokeStyle = "#000000";
+                // } else {
+                //     ctx.strokeStyle = borderColor;
+                // }
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
     }
 
     // Add image preloading
@@ -767,15 +843,18 @@
         
         // Find the player number for the current user
         let currentPlayerNumber = null;
+        let currentColor = null;
         Object.entries(players).forEach(([playerNumber, player]) => {
             if (player.userId === currentUser.id) {
                 currentPlayerNumber = parseInt(playerNumber);
+                currentColor = player.color
             }
         });
         
         // Update currentPlayer if found
         if (currentPlayerNumber !== null) {
             state.currentPlayer = currentPlayerNumber;
+            state.currentColor = currentColor;
         }
         
         // Check if current user is already in the game
@@ -1001,6 +1080,7 @@
                 // Color selection will be hidden when next update comes
                 document.getElementById('joinButton').disabled = true;
                 document.getElementById('joinButton').textContent = 'Присоединяемся...';
+                state.currentColor = selectColor;
             } else {
                 const errorData = await response.json();
                 alert(errorData.error || 'Ошибка присоединения к игре');
@@ -1047,98 +1127,6 @@
         };
     }
 
-    function drawHexagon(x, y, size, hex) {
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = 2 * Math.PI / 6 * i;
-            const xi = x + size * Math.cos(angle);
-            const yi = y + size * Math.sin(angle);
-            if (i === 0) {
-                ctx.moveTo(xi, yi);
-            } else {
-                ctx.lineTo(xi, yi);
-            }
-        }
-        ctx.closePath();
-        
-        // Fill with color using the color mapping function
-        let color = getColorFromName(hex.color);
-        if (hex.isAvailable === false) {
-            ctx.globalAlpha = 0.3;
-        }
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        
-        // Check if this hex is selected
-        const isSelected = state.selectedHex && 
-            state.selectedHex.x === hex.vector.x && 
-            state.selectedHex.y === hex.vector.y && 
-            state.selectedHex.z === hex.vector.z;
-        
-        // Draw border
-        if (isSelected) {
-            ctx.lineWidth = config.selectedHexBorderWidth;
-            ctx.strokeStyle = config.selectedHexColor;
-        } else {
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = hex.isAvailable === false ? '#666666' : config.gridColor;
-        }
-        ctx.stroke();
-
-        // Draw entity icon if present
-        if (hex.entity && hex.entity.type) {
-            const img = getEntityImage(hex.entity.type);
-            if (img && img.complete) {
-                if (hex.isAvailable === false) {
-                    ctx.globalAlpha = 0.3;
-                }
-                const iconSize = size * 0.6;
-                // Для могилы делаем иконку немного меньше
-                const finalIconSize = hex.entity.type === 'GRAVE' ? iconSize * 0.8 : iconSize;
-                
-                // Apply bouncing effect if entity hasn't moved this turn
-                let yOffset = 0;
-                if (hex.entity.movedOnThisTurn === false) {
-                    // Create bouncing effect using sine wave
-                    const time = Date.now() * 0.007; // Speed of bounce
-                    yOffset = Math.sin(time) * 3; // Amplitude of bounce
-                }
-                
-                ctx.drawImage(img, 
-                    x - finalIconSize/2, 
-                    y - finalIconSize/2 + yOffset, 
-                    finalIconSize, 
-                    finalIconSize
-                );
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
-        // Draw shield icon if displayDefence is true
-        if (hex.displayDefence) {
-            const shieldImg = getEntityImage('SHIELD');
-            if (shieldImg && shieldImg.complete) {
-                const shieldSize = size * 1; // Shield is slightly smaller than entity
-                ctx.drawImage(shieldImg,
-                    x - shieldSize/2,
-                    y - shieldSize/2,
-                    shieldSize,
-                    shieldSize
-                );
-            }
-        }
-
-        // Draw coordinates if enabled
-        if (config.showCoordinates) {
-            ctx.fillStyle = '#000';
-            ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
-            ctx.fillText(`${hex.vector.x},${hex.vector.y},${hex.vector.z}`,
-                        x - 20 * state.scale,
-                        y + 5 * state.scale);
-        }
-    }
-
     function renderGrid() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = config.backgroundColor;
@@ -1157,12 +1145,23 @@
             }
         });
 
+        // First pass: draw all hexagons (without borders)
         Object.values(hexData.map).forEach(hex => {
             if (!hex || !hex.vector) return; // Skip invalid hex data
             
             const pixelPos = cubeToPixel(hex.vector);
             if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
-                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+                drawHexagonWithoutBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
+            }
+        });
+
+        // Second pass: draw all borders on top
+        Object.values(hexData.map).forEach(hex => {
+            if (!hex || !hex.vector) return; // Skip invalid hex data
+            
+            const pixelPos = cubeToPixel(hex.vector);
+            if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
+                drawHexagonBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
             }
         });
 
@@ -1338,12 +1337,13 @@
             if (distance <= hexRadius) {
                 if (hex.isAvailable !== false) {
                     onHexClick(cubicCoords);
-                    logCurrentState();
+                    //logCurrentState();
                 }
             }
         } else {
             sendClickBeforeMove(null, null);
-            logCurrentState();
+            state.selectedHex = null
+            //logCurrentState();
         }
     }
 
@@ -1392,7 +1392,7 @@
                 }
                 // Clear selection after move attempt
                 state.selectedHex = null;
-            } else {
+            } else if (clickedHex.color == state.currentColor && state.selectedHex == null) {
                 // Select the new hex
                 state.selectedHex = cubicCoords;
             }
@@ -1521,6 +1521,148 @@
         if (e.key === 'Escape') {
             state.selectedHex = null;
             sendClickBeforeMove(null, null);
+        }
+    }
+
+    // Function to draw hexagon without borders
+    function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = 2 * Math.PI / 6 * i;
+            const xi = x + size * Math.cos(angle);
+            const yi = y + size * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(xi, yi);
+            } else {
+                ctx.lineTo(xi, yi);
+            }
+        }
+        ctx.closePath();
+        
+        // Fill with grass pattern color
+        grassColor = null
+        if (state.selectedHex && isInteractionAllowed()) {
+            grassColor = getColorFromName(hex.color)
+        } else {
+            grassColor = getGrassColorForHex(hex);
+        }
+
+        if (hex.isAvailable === false) {
+            ctx.globalAlpha = 0.3;
+        }
+        ctx.fillStyle = grassColor;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+
+        // Draw entity icon if present
+        if (hex.entity && hex.entity.type) {
+            const img = getEntityImage(hex.entity.type);
+            if (img && img.complete) {
+                if (hex.isAvailable === false) {
+                    ctx.globalAlpha = 0.3;
+                }
+                const iconSize = size * 1;
+                // Для могилы делаем иконку немного меньше
+                const finalIconSize = hex.entity.type === 'GRAVE' ? iconSize * 0.8 : iconSize;
+                
+                // Apply bouncing effect if entity hasn't moved this turn
+                let yOffset = 0;
+                if (hex.entity.movedOnThisTurn === false) {
+                    // Create bouncing effect using sine wave
+                    const time = Date.now() * 0.007; // Speed of bounce
+                    yOffset = Math.sin(time) * 3; // Amplitude of bounce
+                }
+                
+                ctx.drawImage(img, 
+                    x - finalIconSize/2, 
+                    y - finalIconSize/2 + yOffset, 
+                    finalIconSize, 
+                    finalIconSize
+                );
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Draw shield icon if displayDefence is true
+        if (hex.displayDefence) {
+            const shieldImg = getEntityImage('SHIELD');
+            if (shieldImg && shieldImg.complete) {
+                const shieldSize = size * 1; // Shield is slightly smaller than entity
+                ctx.drawImage(shieldImg,
+                    x - shieldSize/2,
+                    y - shieldSize/2,
+                    shieldSize,
+                    shieldSize
+                );
+                ctx.fillStyle = '#ffff00';
+                ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
+                ctx.fillText(`${hex.defenseLevel}`,
+                    x - shieldSize/10,
+                    y + shieldSize/10);
+                ctx.fillStyle = '#00FFFF';
+            }
+        }
+
+        // Draw coordinates if enabled
+        if (config.showCoordinates) {
+            ctx.fillStyle = '#00FFFF';
+            ctx.font = `${Math.max(8, 10 * state.scale)}px Arial`;
+            ctx.fillText(`${hex.vector.x},${hex.vector.y},${hex.vector.z}`,
+                        x - 20 * state.scale,
+                        y + 5 * state.scale);
+            ctx.fillText(`${hex.defenseLevel}`,
+                        x - 15 * state.scale,
+                        y + 15 * state.scale);
+        }
+    }
+
+    // Function to draw hexagon borders only
+    function drawHexagonBorders(x, y, size, hex, hexData) {
+        // Check if this hex is selected
+        const isSelected = state.selectedHex && 
+            state.selectedHex.x === hex.vector.x && 
+            state.selectedHex.y === hex.vector.y && 
+            state.selectedHex.z === hex.vector.z;
+        
+        if (isSelected) {
+            // Selected hex border - draw full border
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const xi = x + size * Math.cos(angle);
+                const yi = y + size * Math.sin(angle);
+                if (i === 0) {
+                    ctx.moveTo(xi, yi);
+                } else {
+                    ctx.lineTo(xi, yi);
+                }
+            }
+            ctx.closePath();
+            
+            ctx.lineWidth = config.selectedHexBorderWidth;
+            ctx.strokeStyle = config.selectedHexColor;
+            ctx.stroke();
+        } else if (hex.color && hex.color !== 'EMPTY') {
+            // Territory border - draw only specific sides
+            drawTerritoryBorders(x, y, size, hex, hexData);
+        } else if (hex.isAvailable === false) {
+            // Unavailable hex border
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = 2 * Math.PI / 6 * i;
+                const xi = x + size * Math.cos(angle);
+                const yi = y + size * Math.sin(angle);
+                if (i === 0) {
+                    ctx.moveTo(xi, yi);
+                } else {
+                    ctx.lineTo(xi, yi);
+                }
+            }
+            ctx.closePath();
+            
+            ctx.lineWidth = 3; // Thicker border for unavailable areas
+            ctx.strokeStyle = '#666666';
+            ctx.stroke();
         }
     }
 

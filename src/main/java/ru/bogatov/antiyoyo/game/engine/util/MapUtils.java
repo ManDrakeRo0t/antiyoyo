@@ -35,7 +35,7 @@ public class MapUtils {
     public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
         map.values().forEach(hex -> {
             if (selfColor == hex.getColor() && hex.getEntity() instanceof Interactable interactable) {
-                if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class) {
+                if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class || interactable.getClass() == TownHall.class) {
                     getNeighborsInRadius(map, 1, hex, false)
                             .stream()
                             .filter(neighbor -> neighbor.getColor() == selfColor)
@@ -91,6 +91,23 @@ public class MapUtils {
         updateTownHallEconomy(region);
     }
 
+    public static Set<Pair<TownHall, Set<Hex>>> findRegions(Map<Vector3, Hex> map, HexColor selfColor) {
+
+        Set<Hex> visited = new HashSet<>();
+        Set<Pair<TownHall, Set<Hex>>> regions = new HashSet<>();
+        map.values().stream()
+                .filter(hex -> hex.getColor() == selfColor)
+                .forEach(hex -> {
+                    if (!visited.contains(hex)) {
+                        Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(map, selfColor, hex);
+                        visited.addAll(region.getSecond());
+                        regions.add(region);
+                    }
+                });
+
+        return regions;
+    }
+
     public static Pair<TownHall, Set<Hex>> findTownHallWithRegion(Map<Vector3, Hex> map, HexColor selfColor, Hex start) {
         Set<Hex> visited = new HashSet<>();
         Queue<Hex> queue = new ArrayDeque<>();
@@ -114,7 +131,7 @@ public class MapUtils {
             queue.addAll(toCheck);
         }
 
-        return Pair.of(townHall, visited);
+        return Pair.of(townHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
     }
 
     private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
@@ -124,10 +141,18 @@ public class MapUtils {
                 .collect(Collectors.toSet());
     }
 
-    public static Integer calculateDefenseLevel(Map<Vector3, Hex> map, Hex root) {
-        return getNearestNeighborsWithSameColor(map, root.getColor(), root)
+    private static Set<Hex> getNearestNeighborsWithSameColorWithCenter(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
+        return getNeighborsInRadius(map, 1, root, true)
                 .stream()
-                .map(Hex::getDefenseLevel)
+                .filter(hex -> hex.getColor() == selfColor)
+                .collect(Collectors.toSet());
+    }
+
+    public static Integer calculateDefenseLevel(Map<Vector3, Hex> map, Hex root) {
+        return getNearestNeighborsWithSameColorWithCenter(map, root.getColor(), root)
+                .stream()
+                .filter(hex -> hex.getEntity() instanceof Interactable)
+                .map(hex ->  ((Interactable) hex.getEntity()).getLevel())
                 .max(Integer::compare).orElse(0);
     }
 
@@ -201,13 +226,33 @@ public class MapUtils {
     }
 
     public static void updateDefenseLevel(Map<Vector3, Hex> map, Hex hex, Integer defenceLevel, HexColor selfColor) {
-        hex.setDefenseLevel(defenceLevel);
+        Integer calculated = MapUtils.calculateDefenseLevel(map, hex);
+        hex.setDefenseLevel(defenceLevel > calculated ? defenceLevel : calculated);
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
         toUpdate.forEach(hexToUpdate -> {
             if (hexToUpdate.getColor() == selfColor) {
                 hexToUpdate.setDefenseLevel(
                         MapUtils.calculateDefenseLevel(map, hexToUpdate));
             }}
+        );
+    }
+
+    public static void updateDefenseLevelForColor(Map<Vector3, Hex> map, Hex hex, HexColor color) {
+        Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
+        toUpdate.forEach(hexToUpdate -> {
+            if (hexToUpdate.getColor() == color) {
+                if (hexToUpdate.getEntity() instanceof Interactable interactable) {
+                    hexToUpdate.setDefenseLevel(interactable.getLevel());
+                } else {
+                    hexToUpdate.setDefenseLevel(0);
+                }
+            }}
+        );
+        toUpdate.forEach(hexToUpdate -> {
+            if (hexToUpdate.getColor() == color) {
+                hexToUpdate.setDefenseLevel(MapUtils.calculateDefenseLevel(map, hexToUpdate));
+            }
+            }
         );
     }
 
