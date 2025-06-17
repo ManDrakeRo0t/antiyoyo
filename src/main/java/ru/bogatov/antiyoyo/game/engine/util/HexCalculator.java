@@ -172,7 +172,7 @@ public class HexCalculator {
 
     private static boolean canPlaceEntity(Interactable entity, Hex to) {
         if (MapUtils.moveableUnits.contains(entity.getClass())) {
-            return to.getEntity() instanceof Tree || to.getEntity() instanceof Field;
+            return to.getEntity() instanceof Tree || to.getEntity() instanceof Field || to.getEntity() instanceof Grave;
         }
         return to.getEntity() instanceof Field;
     }
