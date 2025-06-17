@@ -432,7 +432,7 @@
             <div class="menu-buttons">
                 <button class="menu-button" id="playButton">PLAY</button>
                 <button class="menu-button" id="lobbiesButton">LOBBIES</button>
-                <button class="menu-button" id="rankingButton">RANKING</button>
+                <button class="menu-button" id="rankingButton">REDACTOR</button>
                 <button class="menu-button" id="accountButton">ACCOUNT</button>
                 <button class="menu-button" id="leaveButton">LEAVE</button>
             </div>
@@ -678,7 +678,9 @@
             // Link new menu buttons to existing functions
             document.getElementById('playButton').addEventListener('click', openGame);
             document.getElementById('lobbiesButton').addEventListener('click', createRoom); // Assuming lobbies maps to createRoom
-            document.getElementById('rankingButton').addEventListener('click', function() { alert('Ranking clicked!'); }); // Placeholder
+            document.getElementById('rankingButton').addEventListener('click', function() { 
+                openEditor()
+             }); // Placeholder
             document.getElementById('accountButton').addEventListener('click', function() { alert('Account clicked!'); }); // Placeholder
             document.getElementById('leaveButton').addEventListener('click', logout);
 

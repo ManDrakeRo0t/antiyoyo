@@ -6,12 +6,19 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
     <style>
+        @font-face {
+            font-family: 'Castlefire';
+            src: url('fonts/Castlefire.ttf') format('truetype'),
+                 url('fonts/Castlefire.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            font-family: 'Castlefire', sans-serif; /* Apply Castlefire font */
         }
         #container {
             position: relative;
@@ -71,36 +78,31 @@
             border-radius: 3px;
             font-size: 14px;
         }
-        #topRightPanel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: none;
-            gap: 10px;
-            flex-direction: column;
+        #topRightPanel { /* This panel will be removed from here, styles moved to controlPanel */
+            display: none; /* Hide the old panel */
         }
-        .action-button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .action-button { /* These styles will be refined for new icon buttons */
+            width: 40px; /* Reduced to match image */
+            height: 40px; /* Reduced to match image */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 5px; /* Adjusted to be slightly rounded rectangular */
+            background-color: #F7E5A7; /* Match controlPanel background */
+            transition: all 0.3s ease;
             cursor: pointer;
-            font-size: 14px;
-            min-width: 100px;
-            text-align: center;
+            border: none;
+            padding: 0;
         }
         .action-button:hover {
-            background-color: #45a049;
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .action-button:disabled {
-            background-color: #ccc;
+            opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         .connected {
             background-color: #4CAF50;
@@ -112,7 +114,7 @@
         }
         #controlPanel {
             position: fixed;
-            bottom: 20px;
+            bottom: 80px; /* Adjusted to make space for actionButtonsPanel */
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
@@ -120,9 +122,36 @@
             background-color: #F7E5A7;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: none;
+            display: flex; /* Always flex */
+            gap: 15px; /* Gap between unit buttons and action buttons */
+            align-items: center;
+            justify-content: center; /* Center unit buttons */
+            width: auto; /* Adjust width dynamically */
+            min-width: 300px;
+            max-width: 90vw;
+            box-sizing: border-box;
+        }
+        .unit-buttons-container { /* New container for unit buttons */
+            display: flex;
             gap: 15px;
             align-items: center;
+        }
+        #actionButtonsPanel { /* New styles for the action buttons panel */
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 5px 10px; /* Adjusted padding */
+            background-color: #F7E5A7;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-around; /* Space out the two buttons */
+            width: clamp(125px, 25vw, 200px); /* Adjusted width */
+            box-sizing: border-box;
         }
         .unit-button-container {
             display: flex;
@@ -174,20 +203,37 @@
         #UNIT_3_Btn { background-image: url('images/unit3.png'); }
         #TANK_Btn { background-image: url('images/tank.png'); }
         #TOWN_HALL_Btn { background-image: url('images/town-hall.png'); }
-        #undoBtn { background-image: url('images/undo.png'); }
+        #undoBtn { background-image: url('ui-elements/undo-move.svg'); }
+        #endTurnBtn { background-image: url('ui-elements/end-turn.svg'); }
+
         #balanceDisplay {
             position: fixed;
             top: 20px;
             left: 20px;
             z-index: 1000;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
+            padding: 10px 15px; /* Adjusted padding */
+            background-color: #F7E5A7; /* Match controlPanel background */
+            border-radius: 10px; /* Match controlPanel border-radius */
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: none;
+            display: flex;
+            gap: 15px; /* Reduced gap */
+            align-items: center;
+            
+            box-sizing: border-box;
         }
         #balanceDisplay.visible {
-            display: block;
+            display: flex; /* Changed from block to flex */
+        }
+        .balance-icon {
+            width: 30px; /* Size of the dollar icon */
+            height: 30px;
+            background-image: url('ui-elements/income.png'); /* Changed to income.png */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .balance-amount {
+            /* Text for balance amount, inherits styles from #balanceDisplay */
         }
         .balance-change {
             font-size: 0.8em;
@@ -355,14 +401,26 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
+            background-color: #F7E5A7; /* Match controlPanel background */
+            padding: 5px 10px; /* Adjusted padding */
+            border-radius: 10px; /* Match controlPanel border-radius */
+            font-size: 18px; /* Larger font for turn indicator */
             font-weight: bold;
-            color: #333;
+            color: black;
             z-index: 1001;
-            display: none;
+            display: flex; /* Use flex for icon and text */
+            align-items: center;
+            gap: 5px; /* Gap between icon and text */
+        }
+        .current-turn-icon {
+            width: 60px; /* Increased size of the flag icon */
+            height: 60px; /* Increased size of the flag icon */
+            background-image: none; /* Remove background-image */
+            mask: url('ui-elements/flag.svg') no-repeat center / contain; /* Use SVG as mask */
+            background-color: transparent; /* This will be overridden by JS for color */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
     </style>
 </head>
@@ -371,44 +429,52 @@
         <input type="text" id="sessionId" placeholder="Enter session UUID">
         <button onclick="connectToSession()">Connect</button>
     </div>
-    <div id="balanceDisplay"></div>
-    <div id="connectionStatus" class="disconnected">Disconnected</div>
-    <div id="topRightPanel">
-        <button class="action-button" onclick="sendUndoMove()">Back</button>
-        <button class="action-button" onclick="endTurn()">End Turn</button>
+    <div id="balanceDisplay">
+        <div class="balance-icon"></div>
+        <span class="balance-amount"></span>
     </div>
+    <div id="connectionStatus" class="disconnected">Disconnected</div>
+    <!-- Removed topRightPanel div -->
     <div id="container">
         <canvas id="hexCanvas"></canvas>
     </div>
     <div id="controlPanel">
-        <div class="unit-button-container">
-            <button id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Big Tower"></button>
-            <div class="unit-price" data-unit="BIG_TOWER"></div>
+        <div class="unit-buttons-container">
+            <div class="unit-button-container">
+                <button id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Big Tower"></button>
+                <div class="unit-price" data-unit="BIG_TOWER"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Tower"></button>
+                <div class="unit-price" data-unit="TOWER"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Factory"></button>
+                <div class="unit-price" data-unit="FACTORY"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
+                <div class="unit-price" data-unit="UNIT_1"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Unit Level 2"></button>
+                <div class="unit-price" data-unit="UNIT_2"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Unit Level 3"></button>
+                <div class="unit-price" data-unit="UNIT_3"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
+                <div class="unit-price" data-unit="TANK"></div>
+            </div>
         </div>
-        <div class="unit-button-container">
-            <button id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Tower"></button>
-            <div class="unit-price" data-unit="TOWER"></div>
-        </div>
-        <div class="unit-button-container">
-            <button id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Factory"></button>
-            <div class="unit-price" data-unit="FACTORY"></div>
-        </div>
-        <div class="unit-button-container">
-            <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
-            <div class="unit-price" data-unit="UNIT_1"></div>
-        </div>
-        <div class="unit-button-container">
-            <button id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Unit Level 2"></button>
-            <div class="unit-price" data-unit="UNIT_2"></div>
-        </div>
-        <div class="unit-button-container">
-            <button id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Unit Level 3"></button>
-            <div class="unit-price" data-unit="UNIT_3"></div>
-        </div>
-        <div class="unit-button-container">
-            <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
-            <div class="unit-price" data-unit="TANK"></div>
-        </div>
+    </div>
+
+    <!-- New action buttons panel -->
+    <div id="actionButtonsPanel">
+        <button class="action-button" id="undoBtn" onclick="sendUndoMove()" title="Undo Move"></button>
+        <button class="action-button" id="endTurnBtn" onclick="endTurn()" title="End Turn"></button>
     </div>
 
     <!-- Waiting for players overlay -->
@@ -439,7 +505,7 @@
 
     <!-- Current turn indicator -->
     <div id="currentTurnIndicator" class="current-turn-indicator">
-        Ходит: <span id="currentTurnColor"></span>
+        <div class="current-turn-icon"></div>
     </div>
 
 <script>
@@ -660,17 +726,14 @@
                 reconnectDelay: 200,
                 onConnect: function (frame) {
                     const statusDiv = document.getElementById('connectionStatus');
-                    const topRightPanel = document.getElementById('topRightPanel');
                     statusDiv.textContent = 'Connected';
                 
                     statusDiv.className = 'connected';
                     statusDiv.display = 'none'
-                    topRightPanel.style.display = 'flex';
                     sessionInput.classList.add('hidden');
 
                     const subscription = stompClient.subscribe(destPath, function (message) {
                         const payload = JSON.parse(message.body);
-                        // console.log(payload)
                         updateHexData(payload);
                         renderGrid();
                     });
@@ -681,10 +744,8 @@
                 },
                 onDisconnect: function() {
                     const statusDiv = document.getElementById('connectionStatus');
-                    const topRightPanel = document.getElementById('topRightPanel');
                     statusDiv.textContent = 'Disconnected';
                     statusDiv.className = 'disconnected';
-                    topRightPanel.style.display = 'none';
                     sessionInput.classList.remove('hidden');
                 }
             };
@@ -773,8 +834,9 @@
     // Обновляем отображение баланса
     function updateBalanceDisplay() {
         const balanceDisplay = document.getElementById('balanceDisplay');
+        const balanceAmountSpan = balanceDisplay.querySelector('.balance-amount');
         if (!state.selectedTownHall) {
-            balanceDisplay.classList.remove('visible');
+            balanceDisplay.style.display = 'none'
             return;
         }
 
@@ -788,8 +850,8 @@
             changeText = `<span class="balance-change ${changeClass}">(${changeSign}${balanceChange})</span>`;
         }
 
-        balanceDisplay.innerHTML = `Баланс: ${balance}${changeText}`;
-        balanceDisplay.classList.add('visible');
+        balanceAmountSpan.innerHTML = `${balance}${changeText}`; /* Changed to update span */
+        balanceDisplay.style.display = 'flex'
         
         // Обновляем цены юнитов при изменении баланса
         updateUnitPrices();
@@ -944,7 +1006,7 @@
     // Update current turn indicator
     function updateCurrentTurnIndicator() {
         const currentTurnIndicator = document.getElementById('currentTurnIndicator');
-        const currentTurnColorSpan = document.getElementById('currentTurnColor');
+        const currentTurnIconDiv = currentTurnIndicator.querySelector('.current-turn-icon'); /* Get the icon div */
         
         if (!hexData.players || hexData.currentPlayerMove === null || hexData.currentPlayerMove === undefined) {
             currentTurnIndicator.style.display = 'none';
@@ -957,18 +1019,19 @@
             return;
         }
         
-        const colorNames = {
-            'YELLOW': 'Желтый',
-            'ORANGE': 'Оранжевый',
-            'RED': 'Красный',
-            'BLUE': 'Синий',
-            'GREEN': 'Зеленый',
-            'PURPLE': 'Фиолетовый'
+        const colorHexMap = {
+            'YELLOW': '#ffff00',
+            'ORANGE': '#ffa500',
+            'RED': '#ff0000',
+            'BLUE': '#0000ff',
+            'GREEN': '#00ff00',
+            'PURPLE': '#800080'
         };
-        
-        const colorName = colorNames[currentPlayer.color] || currentPlayer.color;
-        currentTurnColorSpan.textContent = colorName;
-        currentTurnIndicator.style.display = 'block';
+
+        const colorHex = colorHexMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
+
+        currentTurnIconDiv.style.backgroundColor = colorHex; /* Set background color for the flag icon via mask */
+        currentTurnIndicator.style.display = 'flex'; /* Changed to flex */
     }
 
     // Show appropriate waiting UI
@@ -976,11 +1039,11 @@
         const waitingOverlay = document.getElementById('waitingOverlay');
         const colorSelectionPanel = document.getElementById('colorSelectionPanel');
         const controlPanel = document.getElementById('controlPanel');
-        const topRightPanel = document.getElementById('topRightPanel');
+        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
 
         // Hide game controls
         controlPanel.style.display = 'none';
-        topRightPanel.style.display = 'none';
+        actionButtonsPanel.style.display = 'none'; /* Hide action buttons panel */
 
         if (currentUserInGame) {
             // User is in game but waiting for others
@@ -998,10 +1061,11 @@
     function hideWaitingUI() {
         const waitingOverlay = document.getElementById('waitingOverlay');
         const colorSelectionPanel = document.getElementById('colorSelectionPanel');
+        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
         
         waitingOverlay.style.display = 'none';
         colorSelectionPanel.style.display = 'none';
-        // topRightPanel visibility is now controlled by updateUnitButtons based on turn
+        actionButtonsPanel.style.display = 'flex'; /* Show action buttons panel */
     }
 
     // Update available colors based on players structure
@@ -1033,7 +1097,7 @@
                 colorButton.className = 'color-select-button';
                 colorButton.style.backgroundColor = colorMap[color].bg;
                 colorButton.setAttribute('data-color', colorMap[color].name);
-                colorButton.onclick = () => selectColor(color);
+                colorButton.onclick = (event) => selectColor(color, event.target); /* Pass event.target */
                 colorButtonsContainer.appendChild(colorButton);
             }
         });
@@ -1045,14 +1109,14 @@
     }
 
     // Select color for joining
-    function selectColor(color) {
+    function selectColor(color, targetButton) { /* Added targetButton parameter */
         selectedColor = color;
         
         // Update UI
         document.querySelectorAll('.color-select-button').forEach(btn => {
             btn.classList.remove('selected');
         });
-        event.target.classList.add('selected');
+        targetButton.classList.add('selected'); /* Use targetButton */
         
         // Enable join button
         document.getElementById('joinButton').disabled = false;
@@ -1082,7 +1146,7 @@
                 // Color selection will be hidden when next update comes
                 document.getElementById('joinButton').disabled = true;
                 document.getElementById('joinButton').textContent = 'Присоединяемся...';
-                state.currentColor = selectColor;
+                state.currentColor = selectedColor; /* Changed selectColor to selectedColor */
             } else {
                 const errorData = await response.json();
                 alert(errorData.error || 'Ошибка присоединения к игре');
@@ -1282,13 +1346,6 @@
             rz = -rx - ry;
         }
         
-        // console.log('Pixel to Cube conversion:', {
-        //     input: { x, y },
-        //     adjusted: { x: adjustedX, y: adjustedY },
-        //     size,
-        //     cube: { x: rx, y: ry, z: rz }
-        // });
-        
         return { x: rx, y: ry, z: rz };
     }
 
@@ -1339,13 +1396,11 @@
             if (distance <= hexRadius) {
                 if (hex.isAvailable !== false) {
                     onHexClick(cubicCoords);
-                    //logCurrentState();
                 }
             }
         } else {
             sendClickBeforeMove(null, null);
             state.selectedHex = null
-            //logCurrentState();
         }
     }
 
@@ -1458,24 +1513,23 @@
     // Update unit buttons state based on selection
     function updateUnitButtons() {
         const buttons = document.querySelectorAll('.unit-button');
-        const topRightPanel = document.getElementById('topRightPanel');
+       
+        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
         
-        // Show/hide topRightPanel based on whether it's the player's turn
-        if (isInteractionAllowed()) {
-            topRightPanel.style.display = 'flex';
-        } else {
-            topRightPanel.style.display = 'none';
-        }
+ 
         
+        // Action buttons (undo and end turn) are always enabled and visible if their panel is shown
+        // No need to explicitly disable/enable them here, their visibility is controlled by actionButtonsPanel
+
         buttons.forEach(button => {
             const entityType = button.getAttribute('onclick').match(/'([^']+)'/)[1];
             button.classList.toggle('selected', state.selectedUnit === entityType);
             
-            // Disable buttons if it's not the player's turn
+            // Disable unit buttons if it's not the player's turn (or if unaffordable)
             if (!isInteractionAllowed()) {
                 button.disabled = true;
             } else {
-                // Re-enable buttons if it is the player's turn (but keep affordability check)
+                // Re-enable unit buttons if it is the player's turn (but keep affordability check)
                 const priceElement = document.querySelector(`.unit-price[data-unit="${entityType}"]`);
                 if (priceElement) {
                     const price = parseInt(priceElement.textContent);
