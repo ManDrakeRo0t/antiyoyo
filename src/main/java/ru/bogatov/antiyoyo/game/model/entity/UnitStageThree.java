@@ -2,6 +2,7 @@ package ru.bogatov.antiyoyo.game.model.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -13,13 +14,13 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
     }
 
     @Override
-    public Integer getBalanceChange() {
+    public Integer getGoldChanges() {
         return -18;
     }
 
     @Override
-    public Integer getPrice(Integer unitsCount) {
-        return 30;
+    public Currency getPrice(Integer unitsCount) {
+        return Currency.of(30,0,0);
     }
 
     @Override

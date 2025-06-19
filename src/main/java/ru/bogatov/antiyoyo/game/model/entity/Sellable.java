@@ -1,7 +1,9 @@
 package ru.bogatov.antiyoyo.game.model.entity;
 
+import ru.bogatov.antiyoyo.game.model.common.Currency;
+
 public interface Sellable {
 
-    Integer getPrice(Integer unitsCount);
+    Currency getPrice(Integer unitsCount);
 
 }

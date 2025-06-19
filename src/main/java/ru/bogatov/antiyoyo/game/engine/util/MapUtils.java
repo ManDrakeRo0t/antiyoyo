@@ -186,7 +186,7 @@ public class MapUtils {
             if (!(hex.getEntity() instanceof Tree)) {
                 depositChanges += 1;
             }
-            depositChanges += hex.getEntity().getBalanceChange();
+            depositChanges += hex.getEntity().getGoldChanges();
         }
         if (region.getFirst() != null) {
             region.getFirst().setBalanceChanges(depositChanges);

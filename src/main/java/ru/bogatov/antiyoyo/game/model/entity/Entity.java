@@ -9,7 +9,7 @@ public abstract class Entity {
 
     public abstract EntityType getType();
 
-    public Integer getBalanceChange() {
+    public Integer getGoldChanges() {
         return 0;
     }
 

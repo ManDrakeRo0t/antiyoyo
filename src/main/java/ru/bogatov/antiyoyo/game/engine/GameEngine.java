@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import ru.bogatov.antiyoyo.game.engine.util.*;
 import ru.bogatov.antiyoyo.game.model.*;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
 
@@ -147,12 +148,12 @@ public class GameEngine {
         } else {
             if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
                     EntityUtils.fromType(move.getEntityType()) instanceof Sellable) {
-                townHallEntity.setBalance(townHallEntity.getBalance() - townHallEntity.getPrices().get(move.getEntityType()));
+                townHallEntity.getStorage().remove(townHallEntity.getPrices().get(move.getEntityType()));
             }
         }
         if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
                 to.getEntity() != null && to.getEntity() instanceof Mineable mineable) {
-           townHallEntity.setBalance(townHallEntity.getBalance() + mineable.getReward());
+           townHallEntity.getStorage().add(mineable.getReward());
         }
         setEntity(session,
                 to,
@@ -220,10 +221,10 @@ public class GameEngine {
     }
 
     private void validateTownHallsAndRegions(GameSession session, Entity oldEntity, HexColor oldColor) {
-        Integer oldBalance = 0;
+        Currency oldBalance = Currency.EMPTY;
         Set<TownHall> createdTownHall = new HashSet<>();
         if (oldEntity instanceof TownHall townHall) {
-            oldBalance = townHall.getBalance();
+            oldBalance = townHall.getStorage();
         }
         Set<Hex> validated = new HashSet<>();
         session.getMap().values().forEach(hex -> {
@@ -235,7 +236,7 @@ public class GameEngine {
                     } else {
                         Hex placeForTownHall = MapUtils.findPlaceForTownHall(session.getMap(), region.getSecond());
                         if (placeForTownHall != null) {
-                            TownHall townHall = new TownHall(0,0);
+                            TownHall townHall = new TownHall(Currency.EMPTY,Currency.EMPTY);
                             if (placeForTownHall.getColor() == oldColor) {
                                 createdTownHall.add(townHall);
                             }
@@ -246,20 +247,20 @@ public class GameEngine {
                     }
                 } catch (IllegalArgumentException ex) {
                     if (hex.getEntity() instanceof TownHall townHall) {
-                        Integer balance = townHall.getBalance();
+                        Currency balance = townHall.getStorage();
                         setEntity(session, hex, new Field(), hex.getColor());
                         Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(session.getMap(), hex.getColor(), hex);
-                        region.getFirst().setBalance(balance + region.getFirst().getBalance());
+                        region.getFirst().getStorage().add(balance);
                         System.out.println("Merged");
                     }
                 }
             }
         });
         if (!createdTownHall.isEmpty()) {
-            Integer balancePerTownHall = oldBalance / createdTownHall.size();
+            Currency storagePerTownHall = oldBalance.split(createdTownHall.size());
             createdTownHall.forEach(townHall -> {
-                townHall.setBalance(balancePerTownHall);
-                if (townHall.getBalance() - townHall.getBalanceChanges() < 0) {
+                townHall.setStorage(storagePerTownHall.clone());
+                if (townHall.getStorage().getGold() - townHall.getStorageChanges().getGold() < 0) {
                     killInRegion(session ,townHall);
                 }
             });

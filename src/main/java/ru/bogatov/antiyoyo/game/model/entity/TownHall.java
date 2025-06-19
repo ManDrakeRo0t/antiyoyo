@@ -2,6 +2,7 @@ package ru.bogatov.antiyoyo.game.model.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
 
 import java.util.Map;
 import java.util.UUID;
@@ -11,13 +12,13 @@ import java.util.UUID;
 public class TownHall extends Entity implements Interactable {
 
     private UUID uuid = UUID.randomUUID();
-    private Integer balance;
-    private Integer balanceChanges;
-    private Map<EntityType, Integer> prices;
+    private Currency storage;
+    private Currency storageChanges;
+    private Map<EntityType, Currency> prices;
 
-    public TownHall(Integer balance, Integer balanceChanges) {
-        this.balance = balance;
-        this.balanceChanges = balanceChanges;
+    public TownHall(Currency storage, Currency storageChanges) {
+        this.storage = storage;
+        this.storageChanges = storageChanges;
     }
 
     @Override
