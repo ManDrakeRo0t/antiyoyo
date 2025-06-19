@@ -259,7 +259,7 @@ public class GameEngine {
             Integer balancePerTownHall = oldBalance / createdTownHall.size();
             createdTownHall.forEach(townHall -> {
                 townHall.setBalance(balancePerTownHall);
-                if (townHall.getBalance() - townHall.getBalanceChanges() < 0) {
+                if (townHall.getBalance() - Math.abs(townHall.getBalanceChanges()) < 0) {
                     killInRegion(session ,townHall);
                 }
             });
