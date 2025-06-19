@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class Factory extends Entity implements Sellable {
+public class Factory extends Entity implements Sellable, Interactable {
 
     @Override
     public EntityType getType() {
@@ -14,7 +14,7 @@ public class Factory extends Entity implements Sellable {
 
     @Override
     public Integer getBalanceChange() {
-        return 5;
+        return 4;
     }
 
     @Override
@@ -22,4 +22,18 @@ public class Factory extends Entity implements Sellable {
         return 12 + (unitsCount * 2);
     }
 
+    @Override
+    public Integer getLevel() {
+        return 0;
+    }
+
+    @Override
+    public Integer getAttackRadius() {
+        return -1;
+    }
+
+    @Override
+    public Integer getMoveRadius() {
+        return -1;
+    }
 }

@@ -11,8 +11,7 @@ import ru.bogatov.antiyoyo.server.domain.GameEvent;
 
 import java.util.*;
 
-import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.findTownHallWithRegion;
-import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.updateTownHallEconomy;
+import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.*;
 
 
 @Slf4j
@@ -146,10 +145,14 @@ public class GameEngine {
         if (from != null) {
             setEntity(session, from, new Field(), from.getColor());
         } else {
-            if (townHall.getEntity() instanceof TownHall townHallEntity &&
-                    EntityUtils.fromType(move.getEntityType()) instanceof Sellable sellable) {
+            if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
+                    EntityUtils.fromType(move.getEntityType()) instanceof Sellable) {
                 townHallEntity.setBalance(townHallEntity.getBalance() - townHallEntity.getPrices().get(move.getEntityType()));
             }
+        }
+        if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
+                to.getEntity() != null && to.getEntity() instanceof Mineable mineable) {
+           townHallEntity.setBalance(townHallEntity.getBalance() + mineable.getReward());
         }
         setEntity(session,
                 to,
@@ -159,8 +162,6 @@ public class GameEngine {
         if (townHall != null && !move.getRedactorMode()) {
             updateTownHallEconomy(session.getMap(), townHall);
         }
-
-
 
     }
 
@@ -256,7 +257,12 @@ public class GameEngine {
         });
         if (!createdTownHall.isEmpty()) {
             Integer balancePerTownHall = oldBalance / createdTownHall.size();
-            createdTownHall.forEach(townHall -> townHall.setBalance(balancePerTownHall));
+            createdTownHall.forEach(townHall -> {
+                townHall.setBalance(balancePerTownHall);
+                if (townHall.getBalance() - townHall.getBalanceChanges() < 0) {
+                    killInRegion(session ,townHall);
+                }
+            });
         }
     }
 

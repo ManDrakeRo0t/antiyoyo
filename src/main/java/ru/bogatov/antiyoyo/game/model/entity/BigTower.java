@@ -13,6 +13,11 @@ public class BigTower extends Entity implements Sellable, Interactable {
     }
 
     @Override
+    public Integer getBalanceChange() {
+        return -5;
+    }
+
+    @Override
     public Integer getPrice(Integer unitsCount) {
         return 35;
     }
@@ -32,8 +37,4 @@ public class BigTower extends Entity implements Sellable, Interactable {
         return -1;
     }
 
-    @Override
-    public Integer getDefenceRadius() {
-        return 1;
-    }
 }

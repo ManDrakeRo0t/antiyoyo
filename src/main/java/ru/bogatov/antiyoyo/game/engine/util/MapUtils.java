@@ -1,13 +1,11 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
-
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static ru.bogatov.antiyoyo.game.engine.util.HexCalculator.getNeighborsInRadius;
 
@@ -86,6 +84,7 @@ public class MapUtils {
                     updateDefenseLevel(map, hex, 0, hex.getColor());
                 }
             });
+            townHall.setBalance(0);
         }
 
         updateTownHallEconomy(region);
@@ -152,7 +151,7 @@ public class MapUtils {
         return getNearestNeighborsWithSameColorWithCenter(map, root.getColor(), root)
                 .stream()
                 .filter(hex -> hex.getEntity() instanceof Interactable)
-                .map(hex ->  ((Interactable) hex.getEntity()).getLevel())
+                .map(hex -> ((Interactable) hex.getEntity()).getLevel())
                 .max(Integer::compare).orElse(0);
     }
 
@@ -177,7 +176,7 @@ public class MapUtils {
     }
 
     public static void updateTownHallEconomy(Map<Vector3, Hex> map, Hex townHall) {
-         Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(map, townHall.getColor(), townHall);
+        Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(map, townHall.getColor(), townHall);
         updateTownHallEconomy(region);
     }
 
@@ -230,29 +229,31 @@ public class MapUtils {
         hex.setDefenseLevel(defenceLevel > calculated ? defenceLevel : calculated);
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
         toUpdate.forEach(hexToUpdate -> {
-            if (hexToUpdate.getColor() == selfColor) {
-                hexToUpdate.setDefenseLevel(
-                        MapUtils.calculateDefenseLevel(map, hexToUpdate));
-            }}
+                    if (hexToUpdate.getColor() == selfColor) {
+                        hexToUpdate.setDefenseLevel(
+                                MapUtils.calculateDefenseLevel(map, hexToUpdate));
+                    }
+                }
         );
     }
 
     public static void updateDefenseLevelForColor(Map<Vector3, Hex> map, Hex hex, HexColor color) {
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
         toUpdate.forEach(hexToUpdate -> {
-            if (hexToUpdate.getColor() == color) {
-                if (hexToUpdate.getEntity() instanceof Interactable interactable) {
-                    hexToUpdate.setDefenseLevel(interactable.getLevel());
-                } else {
-                    hexToUpdate.setDefenseLevel(0);
+                    if (hexToUpdate.getColor() == color) {
+                        if (hexToUpdate.getEntity() instanceof Interactable interactable) {
+                            hexToUpdate.setDefenseLevel(interactable.getLevel());
+                        } else {
+                            hexToUpdate.setDefenseLevel(0);
+                        }
+                    }
                 }
-            }}
         );
         toUpdate.forEach(hexToUpdate -> {
-            if (hexToUpdate.getColor() == color) {
-                hexToUpdate.setDefenseLevel(MapUtils.calculateDefenseLevel(map, hexToUpdate));
-            }
-            }
+                    if (hexToUpdate.getColor() == color) {
+                        hexToUpdate.setDefenseLevel(MapUtils.calculateDefenseLevel(map, hexToUpdate));
+                    }
+                }
         );
     }
 
@@ -299,7 +300,7 @@ public class MapUtils {
             if (leftColors.size() == 1) {
                 Player winner = session.getPlayers().values().stream()
                         .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
-                                .findFirst().orElse(null);
+                        .findFirst().orElse(null);
                 session.setWinnerId(winner == null ? null : winner.getUserId());
             } else {
                 session.getPlayers().values().forEach(player -> {
@@ -311,11 +312,11 @@ public class MapUtils {
         }
     }
 
-    public static Pair<Integer, Set<HexColor>>  getPlayersCount(Map<Vector3, Hex> map) {
+    public static Pair<Integer, Set<HexColor>> getPlayersCount(Map<Vector3, Hex> map) {
         Set<HexColor> colors = new HashSet<>();
         map.values().forEach(hex -> colors.add(hex.getColor()));
         colors.remove(HexColor.EMPTY);
-        Set<HexColor> playersColors =  colors.stream()
+        Set<HexColor> playersColors = colors.stream()
                 .filter(color -> {
                     var regions = getAllRegionsByColor(map, color);
                     return !regions.isEmpty() && regions.stream().anyMatch(r -> r.getFirst() != null);
@@ -356,5 +357,10 @@ public class MapUtils {
                     hex.setEntity(new Grave());
                     updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
                 });
+    }
+
+    public static void killInRegion(GameSession session, TownHall townHall) {
+        Hex townHallHex = HexCalculator.foundTownHallById(session.getMap(), townHall.getUuid());
+        killInRegion(session, findTownHallWithRegion(session.getMap(), townHallHex.getColor(), townHallHex).getSecond());
     }
 }

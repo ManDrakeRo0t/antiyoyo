@@ -8,6 +8,4 @@ public interface Interactable {
 
     Integer getMoveRadius();
 
-    Integer getDefenceRadius(); //todo delete and make 1 by default
-
 }

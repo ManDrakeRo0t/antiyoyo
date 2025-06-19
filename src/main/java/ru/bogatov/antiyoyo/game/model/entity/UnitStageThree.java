@@ -14,7 +14,7 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
 
     @Override
     public Integer getBalanceChange() {
-        return -8;
+        return -18;
     }
 
     @Override
@@ -35,11 +35,6 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
     @Override
     public Integer getMoveRadius() {
         return 4;
-    }
-
-    @Override
-    public Integer getDefenceRadius() {
-        return 1;
     }
 
 }

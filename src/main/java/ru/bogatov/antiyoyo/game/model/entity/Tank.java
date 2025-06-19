@@ -14,7 +14,7 @@ public class Tank extends Entity implements Sellable, Interactable {
 
     @Override
     public Integer getBalanceChange() {
-        return -10;
+        return -54;
     }
 
     @Override
@@ -37,10 +37,7 @@ public class Tank extends Entity implements Sellable, Interactable {
         return 4;
     }
 
-    @Override
-    public Integer getDefenceRadius() {
-        return 1;
-    }
+
 
 
 }

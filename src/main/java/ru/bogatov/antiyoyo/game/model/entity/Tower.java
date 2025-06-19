@@ -13,6 +13,11 @@ public class Tower extends Entity implements Sellable, Interactable {
     }
 
     @Override
+    public Integer getBalanceChange() {
+        return -2;
+    }
+
+    @Override
     public Integer getPrice(Integer unitsCount) {
         return 15;
     }
@@ -32,8 +37,5 @@ public class Tower extends Entity implements Sellable, Interactable {
         return -1;
     }
 
-    @Override
-    public Integer getDefenceRadius() {
-        return 1;
-    }
+
 }

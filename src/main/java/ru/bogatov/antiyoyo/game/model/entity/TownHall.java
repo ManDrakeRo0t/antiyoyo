@@ -40,8 +40,5 @@ public class TownHall extends Entity implements Interactable {
         return -1;
     }
 
-    @Override
-    public Integer getDefenceRadius() {
-        return 1;
-    }
+
 }

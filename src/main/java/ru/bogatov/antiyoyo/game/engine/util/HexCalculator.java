@@ -167,7 +167,11 @@ public class HexCalculator {
 
     private static boolean canMoveToSelfHex(Hex to, HexColor selfColor, Interactable entity) {
         return isSameColor(to, selfColor) &&
-                (canUpgradeUnit(to.getEntity(), entity) || canPlaceEntity(entity, to));
+                (canUpgradeUnit(to.getEntity(), entity) || canPlaceEntity(entity, to) || canReplaceEntity(entity, to));
+    }
+
+    private static boolean canReplaceEntity(Interactable entity, Hex to) {
+        return to.getEntity() instanceof Tower && entity instanceof BigTower;
     }
 
     private static boolean canPlaceEntity(Interactable entity, Hex to) {

@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class Tree extends Entity {
+public class Tree extends Entity implements Mineable {
 
     @Override
     public EntityType getType() {
@@ -13,4 +13,8 @@ public class Tree extends Entity {
     }
 
 
+    @Override
+    public Integer getReward() {
+        return 3;
+    }
 }
