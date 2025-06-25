@@ -1,6 +1,7 @@
 package ru.bogatov.antiyoyo.game.model.entity;
 
 import lombok.Data;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
 
 @Data
 public abstract class Entity {
@@ -9,8 +10,8 @@ public abstract class Entity {
 
     public abstract EntityType getType();
 
-    public Integer getGoldChanges() {
-        return 0;
+    public Currency getStorageChanges() {
+        return Currency.EMPTY.clone();
     }
 
 }

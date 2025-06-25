@@ -7,6 +7,9 @@ import org.springframework.util.CollectionUtils;
 import ru.bogatov.antiyoyo.game.engine.util.*;
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
 
@@ -42,6 +45,8 @@ public class GameEngine {
        // change player
         MapUtils.checkPlayersCount(session);
         MapUtils.restoreMap(session);
+        MapUtils.processFarms(session);
+        MapUtils.restoreDrones(session);
         chanePlayerOrder(session);
     }
 
@@ -84,12 +89,12 @@ public class GameEngine {
 
         HexColor selfColor = session.getPlayers().get(session.getCurrentPlayerMove()).getColor();
 
-        if (event.getHex() == null || event.getHex().getColor() != selfColor) {
+
+        if (event.getHex() == null || !HexCalculator.canInteractWithHex(session.getMap().get(event.getHex().getVector()), selfColor)) {
             if (event.getEntityType() == null) {
                 MapUtils.restoreMap(session);
             }
         } else {
-
             Pair<TownHall, Set<Hex>> result = MapUtils.findTownHallWithRegion(session.getMap(), selfColor, event.getHex());
             session.getPlayers().get(session.getCurrentPlayerMove()).setSelectedTownHall(result.getFirst());
             MapUtils.updatePricesForTownHall(result);
@@ -101,8 +106,8 @@ public class GameEngine {
                 if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class) {
                     MapUtils.showDefenceForColor(session.getMap(), selfColor);
                 } else {
-                    HexCalculator.getAvailableHexesForExistingEntity(session.getMap(), hex).forEach(available -> {
-                        session.getMap().get(available).setIsAvailable(true);
+                    HexCalculator.getAvailableHexesForExistingEntity(session.getMap(), hex, selfColor).forEach(available -> {
+                        session.getMap().get(available.getVector()).setIsAvailable(true);
                     });
                 }
             } else if (entity.getClass() == TownHall.class) {
@@ -114,7 +119,7 @@ public class GameEngine {
             if (session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall() != null) {
                 HexCalculator.getAvailableHexesForNewEntity(session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
                         session.getMap(), selfColor, (Interactable) EntityUtils.fromType(event.getEntityType())).forEach(hex -> {
-                    session.getMap().get(hex).setIsAvailable(true);
+                    session.getMap().get(hex.getVector()).setIsAvailable(true);
                 });
             }
         }
@@ -132,6 +137,7 @@ public class GameEngine {
 
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
+        boolean skipMove = false;
 
         var selectedTownHall = session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall();
         Hex townHall = null;
@@ -144,7 +150,11 @@ public class GameEngine {
 
 
         if (from != null) {
-            setEntity(session, from, new Field(), from.getColor());
+            if (to.getEntity() instanceof Farmable) {
+                skipMove = true;
+            } else {
+                setEntity(session, from, new Field(), from.getColor());
+            }
         } else {
             if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
                     EntityUtils.fromType(move.getEntityType()) instanceof Sellable) {
@@ -155,10 +165,12 @@ public class GameEngine {
                 to.getEntity() != null && to.getEntity() instanceof Mineable mineable) {
            townHallEntity.getStorage().add(mineable.getReward());
         }
-        setEntity(session,
-                to,
-                EntityUtils.fromType(move.getEntityType()),
-                session.getPlayers().get(move.getPlayer()).getColor());
+        if (!skipMove) {
+            setEntity(session, to, EntityUtils.fromType(move.getEntityType()), session.getPlayers().get(move.getPlayer()).getColor());
+        } else {
+            to.setColor(session.getPlayers().get(move.getPlayer()).getColor());
+            from.getEntity().setMovedOnThisTurn(true);
+        }
 
         if (townHall != null && !move.getRedactorMode()) {
             updateTownHallEconomy(session.getMap(), townHall);
@@ -184,6 +196,7 @@ public class GameEngine {
                 && entity instanceof Interactable toPlace
                 && hex.getColor() == newColor
                 && MapUtils.moveableUnits.contains(entity.getClass())
+                && !(toPlace instanceof Drone)
         ) {
             Boolean isMovedPrevious = hex.getEntity().getMovedOnThisTurn();
             hex.setEntity(mergeUnit(old, toPlace));
@@ -192,7 +205,11 @@ public class GameEngine {
             hex.setEntity(entity);
             hex.getEntity().setMovedOnThisTurn(MapUtils.moveableUnits.contains(entity.getClass()) ? true : null);
         }
-        hex.setColor(newColor);
+        if (entity instanceof Drone) {
+            ((Drone) entity).setOwnerColor(newColor);
+        } else {
+            hex.setColor(newColor);
+        }
         if (hex.getEntity() instanceof Interactable interactable) {
             MapUtils.updateDefenseLevel(session.getMap(), hex, interactable.getLevel(), newColor);
         } else {
@@ -260,7 +277,7 @@ public class GameEngine {
             Currency storagePerTownHall = oldBalance.split(createdTownHall.size());
             createdTownHall.forEach(townHall -> {
                 townHall.setStorage(storagePerTownHall.clone());
-                if (townHall.getStorage().getGold() - townHall.getStorageChanges().getGold() < 0) {
+                if (townHall.getStorage().getGold() + townHall.getStorageUpdate().getGold() < 0) {
                     killInRegion(session ,townHall);
                 }
             });

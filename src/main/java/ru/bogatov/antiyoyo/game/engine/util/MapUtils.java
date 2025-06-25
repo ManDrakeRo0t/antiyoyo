@@ -2,9 +2,14 @@ package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.*;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ru.bogatov.antiyoyo.game.engine.util.HexCalculator.getNeighborsInRadius;
@@ -19,7 +24,10 @@ public class MapUtils {
             EntityType.UNIT_3, new UnitStageThree(),
             EntityType.TOWER, new Tower(),
             EntityType.BIG_TOWER, new BigTower(),
-            EntityType.FACTORY, new Factory()
+            EntityType.FACTORY, new Factory(),
+            EntityType.FOREST_FARM, new ForestFarm(),
+            EntityType.MINE_FARM, new MineFarm(),
+            EntityType.DRONE, new Drone(HexColor.EMPTY)
     );
 
     // aka upgradeable dieable
@@ -27,7 +35,8 @@ public class MapUtils {
             UnitStageTwo.class,
             UnitStageOne.class,
             UnitStageThree.class,
-            Tank.class
+            Tank.class,
+            Drone.class
     );
 
     public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
@@ -44,47 +53,45 @@ public class MapUtils {
     }
 
     public static void updateRegionAfterMove(Map<Vector3, Hex> map, Pair<TownHall, Set<Hex>> region) {
-        Random random = new Random();
 
         TownHall townHall = region.getFirst();
         Set<Hex> territory = region.getSecond();
 
-        townHall.setBalance(townHall.getBalance() + townHall.getBalanceChanges());
-
+        townHall.getStorage().add(townHall.getStorageUpdate());
         territory.forEach(hex -> {
             if (hex.getEntity() instanceof Grave) {
                 hex.setEntity(new Tree());
                 updateDefenseLevel(map, hex, 0, hex.getColor());
             }
-            if (hex.getEntity() instanceof Field) {
-                if (random.nextInt(100) <= 5) {
-                    hex.setEntity(new Tree());
-                    updateDefenseLevel(map, hex, 0, hex.getColor());
-                }
-            }
-            if (hex.getEntity() instanceof Tree) {
-                getNearestNeighborsWithSameColor(map, hex.getColor(), hex)
-                        .stream()
-                        .filter(n -> n.getEntity() instanceof Field)
-                        .forEach(n -> {
-                            if (random.nextInt(100) <= 15) {
-                                n.setEntity(new Tree());
-                            }
-                        });
-            }
+//            if (hex.getEntity() instanceof Field) { Слишком много деревьев
+//                if (random.nextInt(100) <= 5) {
+//                    hex.setEntity(new Tree());
+//                    updateDefenseLevel(map, hex, 0, hex.getColor());
+//                }
+//            }
+//            if (hex.getEntity() instanceof Tree) {
+//                getNearestNeighborsWithSameColor(map, hex.getColor(), hex)
+//                        .stream()
+//                        .filter(n -> n.getEntity() instanceof Field)
+//                        .forEach(n -> {
+//                            if (random.nextInt(100) <= 15) {
+//                                n.setEntity(new Tree());
+//                            }
+//                        });
+//            }
             if (hex.getEntity() instanceof Interactable && moveableUnits.contains(hex.getEntity().getClass())) {
                 hex.getEntity().setMovedOnThisTurn(false);
             }
         });
 
-        if (townHall.getBalance() < 0) {
+        if (townHall.getStorage().getGold() < 0) {
             territory.forEach(hex -> {
                 if (moveableUnits.contains(hex.getEntity().getClass())) {
                     hex.setEntity(new Grave());
                     updateDefenseLevel(map, hex, 0, hex.getColor());
                 }
             });
-            townHall.setBalance(0);
+            townHall.getStorage().setGold(0);
         }
 
         updateTownHallEconomy(region);
@@ -140,6 +147,14 @@ public class MapUtils {
                 .collect(Collectors.toSet());
     }
 
+    private static Set<Entity> getNearestNeighborsWithSameColor(Set<Hex> region, HexColor selfColor, Hex root) {
+        return getNeighborsInRadius(region.stream().collect(Collectors.toMap(Hex::getVector, Function.identity())), 1, root, false)
+                .stream()
+                .filter(hex -> hex.getColor() == selfColor)
+                .map(Hex::getEntity)
+                .collect(Collectors.toSet());
+    }
+
     private static Set<Hex> getNearestNeighborsWithSameColorWithCenter(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
         return getNeighborsInRadius(map, 1, root, true)
                 .stream()
@@ -181,15 +196,18 @@ public class MapUtils {
     }
 
     public static void updateTownHallEconomy(Pair<TownHall, Set<Hex>> region) {
-        int depositChanges = 0;
+        Currency depositChanges = Currency.EMPTY.clone();
         for (Hex hex : region.getSecond()) {
             if (!(hex.getEntity() instanceof Tree)) {
-                depositChanges += 1;
+                depositChanges.add(Currency.of(1,0,0));
             }
-            depositChanges += hex.getEntity().getGoldChanges();
+            if (hex.getEntity() instanceof Farmable farmable) {
+                depositChanges.add(farmable.getFarm(getNearestNeighborsWithSameColor(region.getSecond(), hex.getColor(), hex)));
+            }
+            depositChanges.add(hex.getEntity().getStorageChanges());
         }
         if (region.getFirst() != null) {
-            region.getFirst().setBalanceChanges(depositChanges);
+            region.getFirst().setStorageUpdate(depositChanges);
         }
     }
 
@@ -236,6 +254,8 @@ public class MapUtils {
                 }
         );
     }
+
+
 
     public static void updateDefenseLevelForColor(Map<Vector3, Hex> map, Hex hex, HexColor color) {
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
@@ -362,5 +382,31 @@ public class MapUtils {
     public static void killInRegion(GameSession session, TownHall townHall) {
         Hex townHallHex = HexCalculator.foundTownHallById(session.getMap(), townHall.getUuid());
         killInRegion(session, findTownHallWithRegion(session.getMap(), townHallHex.getColor(), townHallHex).getSecond());
+    }
+
+    public static void processFarms(GameSession session) {
+
+        Random random = new Random();
+
+        session.getMap().values().stream()
+                .filter(hex -> hex.getEntity() instanceof Farmable)
+                .forEach(farm -> {
+                    if (random.nextInt(100) <= 20) {
+                        int count = random.nextInt(2);
+                        Set<Hex> n = getNeighborsInRadius(session.getMap(), 2, farm, false)
+                                .stream().filter(hex -> hex.getEntity() instanceof Field).collect(Collectors.toSet());
+                        int canCreate = Math.min(n.size(), count);
+                        while (canCreate > 0) {
+                            Hex r = n.stream().findAny().get();
+                            r.setEntity(EntityUtils.fromType(((Farmable) farm.getEntity()).farmableType()));
+                            n.remove(r);
+                            canCreate--;
+                        }
+                    }
+                });
+    }
+
+    public static void restoreDrones(GameSession session) {
+        session.getMap().values().stream().filter(hex -> hex.getEntity() instanceof Drone).forEach(drore -> drore.getEntity().setMovedOnThisTurn(false));
     }
 }

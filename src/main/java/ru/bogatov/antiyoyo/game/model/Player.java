@@ -2,6 +2,7 @@ package ru.bogatov.antiyoyo.game.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.entity.TownHall;
 
 import java.util.UUID;

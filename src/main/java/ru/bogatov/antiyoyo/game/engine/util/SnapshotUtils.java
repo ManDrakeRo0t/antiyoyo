@@ -5,7 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import ru.bogatov.antiyoyo.game.model.Hex;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.entity.Drone;
 import ru.bogatov.antiyoyo.game.model.entity.HexSnapshot;
 import ru.bogatov.antiyoyo.game.model.entity.TownHall;
 
@@ -36,7 +37,9 @@ public class SnapshotUtils {
                 hex.getVector(),
                 hex.getColor(),
                 hex.getEntity().getType(),
-                hex.getEntity() instanceof TownHall townHall ? townHall.getBalance() : null,
+                hex.getEntity() instanceof Drone drone ? drone.getOwnerColor() : null,
+                hex.getEntity() instanceof TownHall townHall ? townHall.getStorage() : null,
+                hex.getEntity() instanceof TownHall townHall ? townHall.isDronesAvailable() : null,
                 hex.getDefenseLevel(),
                 hex.getEntity().getMovedOnThisTurn()
         );
@@ -51,10 +54,14 @@ public class SnapshotUtils {
                 snapshot.getDefenseLevel(),
                 false
         );
-        if (snapshot.getBalance() != null) {
+        if (snapshot.getStorage() != null) {
             if (hex.getEntity() instanceof TownHall townHall) {
-                townHall.setBalance(snapshot.getBalance());
+                townHall.setStorage(snapshot.getStorage());
+                townHall.setDronesAvailable(snapshot.getIsDronesAvailable());
             }
+        }
+        if (hex.getEntity() instanceof Drone drone) {
+            drone.setOwnerColor(snapshot.getEntityOwnerColor());
         }
         hex.getEntity().setMovedOnThisTurn(snapshot.getIsMoved());
         return hex;

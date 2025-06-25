@@ -1,7 +1,7 @@
 package ru.bogatov.antiyoyo.server.domain;
 
 import lombok.Data;
-import ru.bogatov.antiyoyo.game.model.Hex;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.Move;
 import ru.bogatov.antiyoyo.game.model.entity.EntityType;
 

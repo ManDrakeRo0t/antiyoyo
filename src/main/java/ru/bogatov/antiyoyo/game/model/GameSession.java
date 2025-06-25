@@ -2,6 +2,8 @@ package ru.bogatov.antiyoyo.game.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
 import java.time.OffsetDateTime;
 import java.util.Map;

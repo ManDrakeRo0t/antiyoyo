@@ -2,9 +2,9 @@ package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import ru.bogatov.antiyoyo.game.model.Hex;
-import ru.bogatov.antiyoyo.game.model.HexColor;
-import ru.bogatov.antiyoyo.game.model.Vector3;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 import java.util.*;
@@ -28,7 +28,7 @@ public class HexCalculator {
                 .orElse(null);
     }
 
-    public static Set<Vector3> getAvailableHexesForNewEntity(UUID townHallId,
+    public static Set<Hex> getAvailableHexesForNewEntity(UUID townHallId,
                                                              Map<Vector3, Hex> map,
                                                              HexColor selfColor,
                                                              Interactable entity) {
@@ -38,25 +38,20 @@ public class HexCalculator {
         }
         Pair<TownHall, Set<Hex>> region = MapUtils.findTownHallWithRegion(map, selfColor, townHall);
 
-        Set<Vector3> available = region.getSecond().stream()
+        Set<Hex> available = region.getSecond().stream()
                 .flatMap(hex -> addNeiboursForAttack(hex, map, entity.getAttackRadius()))
-                .filter(hex -> canMoveToEnemyHex(hex, selfColor, entity)).map(Hex::getVector)
+                .filter(hex -> canMoveToEnemyHex(hex, selfColor, entity))
+                .filter(hex -> !(hex.getEntity() instanceof Farmable))
                 .collect(Collectors.toSet());
 
-        Set<Vector3> selfAvailable = region.getSecond().stream()
+        Set<Hex> selfAvailable = region.getSecond().stream()
                 .filter(hex -> canMoveToSelfHex(hex, selfColor, entity))
-                .map(Hex::getVector)
                 .collect(Collectors.toSet());
 
-        if (entity instanceof Factory) {
-            selfAvailable = selfAvailable.stream()
-                    .filter(hex -> MapUtils.hasInNeighbors(map, map.get(hex), Set.of(Factory.class, TownHall.class)))
-                    .collect(Collectors.toSet());
-        }
 
        available.addAll(selfAvailable);
 
-       return available;
+       return entity.customizeAvailableHexesForNew(map, region, selfColor, available);
     }
 
 
@@ -67,10 +62,17 @@ public class HexCalculator {
 
     }
 
-    public static Set<Vector3> getAvailableHexesForExistingEntity(Map<Vector3, Hex> map,
-                                                                  Hex initialPosition) {
+    public static Set<Hex> getAvailableHexesForExistingEntity(Map<Vector3, Hex> map,
+                                                                  Hex initialPosition,
+                                                                    HexColor playerColor) {
         Interactable entity = (Interactable) initialPosition.getEntity();
         HexColor selfColor = initialPosition.getColor();
+        HexColor entityColor = entity instanceof Drone drone ? drone.getOwnerColor() : initialPosition.getColor();
+
+        if (entityColor != playerColor) {
+            return Set.of();
+        }
+
 
         Set<Hex> available = new HashSet<>();
         Set<Hex> visited = new HashSet<>();
@@ -116,10 +118,10 @@ public class HexCalculator {
 
         visited.remove(initialPosition);
 
-        return available.stream()
+        Set<Hex> result = available.stream()
                 .filter(hex -> canMoveToEnemyHex(hex, selfColor, entity) || canMoveToSelfHex(hex, selfColor, entity))
-                .map(Hex::getVector).collect(Collectors.toSet());
-
+                .collect(Collectors.toSet());
+        return entity.customizeAvailableHexesForExisting(map, initialPosition, result);
     }
 
     public static Set<Hex> getNeighborsInRadius(Map<Vector3, Hex> map, Integer radius, Hex init, boolean addCenter) {
@@ -174,9 +176,13 @@ public class HexCalculator {
         return to.getEntity() instanceof Tower && entity instanceof BigTower;
     }
 
+    public boolean canInteractWithHex(Hex hex, HexColor selfColor) {
+        return isSameColor(hex, selfColor) || (hex.getEntity() instanceof Drone drone && drone.getOwnerColor() == selfColor);
+    }
+
     private static boolean canPlaceEntity(Interactable entity, Hex to) {
         if (MapUtils.moveableUnits.contains(entity.getClass())) {
-            return to.getEntity() instanceof Tree || to.getEntity() instanceof Field || to.getEntity() instanceof Grave;
+            return to.getEntity() instanceof Mineable || to.getEntity() instanceof Field || to.getEntity() instanceof Grave || to.getEntity() instanceof Farmable;
         }
         return to.getEntity() instanceof Field;
     }

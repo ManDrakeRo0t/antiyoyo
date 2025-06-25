@@ -13,12 +13,13 @@ public class TownHall extends Entity implements Interactable {
 
     private UUID uuid = UUID.randomUUID();
     private Currency storage;
-    private Currency storageChanges;
+    private Currency storageUpdate;
+    private boolean isDronesAvailable = true;
     private Map<EntityType, Currency> prices;
 
     public TownHall(Currency storage, Currency storageChanges) {
         this.storage = storage;
-        this.storageChanges = storageChanges;
+        this.storageUpdate = storageChanges;
     }
 
     @Override

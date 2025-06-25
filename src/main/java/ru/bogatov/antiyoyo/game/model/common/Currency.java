@@ -1,17 +1,21 @@
 package ru.bogatov.antiyoyo.game.model.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Currency implements Cloneable {
     private int gold;
     private int tree;
     private int stone;
 
-    public static Currency EMPTY = Currency.of(0,0,0);
+    public static final Currency EMPTY = Currency.of(0,0,0);
 
     public boolean isAffordable(Currency price) {
         return price.getGold() <= this.gold &&
@@ -49,14 +53,10 @@ public class Currency implements Cloneable {
 
     @Override
     public Currency clone() {
-        try {
-            Currency clone = (Currency) super.clone();
-            clone.setGold(this.getGold());
-            clone.setTree(this.getTree());
-            clone.setStone(this.getStone());
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        return Currency.of(
+                this.getGold(),
+                this.getTree(),
+                this.getStone()
+        );
     }
 }

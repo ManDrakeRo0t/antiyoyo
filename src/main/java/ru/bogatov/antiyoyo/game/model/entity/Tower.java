@@ -14,8 +14,8 @@ public class Tower extends Entity implements Sellable, Interactable {
     }
 
     @Override
-    public Integer getGoldChanges() {
-        return -2;
+    public Currency getStorageChanges() {
+        return Currency.of(-2,0,0);
     }
 
     @Override

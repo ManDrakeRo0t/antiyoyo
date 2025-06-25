@@ -11,5 +11,11 @@ public enum EntityType {
     UNIT_1,
     UNIT_2,
     UNIT_3,
-    TANK;
+    TANK,
+    STONE,
+    FOREST,
+    MINE,
+    FOREST_FARM,
+    MINE_FARM,
+    DRONE;
 }

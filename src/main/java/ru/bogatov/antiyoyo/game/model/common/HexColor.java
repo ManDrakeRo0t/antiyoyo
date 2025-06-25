@@ -1,4 +1,4 @@
-package ru.bogatov.antiyoyo.game.model;
+package ru.bogatov.antiyoyo.game.model.common;
 
 public enum HexColor {
     RED,

@@ -1,6 +1,8 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 @UtilityClass
@@ -18,7 +20,13 @@ public class EntityUtils {
             case FIELD -> new Field();
             case TREE -> new Tree();
             case GRAVE -> new Grave();
-            case TOWN_HALL -> new TownHall(10,0);
+            case TOWN_HALL -> new TownHall(Currency.of(10,0,0),Currency.EMPTY);
+            case STONE -> new Stone();
+            case FOREST -> new Forest();
+            case MINE -> new Mine();
+            case FOREST_FARM -> new ForestFarm();
+            case MINE_FARM -> new MineFarm();
+            case DRONE -> new Drone(HexColor.EMPTY);
         };
     }
 

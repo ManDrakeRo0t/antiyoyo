@@ -1,11 +1,17 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
+import lombok.Data;
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.*;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
+import ru.bogatov.antiyoyo.game.model.entity.Drone;
 import ru.bogatov.antiyoyo.game.model.entity.Interactable;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * Класс для проверки шагов
@@ -30,7 +36,9 @@ public class MoveValidator {
         if (move.getFrom() != null) { // Передвижение
             HexColor from = session.getMap().get(move.getFrom()).getColor();
             HexColor player = session.getPlayers().get(move.getPlayer()).getColor();
-            if (from != player) {
+            HexColor entityColor = session.getMap().get(move.getFrom()).getEntity() instanceof Drone drone
+                    && drone.getOwnerColor() == player ? drone.getOwnerColor() : null;
+            if (from != player && entityColor != player) {
                 throw new IllegalArgumentException("Can't move enemy entity");
             }
         }
@@ -44,7 +52,7 @@ public class MoveValidator {
         Hex from = gameSession.getMap().get(move.getFrom());
         Hex to = gameSession.getMap().get(move.getTo());
 
-        Set<Vector3> availableHexes;
+        Set<Hex> availableHexes;
 
         if (from == null) { // Новая покупка
             availableHexes = HexCalculator.getAvailableHexesForNewEntity(
@@ -54,11 +62,11 @@ public class MoveValidator {
                     (Interactable) EntityUtils.fromType(move.getEntityType()));
         } else { // Передвижение
             availableHexes = HexCalculator.getAvailableHexesForExistingEntity(
-                    gameSession.getMap(), from
+                    gameSession.getMap(), from, gameSession.getPlayers().get(move.getPlayer()).getColor()
             );
         }
 
-        if (!availableHexes.contains(to.getVector())) {
+        if (!availableHexes.stream().map(Hex::getVector).collect(Collectors.toSet()).contains(to.getVector())) {
             throw new IllegalArgumentException("Can't move to not available hex");
         }
         if (from == to) {

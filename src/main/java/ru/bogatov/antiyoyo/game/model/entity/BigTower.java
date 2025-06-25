@@ -14,8 +14,8 @@ public class BigTower extends Entity implements Sellable, Interactable {
     }
 
     @Override
-    public Integer getGoldChanges() {
-        return -5;
+    public Currency getStorageChanges() {
+        return Currency.of(-5,0,0);
     }
 
     @Override

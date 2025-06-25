@@ -327,7 +327,14 @@
             'TANK': 'images/tank.png',
             'TOWN_HALL': 'images/town-hall.png',
             'TREE': 'images/tree.png',
-            'GRAVE': 'images/grave.png'
+            'GRAVE': 'images/grave.png',
+            'STONE': 'images/stone.png',
+            'MINE': 'images/mine.png',
+            'MINE_FARM': 'images/mine-farm.png',
+            'FOREST': 'images/forest.png',
+            'FOREST_FARM': 'images/forest-farm.png',
+            'SHIELD': 'images/shield.png',
+            'DRONE': 'images/drone.png'
         };
 
         // Preload images
@@ -511,10 +518,38 @@
             mapCtx.stroke();
 
             // Draw entity icon if present
-            if (hex.entity && hex.entity !== 'FIELD') {
-                const img = getEntityImage(hex.entity);
+            let entityType = null;
+            if (hex.entity) {
+                if (typeof hex.entity === 'string') {
+                    entityType = hex.entity;
+                } else if (typeof hex.entity === 'object' && hex.entity.type) {
+                    entityType = hex.entity.type;
+                }
+            }
+            if (entityType && entityType !== 'FIELD') {
+                const img = getEntityImage(entityType);
                 if (img && img.complete) {
                     const iconSize = size * 0.6;
+                    // Если DRONE, рисуем кружок ownerColor
+                    if (entityType === 'DRONE' && hex.entity && hex.entity.ownerColor) {
+                        const colorMap = {
+                            'EMPTY': '#cccccc',
+                            'RED': '#ff0000',
+                            'BLUE': '#0000ff',
+                            'GREEN': '#00ff00',
+                            'YELLOW': '#ffff00',
+                            'PURPLE': '#800080',
+                            'ORANGE': '#ffa500',
+                            'BLACK': '#000000',
+                            'WHITE': '#ffffff'
+                        };
+                        mapCtx.beginPath();
+                        mapCtx.arc(x, y + iconSize * 0.45, iconSize * 0.18, 0, 2 * Math.PI);
+                        mapCtx.fillStyle = colorMap[hex.entity.ownerColor] || '#000';
+                        mapCtx.globalAlpha = 0.85;
+                        mapCtx.fill();
+                        mapCtx.globalAlpha = 1.0;
+                    }
                     mapCtx.drawImage(img, 
                         x - iconSize/2, 
                         y - iconSize/2, 

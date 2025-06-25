@@ -1,6 +1,7 @@
 package ru.bogatov.antiyoyo.game.model;
 
 import lombok.Data;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.EntityType;
 
 @Data

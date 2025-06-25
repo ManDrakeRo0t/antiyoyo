@@ -1,9 +1,9 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
-import ru.bogatov.antiyoyo.game.model.Hex;
-import ru.bogatov.antiyoyo.game.model.HexColor;
-import ru.bogatov.antiyoyo.game.model.Vector3;
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.Field;
 
 import java.util.HashMap;

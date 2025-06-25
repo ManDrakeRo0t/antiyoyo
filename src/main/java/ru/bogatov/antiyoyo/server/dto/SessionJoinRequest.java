@@ -1,7 +1,7 @@
 package ru.bogatov.antiyoyo.server.dto;
 
 import lombok.Data;
-import ru.bogatov.antiyoyo.game.model.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
 
 import java.util.UUID;
 

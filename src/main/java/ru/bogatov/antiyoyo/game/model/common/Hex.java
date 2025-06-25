@@ -1,4 +1,4 @@
-package ru.bogatov.antiyoyo.game.model;
+package ru.bogatov.antiyoyo.game.model.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JacksonException;
@@ -36,4 +36,5 @@ class IgnoreDeserializer extends JsonDeserializer<Object> {
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
         return null;
     }
+
 }

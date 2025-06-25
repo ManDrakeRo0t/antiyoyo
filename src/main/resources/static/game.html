@@ -198,6 +198,8 @@
         #BIG_TOWER_Btn { background-image: url('images/big_tower.png'); }
         #TOWER_Btn { background-image: url('images/tower.png'); }
         #FACTORY_Btn { background-image: url('images/factory.png'); }
+        #FOREST_FARM_Btn { background-image: url('images/forest-farm.png'); }
+        #MINE_FARM_Btn { background-image: url('images/mine-farm.png'); }
         #UNIT_1_Btn { background-image: url('images/unit1.png'); }
         #UNIT_2_Btn { background-image: url('images/unit2.png'); }
         #UNIT_3_Btn { background-image: url('images/unit3.png'); }
@@ -205,6 +207,7 @@
         #TOWN_HALL_Btn { background-image: url('images/town-hall.png'); }
         #undoBtn { background-image: url('ui-elements/undo-move.svg'); }
         #endTurnBtn { background-image: url('ui-elements/end-turn.svg'); }
+        #DRONE_Btn { background-image: url('images/drone.png'); }
 
         #balanceDisplay {
             position: fixed;
@@ -216,10 +219,9 @@
             border-radius: 10px; /* Match controlPanel border-radius */
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: flex;
-            gap: 15px; /* Reduced gap */
-            align-items: center;
-            
-            box-sizing: border-box;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
         }
         #balanceDisplay.visible {
             display: flex; /* Changed from block to flex */
@@ -228,6 +230,22 @@
             width: 30px; /* Size of the dollar icon */
             height: 30px;
             background-image: url('ui-elements/income.png'); /* Changed to income.png */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .tree-icon {
+            width: 30px; /* Size of the dollar icon */
+            height: 30px;
+            background-image: url('ui-elements/tree.png'); /* Changed to income.png */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .stone-icon {
+            width: 30px; /* Size of the dollar icon */
+            height: 30px;
+            background-image: url('ui-elements/stone.png'); /* Changed to income.png */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -429,9 +447,19 @@
         <input type="text" id="sessionId" placeholder="Enter session UUID">
         <button onclick="connectToSession()">Connect</button>
     </div>
-    <div id="balanceDisplay">
-        <div class="balance-icon"></div>
-        <span class="balance-amount"></span>
+    <div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <div class="balance-icon"></div>
+            <span class="balance-amount"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <div class="stone-icon"></div>
+            <span class="stone-amount"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <div class="tree-icon"></div>
+            <span class="tree-amount"></span>
+        </div>
     </div>
     <div id="connectionStatus" class="disconnected">Disconnected</div>
     <!-- Removed topRightPanel div -->
@@ -453,6 +481,14 @@
                 <div class="unit-price" data-unit="FACTORY"></div>
             </div>
             <div class="unit-button-container">
+                <button id="FOREST_FARM_Btn" class="unit-button" onclick="sendUnitMove('FOREST_FARM')" title="Forest Farm"></button>
+                <div class="unit-price" data-unit="FOREST_FARM"></div>
+            </div>
+            <div class="unit-button-container">
+                <button id="MINE_FARM_Btn" class="unit-button" onclick="sendUnitMove('MINE_FARM')" title="Mine Farm"></button>
+                <div class="unit-price" data-unit="MINE_FARM"></div>
+            </div>
+            <div class="unit-button-container">
                 <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
                 <div class="unit-price" data-unit="UNIT_1"></div>
             </div>
@@ -467,6 +503,10 @@
             <div class="unit-button-container">
                 <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
                 <div class="unit-price" data-unit="TANK"></div>
+            </div>
+            <div class="unit-button-container drone-button-container" style="display: none;">
+                <button id="DRONE_Btn" class="unit-button" onclick="sendUnitMove('DRONE')" title="Drone"></button>
+                <div class="unit-price" data-unit="DRONE"></div>
             </div>
         </div>
     </div>
@@ -685,7 +725,13 @@
         'TOWN_HALL': 'images/town-hall.png',
         'TREE': 'images/tree.png',
         'GRAVE': 'images/grave.png',
-        'SHIELD': 'images/shield.png'
+        'SHIELD': 'images/shield.png',
+        'STONE': 'images/stone.png',
+        'MINE': 'images/mine.png',
+        'MINE_FARM' : 'images/mine-farm.png',
+        'FOREST' : 'images/forest.png',
+        'FOREST_FARM' : 'images/forest-farm.png',
+        'DRONE': 'images/drone.png',
     };
 
     // Preload all images
@@ -782,49 +828,58 @@
     function updateControlPanelVisibility() {
         const controlPanel = document.getElementById('controlPanel');
         const sessionInput = document.getElementById('sessionInput');
-        
+        const actionButtonsPanel = document.getElementById('actionButtonsPanel');
+        const droneButtonContainer = document.querySelector('.drone-button-container');
         if (
             hexData.players && 
             hexData.players[state.currentPlayer] && 
             hexData.players[state.currentPlayer].selectedTownHall) {
-            
             state.selectedTownHall = hexData.players[state.currentPlayer].selectedTownHall;
             controlPanel.style.display = 'flex';
             sessionInput.classList.add('hidden');
             updateUnitPrices();
             updateUnitButtons();
+            // Показываем кнопку DRONE только если isDronesAvailable
+            if (state.selectedTownHall.dronesAvailable) {
+                droneButtonContainer.style.display = 'flex';
+            } else {
+                droneButtonContainer.style.display = 'none';
+            }
         } else {
             state.selectedTownHall = null;
             controlPanel.style.display = 'none';
             if (!stompClient || !stompClient.connected) {
                 sessionInput.classList.remove('hidden');
             }
+            droneButtonContainer.style.display = 'none';
         }
-        
+        if (isPlayerTurn()) {
+            actionButtonsPanel.style.display = 'flex';
+        } else {
+            actionButtonsPanel.style.display = 'none';
+        }
         updateBalanceDisplay();
     }
 
     // Функция для обновления цен юнитов и состояния кнопок
     function updateUnitPrices() {
         if (!state.selectedTownHall || !state.selectedTownHall.prices) return;
-
-        const balance = state.selectedTownHall.balance || 0;
+        const storage = state.selectedTownHall.storage || { gold: 0, tree: 0, stone: 0 };
         const prices = state.selectedTownHall.prices;
-
-        // Обновляем отображение цены и состояние кнопки для каждого юнита
         Object.entries(prices).forEach(([unitType, price]) => {
             const priceElement = document.querySelector(`.unit-price[data-unit="${unitType}"]`);
             const button = document.getElementById(`${unitType}_Btn`);
-            
             if (priceElement && button) {
-                // Обновляем отображение цены
-                priceElement.textContent = `${price}`;
-                
-                // Обновляем состояние кнопки и стиль отображения цены
-                const canAfford = balance >= price;
+                // Форматируем цену в столбик
+                priceElement.innerHTML = `
+                    <div style='display: flex; flex-direction: column; align-items: flex-start; gap: 2px;'>
+                        <span style='color:#d4af37;'>🪙${price.gold||0}</span>
+                        <span style='color:#888;'>🪨${price.stone||0}</span>
+                        <span style='color:#228B22;'>🌲${price.tree||0}</span>
+                    </div>`;
+                // Проверяем хватает ли всех ресурсов
+                const canAfford = (storage.gold || 0) >= (price.gold || 0) && (storage.tree || 0) >= (price.tree || 0) && (storage.stone || 0) >= (price.stone || 0);
                 button.disabled = !canAfford;
-                
-                // Удаляем старые классы и добавляем новый
                 priceElement.classList.remove('affordable', 'unaffordable');
                 priceElement.classList.add(canAfford ? 'affordable' : 'unaffordable');
             }
@@ -835,25 +890,41 @@
     function updateBalanceDisplay() {
         const balanceDisplay = document.getElementById('balanceDisplay');
         const balanceAmountSpan = balanceDisplay.querySelector('.balance-amount');
+        const treeAmountSpan = balanceDisplay.querySelector('.tree-amount');
+        const stoneAmountSpan = balanceDisplay.querySelector('.stone-amount');
         if (!state.selectedTownHall) {
-            balanceDisplay.style.display = 'none'
+            balanceDisplay.style.display = 'none';
             return;
         }
-
-        const balance = state.selectedTownHall.balance || 0;
-        const balanceChange = state.selectedTownHall.balanceChanges || 0;
-        
-        let changeText = '';
-        if (balanceChange !== 0) {
-            const changeClass = balanceChange > 0 ? 'positive' : 'negative';
-            const changeSign = balanceChange > 0 ? '+' : '';
-            changeText = `<span class="balance-change ${changeClass}">(${changeSign}${balanceChange})</span>`;
+        const goldAmount = state.selectedTownHall.storage.gold || 0;
+        const goldChange = state.selectedTownHall.storageUpdate.gold || 0;
+        const treeAmount = state.selectedTownHall.storage.tree || 0;
+        const stoneAmount = state.selectedTownHall.storage.stone || 0;
+        const treeChange = state.selectedTownHall.storageUpdate.tree || 0;
+        const stoneChange = state.selectedTownHall.storageUpdate.stone || 0;
+        let changeGoldText = '';
+        if (goldChange !== 0) {
+            const changeClass = goldChange > 0 ? 'positive' : 'negative';
+            const changeSign = goldChange > 0 ? '+' : '';
+            changeGoldText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${goldChange})</span>`;
         }
-
-        balanceAmountSpan.innerHTML = `${balance}${changeText}`; /* Changed to update span */
-        balanceDisplay.style.display = 'flex'
-        
-        // Обновляем цены юнитов при изменении баланса
+        let changeTreeText = '';
+        if (treeChange !== 0) {
+            const changeClass = treeChange > 0 ? 'positive' : 'negative';
+            const changeSign = treeChange > 0 ? '+' : '';
+            changeTreeText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${treeChange})</span>`;
+        }
+        let changeStoneText = '';
+        if (stoneChange !== 0) {
+            const changeClass = stoneChange > 0 ? 'positive' : 'negative';
+            const changeSign = stoneChange > 0 ? '+' : '';
+            changeStoneText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${stoneChange})</span>`;
+        }
+        // Порядок: золото, камень, дерево
+        balanceAmountSpan.innerHTML = `${goldAmount}${changeGoldText}`;
+        stoneAmountSpan.innerHTML = `${stoneAmount}${changeStoneText}`;
+        treeAmountSpan.innerHTML = `${treeAmount}${changeTreeText}`;
+        balanceDisplay.style.display = 'flex';
         updateUnitPrices();
     }
 
@@ -1039,12 +1110,10 @@
         const waitingOverlay = document.getElementById('waitingOverlay');
         const colorSelectionPanel = document.getElementById('colorSelectionPanel');
         const controlPanel = document.getElementById('controlPanel');
-        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
-
+        // const actionButtonsPanel = document.getElementById('actionButtonsPanel');
         // Hide game controls
         controlPanel.style.display = 'none';
-        actionButtonsPanel.style.display = 'none'; /* Hide action buttons panel */
-
+        // actionButtonsPanel.style.display = 'none';
         if (currentUserInGame) {
             // User is in game but waiting for others
             waitingOverlay.style.display = 'flex';
@@ -1061,11 +1130,10 @@
     function hideWaitingUI() {
         const waitingOverlay = document.getElementById('waitingOverlay');
         const colorSelectionPanel = document.getElementById('colorSelectionPanel');
-        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
-        
+        // const actionButtonsPanel = document.getElementById('actionButtonsPanel');
         waitingOverlay.style.display = 'none';
         colorSelectionPanel.style.display = 'none';
-        actionButtonsPanel.style.display = 'flex'; /* Show action buttons panel */
+        // actionButtonsPanel.style.display = 'flex';
     }
 
     // Update available colors based on players structure
@@ -1204,12 +1272,7 @@
         if (!hexData || !hexData.map) return;
 
         // Check if there are bouncing entities
-        state.hasBouncingEntities = false;
-        Object.values(hexData.map).forEach(hex => {
-            if (hex && hex.entity && hex.entity.movedOnThisTurn === false) {
-                state.hasBouncingEntities = true;
-            }
-        });
+        
 
         // First pass: draw all hexagons (without borders)
         Object.values(hexData.map).forEach(hex => {
@@ -1232,9 +1295,7 @@
         });
 
         // Continue animation if there are bouncing entities
-        if (state.hasBouncingEntities) {
-            requestAnimationFrame(renderGrid);
-        }
+        
     }
 
     function isHexInView(x, y, size, visibleArea) {
@@ -1266,7 +1327,7 @@
 
     // Mouse event handlers
     function handleMouseDown(e) {
-        if (!isInteractionAllowed()) return;
+        
         
         state.isDragging = true;
         state.lastMouseX = e.clientX;
@@ -1275,7 +1336,7 @@
     }
 
     function handleMouseMove(e) {
-        if (state.isDragging && isInteractionAllowed()) {
+        if (state.isDragging) {
             const dx = e.clientX - state.lastMouseX;
             const dy = e.clientY - state.lastMouseY;
             state.offsetX += dx;
@@ -1292,7 +1353,7 @@
     }
 
     function handleWheel(e) {
-        if (!isInteractionAllowed()) return;
+      
         
         e.preventDefault();
 
@@ -1449,7 +1510,11 @@
                 }
                 // Clear selection after move attempt
                 state.selectedHex = null;
-            } else if (clickedHex.color == state.currentColor && state.selectedHex == null) {
+            } else if (
+                (
+                    (clickedHex.color == state.currentColor && (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) || clickedHex.entity.ownerColor == state.currentColor) 
+                    && state.selectedHex == null
+                ) {
                 // Select the new hex
                 state.selectedHex = cubicCoords;
             }
@@ -1513,28 +1578,20 @@
     // Update unit buttons state based on selection
     function updateUnitButtons() {
         const buttons = document.querySelectorAll('.unit-button');
-       
-        const actionButtonsPanel = document.getElementById('actionButtonsPanel'); /* Get the action buttons panel */
-        
- 
-        
-        // Action buttons (undo and end turn) are always enabled and visible if their panel is shown
-        // No need to explicitly disable/enable them here, their visibility is controlled by actionButtonsPanel
-
         buttons.forEach(button => {
             const entityType = button.getAttribute('onclick').match(/'([^']+)'/)[1];
             button.classList.toggle('selected', state.selectedUnit === entityType);
-            
             // Disable unit buttons if it's not the player's turn (or if unaffordable)
             if (!isInteractionAllowed()) {
                 button.disabled = true;
             } else {
-                // Re-enable unit buttons if it is the player's turn (but keep affordability check)
+                // Проверяем хватает ли всех ресурсов
                 const priceElement = document.querySelector(`.unit-price[data-unit="${entityType}"]`);
                 if (priceElement) {
-                    const price = parseInt(priceElement.textContent);
-                    const balance = state.selectedTownHall ? (state.selectedTownHall.balance || 0) : 0;
-                    button.disabled = balance < price;
+                    const price = state.selectedTownHall && state.selectedTownHall.prices ? state.selectedTownHall.prices[entityType] : null;
+                    const storage = state.selectedTownHall && state.selectedTownHall.storage ? state.selectedTownHall.storage : { gold: 0, tree: 0, stone: 0 };
+                    const canAfford = price && (storage.gold || 0) >= (price.gold || 0) && (storage.tree || 0) >= (price.tree || 0) && (storage.stone || 0) >= (price.stone || 0);
+                    button.disabled = !canAfford;
                 }
             }
         });
@@ -1614,28 +1671,34 @@
         if (hex.entity && hex.entity.type) {
             const img = getEntityImage(hex.entity.type);
             if (img && img.complete) {
-                if (hex.isAvailable === false) {
-                    ctx.globalAlpha = 0.3;
-                }
                 const iconSize = size * 1;
-                // Для могилы делаем иконку немного меньше
-                const finalIconSize = hex.entity.type === 'GRAVE' ? iconSize * 0.8 : iconSize;
-                
-                // Apply bouncing effect if entity hasn't moved this turn
                 let yOffset = 0;
-                if (hex.entity.movedOnThisTurn === false) {
-                    // Create bouncing effect using sine wave
-                    const time = Date.now() * 0.007; // Speed of bounce
-                    yOffset = Math.sin(time) * 3; // Amplitude of bounce
+                // Если DRONE, рисуем кружок ownerColor
+                if (hex.entity.type === 'DRONE' && hex.entity.ownerColor) {
+                    const colorMap = {
+                        'EMPTY': '#3CB371',
+                        'RED': '#ff0000',
+                        'BLUE': '#0000ff',
+                        'GREEN': '#00ff00',
+                        'YELLOW': '#ffff00',
+                        'PURPLE': '#800080',
+                        'ORANGE': '#ffa500',
+                        'BLACK': '#000000',
+                        'WHITE': '#ffffff'
+                    };
+                    ctx.beginPath();
+                    ctx.arc(x, y - iconSize * 0.05, iconSize * 0.5, 0, 2 * Math.PI);
+                    ctx.fillStyle = colorMap[hex.entity.ownerColor] || '#000';
+                    ctx.globalAlpha = 0.85;
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
                 }
-                
                 ctx.drawImage(img, 
-                    x - finalIconSize/2, 
-                    y - finalIconSize/2 + yOffset, 
-                    finalIconSize, 
-                    finalIconSize
+                    x - iconSize/2, 
+                    y - iconSize/2 + yOffset, 
+                    iconSize, 
+                    iconSize
                 );
-                ctx.globalAlpha = 1.0;
             }
         }
 

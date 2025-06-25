@@ -14,8 +14,8 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
     }
 
     @Override
-    public Integer getGoldChanges() {
-        return -18;
+    public Currency getStorageChanges() {
+        return Currency.of(-18,0,0);
     }
 
     @Override
