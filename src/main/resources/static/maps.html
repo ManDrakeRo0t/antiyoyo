@@ -271,14 +271,15 @@
 
     <script>
         // Backend host management
-        let backendHost = 'localhost';
-        
-        // Initialize backend host from localStorage
+        let backendHost = window.location.hostname;
+    
+    // Initialize backend host from localStorage
         function initializeBackendHost() {
             const storedHost = localStorage.getItem('backendHost');
             if (!storedHost) {
-                localStorage.setItem('backendHost', 'localhost');
-                backendHost = 'localhost';
+                currentHost = window.location.hostname;
+                localStorage.setItem('backendHost', currentHost);
+                backendHost = currentHost;
             } else {
                 backendHost = storedHost;
             }

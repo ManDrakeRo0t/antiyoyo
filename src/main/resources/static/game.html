@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Hexagon Grid Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
     <style>
@@ -29,6 +30,10 @@
         canvas {
             display: block;
             background-color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
         }
         #sessionInput {
             position: fixed;
@@ -135,23 +140,22 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            overflow-x: auto; /* Добавлено для горизонтального скролла */
+            white-space: nowrap; /* Кнопки в одну строку */
+            padding-bottom: 4px; /* Для видимости скролла */
+            scrollbar-width: thin;
+            scrollbar-color: #d4af37 #F7E5A7;
+            max-width: 90vw; /* Не выходить за экран */
         }
-        #actionButtonsPanel { /* New styles for the action buttons panel */
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            padding: 5px 10px; /* Adjusted padding */
-            background-color: #F7E5A7;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-around; /* Space out the two buttons */
-            width: clamp(125px, 25vw, 200px); /* Adjusted width */
-            box-sizing: border-box;
+        .unit-buttons-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .unit-buttons-container::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+        .unit-buttons-container::-webkit-scrollbar-track {
+            background: #F7E5A7;
         }
         .unit-button-container {
             display: flex;
@@ -440,6 +444,99 @@
             background-repeat: no-repeat;
             background-position: center;
         }
+        /* Мобильная адаптация */
+        @media (max-width: 600px) {
+            #balanceDisplay {
+                top: 8px;
+                left: 8px;
+                padding: 4px 7px;
+                border-radius: 10px;
+                font-size: 1em;
+                gap: 2px;
+            }
+            .balance-icon, .tree-icon, .stone-icon {
+                width: 28px;
+                height: 28px;
+            }
+            .balance-amount, .tree-amount, .stone-amount {
+                font-size: 1em;
+            }
+            .current-turn-indicator {
+                top: 8px;
+                right: 8px;
+                padding: 4px 7px;
+                border-radius: 10px;
+                font-size: 1em;
+            }
+            .current-turn-icon {
+                width: 28px;
+                height: 28px;
+            }
+            #controlPanel {
+                bottom: 90px;
+                padding: 4px;
+                border-radius: 10px;
+                gap: 4px;
+                min-width: 0;
+                max-width: 99vw;
+            }
+            .unit-button {
+                width: 44px;
+                height: 44px;
+                border-radius: 7px;
+            }
+            .unit-price {
+                font-size: 0.9em;
+            }
+            #actionButtonsPanel {
+                bottom: 10px;
+                padding: 4px 7px;
+                border-radius: 10px;
+                width: clamp(90px, 40vw, 160px);
+                gap: 8px;
+            }
+            .action-button {
+                width: 36px;
+                height: 36px;
+                border-radius: 7px;
+            }
+            #sessionInput {
+                top: 8px;
+                padding: 10px;
+                border-radius: 8px;
+            }
+            #sessionInput input {
+                width: 70vw;
+                font-size: 1.1em;
+                padding: 10px;
+            }
+            #sessionInput button {
+                font-size: 1em;
+                padding: 10px 14px;
+            }
+            .unit-buttons-container {
+                gap: 6px;
+                max-width: 99vw;
+                padding-bottom: 2px;
+            }
+        }
+        #actionButtonsPanel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 5px 10px;
+            background-color: #F7E5A7;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-around;
+            width: clamp(125px, 25vw, 200px);
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -461,8 +558,6 @@
             <span class="tree-amount"></span>
         </div>
     </div>
-    <div id="connectionStatus" class="disconnected">Disconnected</div>
-    <!-- Removed topRightPanel div -->
     <div id="container">
         <canvas id="hexCanvas"></canvas>
     </div>
@@ -550,14 +645,15 @@
 
 <script>
     // Backend host management
-    let backendHost = 'localhost';
+    let backendHost = window.location.hostname;
     
     // Initialize backend host from localStorage
     function initializeBackendHost() {
         const storedHost = localStorage.getItem('backendHost');
         if (!storedHost) {
-            localStorage.setItem('backendHost', 'localhost');
-            backendHost = 'localhost';
+            currentHost = window.location.hostname;
+            localStorage.setItem('backendHost', currentHost);
+            backendHost = currentHost;
         } else {
             backendHost = storedHost;
         }
@@ -656,8 +752,6 @@
         return config.grassColors[index];
     }
 
-
-
     // Function to draw territory borders only on specific sides
     function drawTerritoryBorders(x, y, size, hex, hexData) {
         if (!hex.color || hex.color === 'EMPTY') return;
@@ -732,6 +826,7 @@
         'FOREST' : 'images/forest.png',
         'FOREST_FARM' : 'images/forest-farm.png',
         'DRONE': 'images/drone.png',
+        'FIRE': 'images/fire.png',
     };
 
     // Preload all images
@@ -771,11 +866,6 @@
                 brokerURL: getWebSocketUrl(),
                 reconnectDelay: 200,
                 onConnect: function (frame) {
-                    const statusDiv = document.getElementById('connectionStatus');
-                    statusDiv.textContent = 'Connected';
-                
-                    statusDiv.className = 'connected';
-                    statusDiv.display = 'none'
                     sessionInput.classList.add('hidden');
 
                     const subscription = stompClient.subscribe(destPath, function (message) {
@@ -789,9 +879,6 @@
                     updateUnitButtons();
                 },
                 onDisconnect: function() {
-                    const statusDiv = document.getElementById('connectionStatus');
-                    statusDiv.textContent = 'Disconnected';
-                    statusDiv.className = 'disconnected';
                     sessionInput.classList.remove('hidden');
                 }
             };
@@ -799,13 +886,9 @@
             stompClient = new StompJs.Client(stompConfig);
             stompClient.activate();
         }
-    
     }
 
     function onError(error) {
-        const statusDiv = document.getElementById('connectionStatus');
-        statusDiv.textContent = 'Connection Error';
-        statusDiv.className = 'disconnected';
         console.error('WebSocket Error:', error);
     }
 
@@ -940,6 +1023,7 @@
       
         if (data.map) {
             hexData = data;
+            powerByColor = data.powerByColor || null;
             updateControlPanelVisibility();
             checkPlayerStatus();
             checkGameStatus(); // Check for winner or destroyed player
@@ -1266,53 +1350,30 @@
         ctx.fillStyle = config.backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        if (!hexData || typeof hexData.map !== 'object' || !hexData.map) return;
+
         const size = config.hexSize * state.scale;
-        const visibleArea = calculateVisibleArea();
+        ctx.imageSmoothingEnabled = true; // Всегда включаем сглаживание для иконок
 
-        if (!hexData || !hexData.map) return;
+        const hexList = Object.values(hexData.map || {});
+        if (!hexList.length) return;
 
-        // Check if there are bouncing entities
-        
-
-        // First pass: draw all hexagons (without borders)
-        Object.values(hexData.map).forEach(hex => {
-            if (!hex || !hex.vector) return; // Skip invalid hex data
-            
+        hexList.forEach(hex => {
+            if (!hex || !hex.vector) return;
             const pixelPos = cubeToPixel(hex.vector);
-            if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
-                drawHexagonWithoutBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
-            }
+            drawHexagonWithoutBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
         });
 
-        // Second pass: draw all borders on top
-        Object.values(hexData.map).forEach(hex => {
-            if (!hex || !hex.vector) return; // Skip invalid hex data
-            
+        hexList.forEach(hex => {
+            if (!hex || !hex.vector) return;
             const pixelPos = cubeToPixel(hex.vector);
-            if (isHexInView(pixelPos.x, pixelPos.y, size, visibleArea)) {
-                drawHexagonBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
-            }
+            drawHexagonBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
         });
 
-        // Continue animation if there are bouncing entities
-        
-    }
-
-    function isHexInView(x, y, size, visibleArea) {
-        const hexRadius = size;
-        return x + hexRadius > visibleArea.left &&
-               x - hexRadius < visibleArea.right &&
-               y + hexRadius > visibleArea.top &&
-               y - hexRadius < visibleArea.bottom;
-    }
-
-    function calculateVisibleArea() {
-        return {
-            left: -state.offsetX,
-            right: canvas.width - state.offsetX,
-            top: -state.offsetY,
-            bottom: canvas.height - state.offsetY
-        };
+        // Рисуем круговую диаграмму powerByColor
+        if (powerByColor) {
+            drawPowerPieChart(powerByColor);
+        }
     }
 
     // Function to check if it's the current player's turn
@@ -1671,8 +1732,18 @@
         if (hex.entity && hex.entity.type) {
             const img = getEntityImage(hex.entity.type);
             if (img && img.complete) {
-                const iconSize = size * 1;
+                let iconSize = size * 1;
                 let yOffset = 0;
+                if (hex.entity.type === 'FIRE') {
+                    // Меняем размер в зависимости от stage
+                    if (hex.entity.stage === 2) {
+                        iconSize = size * 0.8;
+                    } else if (hex.entity.stage === 1) {
+                        iconSize = size * 0.6;
+                    } else {
+                        iconSize = size * 1;
+                    }
+                }
                 // Если DRONE, рисуем кружок ownerColor
                 if (hex.entity.type === 'DRONE' && hex.entity.ownerColor) {
                     const colorMap = {
@@ -1792,6 +1863,176 @@
     document.addEventListener('DOMContentLoaded', function() {
         updateUnitButtons();
     });
-    </script>
+
+    // --- Жесты для мобильных устройств ---
+    let lastTouchDistance = null;
+    let lastTouchCenter = null;
+    let isTouchDragging = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchMoved = false;
+    let longTapTimeout = null;
+    const LONG_TAP_DURATION = 500; // мс
+
+    function getTouchDistance(touches) {
+        if (touches.length < 2) return 0;
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    function getTouchCenter(touches) {
+        if (touches.length < 2) return {x: 0, y: 0};
+        return {
+            x: (touches[0].clientX + touches[1].clientX) / 2,
+            y: (touches[0].clientY + touches[1].clientY) / 2
+        };
+    }
+    canvas.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+            isTouchDragging = false;
+            touchMoved = false;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            state.lastMouseX = touchStartX;
+            state.lastMouseY = touchStartY;
+            // long tap detection
+            longTapTimeout = setTimeout(() => {
+                state.selectedHex = null;
+                sendClickBeforeMove(null, null);
+            }, LONG_TAP_DURATION);
+        } else if (e.touches.length === 2) {
+            lastTouchDistance = getTouchDistance(e.touches);
+            lastTouchCenter = getTouchCenter(e.touches);
+        }
+    }, { passive: false });
+    canvas.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 1 && !touchMoved) {
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                isTouchDragging = true;
+                touchMoved = true;
+                if (longTapTimeout) {
+                    clearTimeout(longTapTimeout);
+                    longTapTimeout = null;
+                }
+            }
+        }
+        if (e.touches.length === 1 && isTouchDragging) {
+            const dx = e.touches[0].clientX - state.lastMouseX;
+            const dy = e.touches[0].clientY - state.lastMouseY;
+            state.offsetX += dx;
+            state.offsetY += dy;
+            state.lastMouseX = e.touches[0].clientX;
+            state.lastMouseY = e.touches[0].clientY;
+            renderGrid();
+        } else if (e.touches.length === 2) {
+            const newDistance = getTouchDistance(e.touches);
+            const center = getTouchCenter(e.touches);
+            if (lastTouchDistance) {
+                const scaleChange = newDistance / lastTouchDistance;
+                let newScale = state.scale * scaleChange;
+                newScale = Math.max(state.minScale, Math.min(state.maxScale, newScale));
+                // Центрируем относительно центра pinch
+                const worldX = (center.x - canvas.width/2 - state.offsetX) / state.scale;
+                const worldY = (center.y - canvas.height/2 - state.offsetY) / state.scale;
+                state.offsetX = center.x - canvas.width/2 - worldX * newScale;
+                state.offsetY = center.y - canvas.height/2 - worldY * newScale;
+                state.scale = newScale;
+                renderGrid();
+            }
+            lastTouchDistance = newDistance;
+            lastTouchCenter = center;
+        }
+        e.preventDefault();
+    }, { passive: false });
+    canvas.addEventListener('touchend', function(e) {
+        // Обычный тап (если не было drag)
+        if (!isTouchDragging && !touchMoved && e.changedTouches.length === 1) {
+            handleCanvasClick({ clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY, preventDefault: ()=>{}, stopPropagation: ()=>{} });
+        }
+        if (longTapTimeout) {
+            clearTimeout(longTapTimeout);
+            longTapTimeout = null;
+        }
+        isTouchDragging = false;
+        touchMoved = false;
+        if (e.touches.length < 2) {
+            lastTouchDistance = null;
+            lastTouchCenter = null;
+        }
+        if (e.touches.length === 0) {
+            isTouchDragging = false;
+        }
+    });
+
+    // Функция для рисования круговой диаграммы powerByColor
+    function drawPowerPieChart(powerObj) {
+        const colors = Object.keys(powerObj);
+        const values = Object.values(powerObj);
+        const total = values.reduce((a, b) => a + b, 0);
+        if (total === 0) return;
+        const centerX = canvas.width / 2;
+        const centerY = 40; // отступ сверху
+        const radius = 40;
+        let startAngle = -Math.PI / 2; // сверху
+        // Цвета для секторов
+        const colorMap = {
+            'EMPTY': '#3CB371',
+            'RED': '#ff0000',
+            'BLUE': '#0000ff',
+            'GREEN': '#00ff00',
+            'YELLOW': '#ffff00',
+            'PURPLE': '#800080',
+            'ORANGE': '#ffa500',
+            'BLACK': '#000000',
+            'WHITE': '#ffffff'
+        };
+        colors.forEach((color, i) => {
+            const value = powerObj[color];
+            if (value <= 0) return;
+            const percent = value / total;
+            const endAngle = startAngle + percent * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = colorMap[color] || '#ccc';
+            ctx.globalAlpha = 0.85;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+            // --- Добавляем подпись процента ---
+            const midAngle = (startAngle + endAngle) / 2;
+            const labelRadius = radius * 0.65;
+            const labelX = centerX + labelRadius * Math.cos(midAngle);
+            const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
+            const percentText = Math.round(percent * 100) + '%';
+            // Выбор цвета текста для контраста
+            let textColor = '#fff';
+            if (colorMap[color]) {
+                // Простая проверка яркости цвета
+                const hex = colorMap[color].replace('#','');
+                const r = parseInt(hex.substring(0,2),16);
+                const g = parseInt(hex.substring(2,4),16);
+                const b = parseInt(hex.substring(4,6),16);
+                const brightness = (r*299 + g*587 + b*114) / 1000;
+                if (brightness > 170) textColor = '#222';
+            }
+            ctx.font = 'bold 15px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = textColor;
+            ctx.fillText(percentText, labelX, labelY);
+            // --- конец подписи ---
+            startAngle = endAngle;
+        });
+        // Белая обводка
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+    }
+</script>
 </body>
 </html>

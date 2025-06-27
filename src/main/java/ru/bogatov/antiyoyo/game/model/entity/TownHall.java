@@ -14,7 +14,7 @@ public class TownHall extends Entity implements Interactable {
     private UUID uuid = UUID.randomUUID();
     private Currency storage;
     private Currency storageUpdate;
-    private boolean isDronesAvailable = true;
+    private boolean isDronesAvailable;
     private Map<EntityType, Currency> prices;
 
     public TownHall(Currency storage, Currency storageChanges) {

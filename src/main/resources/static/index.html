@@ -446,14 +446,15 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script>
         // Backend host management
-        let backendHost = 'localhost';
-
+        let backendHost = window.location.hostname;
+    
         // Initialize backend host from localStorage
         function initializeBackendHost() {
             const storedHost = localStorage.getItem('backendHost');
             if (!storedHost) {
-                localStorage.setItem('backendHost', 'localhost');
-                backendHost = 'localhost';
+                currentHost = window.location.hostname;
+                localStorage.setItem('backendHost', currentHost);
+                backendHost = currentHost;
             } else {
                 backendHost = storedHost;
             }

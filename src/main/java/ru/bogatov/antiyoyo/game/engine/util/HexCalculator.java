@@ -73,7 +73,6 @@ public class HexCalculator {
             return Set.of();
         }
 
-
         Set<Hex> available = new HashSet<>();
         Set<Hex> visited = new HashSet<>();
 
@@ -182,7 +181,11 @@ public class HexCalculator {
 
     private static boolean canPlaceEntity(Interactable entity, Hex to) {
         if (MapUtils.moveableUnits.contains(entity.getClass())) {
-            return to.getEntity() instanceof Mineable || to.getEntity() instanceof Field || to.getEntity() instanceof Grave || to.getEntity() instanceof Farmable;
+            return to.getEntity() instanceof Mineable ||
+                    to.getEntity() instanceof Field ||
+                    to.getEntity() instanceof Grave ||
+                    to.getEntity() instanceof Farmable ||
+                    (to.getEntity() instanceof Drone drone && drone.getOwnerColor() != to.getColor());
         }
         return to.getEntity() instanceof Field;
     }

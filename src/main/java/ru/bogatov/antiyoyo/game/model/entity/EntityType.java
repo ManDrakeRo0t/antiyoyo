@@ -17,5 +17,6 @@ public enum EntityType {
     MINE,
     FOREST_FARM,
     MINE_FARM,
-    DRONE;
+    DRONE,
+    FIRE;
 }

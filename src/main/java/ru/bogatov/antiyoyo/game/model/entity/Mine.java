@@ -26,7 +26,7 @@ public class Mine extends Entity implements Farmable {
         if (neighbors.stream().anyMatch(MineFarm.class::isInstance)) {
             return Currency.of(0,0,3);
         }
-        return Currency.EMPTY;
+        return Currency.EMPTY.clone();
     }
 
     @Override

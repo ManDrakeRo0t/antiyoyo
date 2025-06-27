@@ -20,7 +20,7 @@ public class Tank extends Entity implements Sellable, Interactable {
 
     @Override
     public Currency getPrice(Integer unitsCount) {
-        return Currency.of(40, 0,0);
+        return Currency.of(40, 2,2);
     }
 
     @Override

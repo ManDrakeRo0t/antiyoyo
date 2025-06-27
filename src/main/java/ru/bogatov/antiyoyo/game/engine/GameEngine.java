@@ -47,6 +47,8 @@ public class GameEngine {
         MapUtils.restoreMap(session);
         MapUtils.processFarms(session);
         MapUtils.restoreDrones(session);
+        MapUtils.processFire(session);
+        MapUtils.updatePowerAndDronesAvailability(session);
         chanePlayerOrder(session);
     }
 
@@ -63,7 +65,7 @@ public class GameEngine {
         }
     }
 
-    public void undoMove(GameSession session) throws JsonProcessingException {
+    public void undoMove(GameSession session)  {
 
         var map = session.getHistory().pop();
         if (map != null) {
@@ -77,7 +79,7 @@ public class GameEngine {
     }
 
 
-    private void saveState(GameSession session) throws JsonProcessingException {
+    private void saveState(GameSession session)  {
         if (CollectionUtils.isEmpty(session.getHistory())) {
             session.setHistory(new Stack<>());
         }
@@ -98,6 +100,7 @@ public class GameEngine {
             Pair<TownHall, Set<Hex>> result = MapUtils.findTownHallWithRegion(session.getMap(), selfColor, event.getHex());
             session.getPlayers().get(session.getCurrentPlayerMove()).setSelectedTownHall(result.getFirst());
             MapUtils.updatePricesForTownHall(result);
+            MapUtils.updateDronesFlag(session, selfColor);
             updateTownHallEconomy(result);
             Hex hex = session.getMap().get(event.getHex().getVector());
             Entity entity = hex.getEntity();
@@ -137,7 +140,9 @@ public class GameEngine {
 
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
+        HexColor selfColor = session.getPlayers().get(move.getPlayer()).getColor();
         boolean skipMove = false;
+
 
         var selectedTownHall = session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall();
         Hex townHall = null;
@@ -147,7 +152,6 @@ public class GameEngine {
                     selectedTownHall.getUuid()
             );
         }
-
 
         if (from != null) {
             if (to.getEntity() instanceof Farmable) {
@@ -174,6 +178,8 @@ public class GameEngine {
 
         if (townHall != null && !move.getRedactorMode()) {
             updateTownHallEconomy(session.getMap(), townHall);
+            MapUtils.updatePricesForTownHall(findTownHallWithRegion(session.getMap(), selfColor ,townHall));
+            MapUtils.updateDronesFlag(session, selfColor);
         }
 
     }
@@ -187,26 +193,30 @@ public class GameEngine {
         };
     }
 
-    private void setEntity(GameSession session, Hex hex, Entity entity, HexColor newColor) {
+    private void setEntity(GameSession session, Hex hex, Entity newEntity, HexColor newColor) {
 
         HexColor oldColor = hex.getColor();
         Entity oldEntity = hex.getEntity();
 
-        if (hex.getEntity() instanceof Interactable old
-                && entity instanceof Interactable toPlace
+        if (oldEntity instanceof Interactable old
+                && newEntity instanceof Interactable toPlace
                 && hex.getColor() == newColor
-                && MapUtils.moveableUnits.contains(entity.getClass())
-                && !(toPlace instanceof Drone)
+                && MapUtils.moveableUnits.contains(newEntity.getClass())
+                && !(toPlace instanceof Drone) && !(old instanceof Drone)
         ) {
             Boolean isMovedPrevious = hex.getEntity().getMovedOnThisTurn();
             hex.setEntity(mergeUnit(old, toPlace));
             hex.getEntity().setMovedOnThisTurn(isMovedPrevious);
         } else {
-            hex.setEntity(entity);
-            hex.getEntity().setMovedOnThisTurn(MapUtils.moveableUnits.contains(entity.getClass()) ? true : null);
+            hex.setEntity(newEntity);
+            hex.getEntity().setMovedOnThisTurn(MapUtils.moveableUnits.contains(newEntity.getClass()) ? true : null);
         }
-        if (entity instanceof Drone) {
-            ((Drone) entity).setOwnerColor(newColor);
+        if (newEntity instanceof Drone) {
+            if (oldEntity instanceof Field) {
+                ((Drone) newEntity).setOwnerColor(newColor);
+            } else {
+                hex.setEntity(new Fire());
+            }
         } else {
             hex.setColor(newColor);
         }
@@ -216,7 +226,7 @@ public class GameEngine {
             MapUtils.updateDefenseLevel(session.getMap(), hex, 0, newColor);
         }
 
-        if (entity instanceof TownHall) {
+        if (newEntity instanceof TownHall) {
             MapUtils.updateTownHallEconomy(session.getMap(), hex);
         }
 
@@ -238,7 +248,7 @@ public class GameEngine {
     }
 
     private void validateTownHallsAndRegions(GameSession session, Entity oldEntity, HexColor oldColor) {
-        Currency oldBalance = Currency.EMPTY;
+        Currency oldBalance = Currency.EMPTY.clone();
         Set<TownHall> createdTownHall = new HashSet<>();
         if (oldEntity instanceof TownHall townHall) {
             oldBalance = townHall.getStorage();

@@ -3,6 +3,7 @@ package ru.bogatov.antiyoyo.game.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
 import java.time.OffsetDateTime;
@@ -20,6 +21,7 @@ public class GameSession {
     private Map<Integer, Player> players;
     private Map<Vector3, Hex> map;
     private GameSetting setting;
+    private Map<HexColor, Integer> powerByColor;
     @JsonIgnore
     private Stack<String> history;
     private Integer currentPlayerMove;

@@ -89,7 +89,7 @@ public class GameService {
     public GameSession createSessionFromMap(GameMap gameMap) {
         GameSession gameSession = new GameSession();
         gameSession.setId(UUID.randomUUID());
-        gameSession.setName("Session :" + gameMap.getName());
+        gameSession.setName("Session : " + gameMap.getName());
         gameSession.setCurrentPlayerMove(0);
         gameSession.setPlayers(new HashMap<>());
         Map<Vector3, Hex> map = new HashMap<>();
@@ -117,6 +117,7 @@ public class GameService {
         // change player
         MapUtils.restoreMap(gameSession);
         MapUtils.restoreDefence(gameSession);
+        MapUtils.updatePowerAndDronesAvailability(gameSession);
         return gameSession;
     }
 }

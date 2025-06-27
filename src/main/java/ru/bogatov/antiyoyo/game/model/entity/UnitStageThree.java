@@ -20,7 +20,7 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
 
     @Override
     public Currency getPrice(Integer unitsCount) {
-        return Currency.of(30,0,0);
+        return Currency.of(30,1,1);
     }
 
     @Override

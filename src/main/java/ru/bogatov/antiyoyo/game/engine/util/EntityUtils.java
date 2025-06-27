@@ -27,6 +27,7 @@ public class EntityUtils {
             case FOREST_FARM -> new ForestFarm();
             case MINE_FARM -> new MineFarm();
             case DRONE -> new Drone(HexColor.EMPTY);
+            case FIRE -> new Fire();
         };
     }
 
