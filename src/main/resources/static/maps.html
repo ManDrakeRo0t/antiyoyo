@@ -7,9 +7,10 @@
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         /* Header */
@@ -55,6 +56,7 @@
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
+            padding-bottom: 40px;
         }
 
         .maps-grid {
@@ -230,6 +232,92 @@
             padding: 50px;
             color: #666;
         }
+
+        /* Settings Modal */
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2001;
+        }
+
+        .settings-modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .form-group input[type="range"] {
+            width: 100%;
+        }
+
+        .range-value {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .settings-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .settings-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .settings-buttons .cancel-button {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .settings-buttons .create-button {
+            background-color: #4CAF50;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -266,6 +354,40 @@
             <p>ID сессии:</p>
             <div id="sessionId" class="session-id"></div>
             <button class="action-button create-game-button" onclick="closeSessionModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <h2>Настройки игры</h2>
+            <form id="settingsForm" class="settings-form">
+                <div class="form-group">
+                    <label for="secondToMove">Секунды на ход</label>
+                    <input type="number" id="secondToMove" name="secondToMove" value="60" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="grave">
+                        <input type="checkbox" id="grave" name="grave" checked>
+                        Могилы
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="farmsDensity">Плотность ферм: <span id="farmsDensityValue">20</span></label>
+                    <input type="range" id="farmsDensity" name="farmsDensity" min="0" max="100" value="20" 
+                           oninput="document.getElementById('farmsDensityValue').textContent = this.value">
+                </div>
+                <div class="form-group">
+                    <label for="undoMove">
+                        <input type="checkbox" id="undoMove" name="undoMove" checked>
+                        Отмена хода
+                    </label>
+                </div>
+                <div class="settings-buttons">
+                    <button type="button" class="cancel-button" onclick="closeSettingsModal()">Отмена</button>
+                    <button type="submit" class="create-button">Создать игру</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -611,18 +733,56 @@
             }
         }
 
-        async function createGame(mapId) {
+        let currentMapId = null;
+
+        function showSettingsModal(mapId) {
+            currentMapId = mapId;
+            document.getElementById('settingsModal').style.display = 'flex';
+            
+            // Reset form to default values
+            document.getElementById('secondToMove').value = '60';
+            document.getElementById('grave').checked = true;
+            document.getElementById('farmsDensity').value = '20';
+            document.getElementById('farmsDensityValue').textContent = '20';
+            document.getElementById('undoMove').checked = true;
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+            currentMapId = null;
+        }
+
+        // Update createGame function to show settings modal
+        function createGame(mapId) {
+            showSettingsModal(mapId);
+        }
+
+        // Add form submit handler
+        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentMapId) return;
+
+            const formData = {
+                mapId: currentMapId,
+                secondToMove: parseInt(document.getElementById('secondToMove').value),
+                grave: document.getElementById('grave').checked,
+                farmsDensity: parseInt(document.getElementById('farmsDensity').value),
+                undoMove: document.getElementById('undoMove').checked
+            };
+
             try {
                 const response = await fetch(`${getBackendUrl()}/api/sessions`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ mapId: mapId })
+                    body: JSON.stringify(formData)
                 });
 
                 if (response.ok) {
                     const data = await response.json();
+                    closeSettingsModal();
                     document.getElementById('sessionId').textContent = data.sessionId;
                     document.getElementById('sessionModal').style.display = 'flex';
                 } else {
@@ -633,7 +793,7 @@
                 console.error('Error creating game:', error);
                 alert('Ошибка соединения с сервером');
             }
-        }
+        });
 
         function closeMapModal() {
             document.getElementById('mapModal').style.display = 'none';

@@ -41,7 +41,7 @@ public class GameEngine {
        Player player = session.getPlayers().get(session.getCurrentPlayerMove());
        HexColor selfColor = player.getColor();
        MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
-               .forEach(region -> MapUtils.updateRegionAfterMove(session.getMap(), region));
+               .forEach(region -> MapUtils.updateRegionAfterMove(session, region));
        // change player
         MapUtils.checkPlayersCount(session);
         MapUtils.restoreMap(session);
@@ -66,6 +66,10 @@ public class GameEngine {
     }
 
     public void undoMove(GameSession session)  {
+
+        if (!session.getSetting().getUndoMove()) {
+            return;
+        }
 
         var map = session.getHistory().pop();
         if (map != null) {
@@ -215,7 +219,11 @@ public class GameEngine {
             if (oldEntity instanceof Field) {
                 ((Drone) newEntity).setOwnerColor(newColor);
             } else {
-                hex.setEntity(new Fire());
+                if (dieableUnits.contains(oldEntity.getClass())) {
+                    hex.setEntity(new Fire(1));
+                } else {
+                    hex.setEntity(new Fire());
+                }
             }
         } else {
             hex.setColor(newColor);
@@ -263,7 +271,7 @@ public class GameEngine {
                     } else {
                         Hex placeForTownHall = MapUtils.findPlaceForTownHall(session.getMap(), region.getSecond());
                         if (placeForTownHall != null) {
-                            TownHall townHall = new TownHall(Currency.EMPTY,Currency.EMPTY);
+                            TownHall townHall = new TownHall(Currency.EMPTY.clone(),Currency.EMPTY.clone());
                             if (placeForTownHall.getColor() == oldColor) {
                                 createdTownHall.add(townHall);
                             }

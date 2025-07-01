@@ -17,8 +17,11 @@ import ru.bogatov.antiyoyo.server.domain.GameEvent;
 import ru.bogatov.antiyoyo.server.domain.GameMap;
 import ru.bogatov.antiyoyo.server.dto.SessionCreateRequest;
 import ru.bogatov.antiyoyo.server.dto.SessionJoinRequest;
+import ru.bogatov.antiyoyo.server.job.EndMoveTask;
+import ru.bogatov.antiyoyo.server.job.TaskSchedulingService;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +37,7 @@ public class GameService {
     private final SessionRepository sessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final GameMapService gameMapService;
+    private final TaskSchedulingService taskSchedulingService;
 
 
     public void validateGameMap(GameMap gameMap) {
@@ -42,7 +46,6 @@ public class GameService {
 
     @SneakyThrows
     public void handleEvent(String sessionId, GameEvent event) {
-
 
         GameSession session = sessionRepository.getSession(UUID.fromString(sessionId));
 
@@ -54,7 +57,10 @@ public class GameService {
             case MOVE -> gameEngine.makeMove(session, event.getMove());
             case UNDO_MOVE -> gameEngine.undoMove(session);
             case BEFORE_MOVE -> gameEngine.handleBeforeMoveClick(session, event);
-            case FINISH_TURN -> gameEngine.endMove(session);
+            case FINISH_TURN -> {
+                gameEngine.endMove(session);
+                scheduleEndMoveTask(UUID.fromString(sessionId));
+            }
             case GET_SESSION -> {
             }
         }
@@ -66,21 +72,44 @@ public class GameService {
     public GameSession createSession(SessionCreateRequest request) {
 
         GameMap gameMap = gameMapService.getById(request.getMapId());
-
         GameSession gameSession = createSessionFromMap(gameMap);
+        gameSession.setSetting(settingFromRequest(request));
         sessionRepository.saveSession(gameSession);
         return gameSession;
+
+    }
+
+    private GameSetting settingFromRequest(SessionCreateRequest request) {
+        GameSetting setting = new GameSetting();
+        setting.setGrave(request.getGrave());
+        setting.setFarmsDensity(request.getFarmsDensity());
+        setting.setSecondsToMove(request.getSecondToMove());
+        setting.setUndoMove(request.getUndoMove());
+        return setting;
+    }
+
+    public void scheduleEndMoveTask(UUID sessionId) {
+        GameSession gameSession = sessionRepository.getSession(sessionId);
+        if (gameSession.getSkipMoveTaskId() != null) {
+            taskSchedulingService.cancelTask(gameSession.getSkipMoveTaskId().toString());
+        }
+        Instant nextTimeToSkip = Instant.now().plusSeconds(gameSession.getSetting().getSecondsToMove());
+        UUID nextTaskId = UUID.randomUUID();
+        gameSession.setSkipMoveTaskId(nextTaskId);
+        gameSession.setEndMoveTime(nextTimeToSkip);
+        taskSchedulingService.scheduleTask(nextTaskId.toString(), new EndMoveTask(sessionId, sessionRepository, gameEngine, messagingTemplate, this), nextTimeToSkip);
     }
 
     public GameSession joinSession(SessionJoinRequest request) {
-
         GameSession session = sessionRepository.getSession(request.getSessionId());
-
         Player player = session.getPlayers()
                 .values().stream()
                 .filter(p -> p.getColor() == request.getColor()).findFirst().orElse(null);
         if (player.getUserId() == null) {
             player.setUserId(request.getUserId());
+        }
+        if (session.getPlayers().values().stream().allMatch(p -> p.getUserId() != null)) {
+            scheduleEndMoveTask(request.getSessionId());
         }
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", session.getId().toString()), session);
         return session;

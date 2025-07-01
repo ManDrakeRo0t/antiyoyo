@@ -8,4 +8,9 @@ import java.util.UUID;
 public class SessionCreateRequest {
 
     private UUID mapId;
+    private Integer secondToMove;
+    private Boolean grave;
+    private Integer farmsDensity;
+    private Boolean undoMove;
+
 }

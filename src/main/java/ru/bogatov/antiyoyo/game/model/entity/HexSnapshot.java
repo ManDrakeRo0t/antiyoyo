@@ -17,6 +17,7 @@ public class HexSnapshot {
     HexColor entityOwnerColor;
     Currency storage;
     Boolean isDronesAvailable;
+    Integer dronesLimit;
     Integer defenseLevel;
     Boolean isMoved;
 }

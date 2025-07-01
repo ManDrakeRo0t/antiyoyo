@@ -41,7 +41,7 @@ public class Drone extends Entity implements Sellable, Interactable {
 
     @Override
     public Integer getMoveRadius() {
-        return 2;
+        return 4;
     }
 
     @Override
@@ -55,7 +55,9 @@ public class Drone extends Entity implements Sellable, Interactable {
                         Field.class,
                         Factory.class,
                         MineFarm.class,
-                        ForestFarm.class
+                        ForestFarm.class,
+                        UnitStageOne.class,
+                        UnitStageTwo.class
                 );
         return HexCalculator.getNeighborsInRadius(map, this.getMoveRadius(), initialPosition, false)
                 .stream()

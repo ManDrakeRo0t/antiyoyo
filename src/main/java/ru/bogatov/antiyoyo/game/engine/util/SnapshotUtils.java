@@ -40,6 +40,7 @@ public class SnapshotUtils {
                 hex.getEntity() instanceof Drone drone ? drone.getOwnerColor() : null,
                 hex.getEntity() instanceof TownHall townHall ? townHall.getStorage() : null,
                 hex.getEntity() instanceof TownHall townHall ? townHall.isDronesAvailable() : null,
+                hex.getEntity() instanceof TownHall townHall ? townHall.getDronesLimit() : null,
                 hex.getDefenseLevel(),
                 hex.getEntity().getMovedOnThisTurn()
         );
@@ -58,6 +59,7 @@ public class SnapshotUtils {
             if (hex.getEntity() instanceof TownHall townHall) {
                 townHall.setStorage(snapshot.getStorage());
                 townHall.setDronesAvailable(snapshot.getIsDronesAvailable());
+                townHall.setDronesLimit(snapshot.getDronesLimit());
             }
         }
         if (hex.getEntity() instanceof Drone drone) {

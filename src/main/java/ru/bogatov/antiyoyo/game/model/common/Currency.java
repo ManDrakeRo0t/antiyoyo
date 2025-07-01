@@ -15,7 +15,7 @@ public class Currency implements Cloneable {
     private int tree;
     private int stone;
 
-    public static final Currency EMPTY = Currency.of(0,0,0);
+    public static final Currency EMPTY = Currency.of(0,0,0).clone();
 
     public boolean isAffordable(Currency price) {
         return price.getGold() <= this.gold &&

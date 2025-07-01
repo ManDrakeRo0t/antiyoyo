@@ -644,6 +644,9 @@
     </div>
 
 <script>
+    // --- Глобальные переменные для drag/click ---
+    let mouseDown = false;
+    let mouseMoved = false;
     // Backend host management
     let backendHost = window.location.hostname;
     
@@ -1020,10 +1023,14 @@
             return;
         }
 
-      
         if (data.map) {
             hexData = data;
             powerByColor = data.powerByColor || null;
+            // Запускаем обновление таймера при каждом новом событии
+            if (data.endMoveTime) {
+                lastEndMoveTime = data.endMoveTime;
+                startTimerUpdater();
+            }
             updateControlPanelVisibility();
             checkPlayerStatus();
             checkGameStatus(); // Check for winner or destroyed player
@@ -1239,7 +1246,8 @@
             'RED': { bg: '#ff0000', name: 'Красный' },
             'BLUE': { bg: '#0000ff', name: 'Синий' },
             'GREEN': { bg: '#00ff00', name: 'Зеленый' },
-            'PURPLE': { bg: '#800080', name: 'Фиолетовый' }
+            'PURPLE': { bg: '#800080', name: 'Фиолетовый' },
+            'BLACK' : { bg: '#000000', name: 'Черный' }
         };
 
         // Create color buttons for each available color
@@ -1329,7 +1337,7 @@
         canvas.addEventListener('mouseup', handleMouseUp);
         canvas.addEventListener('mouseleave', handleMouseUp);
         canvas.addEventListener('wheel', handleWheel, { passive: false });
-        canvas.addEventListener('click', handleCanvasClick);
+        // canvas.addEventListener('click', handleCanvasClick); // УДАЛЕНО, чтобы не было двойного вызова
 
         // Keyboard event handlers
         document.addEventListener('keydown', handleKeyDown);
@@ -1528,6 +1536,7 @@
 
     // Function to handle hex click
     function onHexClick(cubicCoords) {
+        console.log('onHexClick', cubicCoords);
         let move_sended = false;
         if (state.selectedUnit) {
             // If unit is selected, try to place it
@@ -1873,6 +1882,7 @@
     let touchMoved = false;
     let longTapTimeout = null;
     const LONG_TAP_DURATION = 500; // мс
+    let wasTouch = false; // <--- для блокировки ghost click только после touch
 
     function getTouchDistance(touches) {
         if (touches.length < 2) return 0;
@@ -1950,6 +1960,9 @@
         // Обычный тап (если не было drag)
         if (!isTouchDragging && !touchMoved && e.changedTouches.length === 1) {
             handleCanvasClick({ clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY, preventDefault: ()=>{}, stopPropagation: ()=>{} });
+            wasTouch = true;
+            setTimeout(() => { wasTouch = false; }, 700);
+            e.preventDefault(); // предотвращаем ghost click
         }
         if (longTapTimeout) {
             clearTimeout(longTapTimeout);
@@ -1964,17 +1977,47 @@
         if (e.touches.length === 0) {
             isTouchDragging = false;
         }
-    });
+    }, { passive: false });
 
-    // Функция для рисования круговой диаграммы powerByColor
+    // --- Таймер ---
+    let timerInterval = null;
+    let lastEndMoveTime = null;
+    let clockImg = new window.Image();
+    clockImg.src = 'ui-elements/clock.svg';
+
+    function getSecondsLeft(endMoveTime) {
+        if (!endMoveTime) return null;
+        const end = new Date(endMoveTime).getTime();
+        const now = Date.now();
+        return Math.max(0, Math.round((end - now) / 1000));
+    }
+
+    function startTimerUpdater() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (typeof renderGrid === 'function') renderGrid();
+        }, 1000);
+    }
+
+    // Модифицируем drawPowerPieChart
     function drawPowerPieChart(powerObj) {
         const colors = Object.keys(powerObj);
         const values = Object.values(powerObj);
         const total = values.reduce((a, b) => a + b, 0);
         if (total === 0) return;
-        const centerX = canvas.width / 2;
         const centerY = 40; // отступ сверху
         const radius = 40;
+        // --- Центрирование двух элементов ---
+        const gap = 20; // px между диаграммой и часами
+        const totalWidth = radius * 2 + gap + radius * 2;
+        const centerX = canvas.width / 2 - totalWidth / 2 + radius;
+        const clockX = centerX + radius + gap + radius; // центр clock.svg
+
+        // Размеры для таймера
+        const clockRadius = radius * 0.7; // Уменьшаем размер часов
+        const timerFontSize = 24; // Размер шрифта для секунд
+        const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
+
         let startAngle = -Math.PI / 2; // сверху
         // Цвета для секторов
         const colorMap = {
@@ -2001,16 +2044,14 @@
             ctx.globalAlpha = 0.85;
             ctx.fill();
             ctx.globalAlpha = 1.0;
-            // --- Добавляем подпись процента ---
+            // --- подпись процента ---
             const midAngle = (startAngle + endAngle) / 2;
             const labelRadius = radius * 0.65;
             const labelX = centerX + labelRadius * Math.cos(midAngle);
             const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
             const percentText = Math.round(percent * 100) + '%';
-            // Выбор цвета текста для контраста
             let textColor = '#fff';
             if (colorMap[color]) {
-                // Простая проверка яркости цвета
                 const hex = colorMap[color].replace('#','');
                 const r = parseInt(hex.substring(0,2),16);
                 const g = parseInt(hex.substring(2,4),16);
@@ -2023,7 +2064,6 @@
             ctx.textBaseline = 'middle';
             ctx.fillStyle = textColor;
             ctx.fillText(percentText, labelX, labelY);
-            // --- конец подписи ---
             startAngle = endAngle;
         });
         // Белая обводка
@@ -2032,7 +2072,93 @@
         ctx.lineWidth = 3;
         ctx.strokeStyle = '#fff';
         ctx.stroke();
+
+        // --- CLOCK & TIMER ---
+        // endMoveTime должен быть в hexData.endMoveTime
+        if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
+            // Запускаем обновление таймера
+            if (lastEndMoveTime !== hexData.endMoveTime) {
+                lastEndMoveTime = hexData.endMoveTime;
+                startTimerUpdater();
+            }
+            const secondsLeft = getSecondsLeft(hexData.endMoveTime);
+            // Рисуем иконку часов
+            if (clockImg.complete) {
+                ctx.save();
+                ctx.drawImage(clockImg, 
+                    clockX - clockRadius, 
+                    clockY - clockRadius, 
+                    clockRadius * 2, 
+                    clockRadius * 2
+                );
+                ctx.restore();
+            } else {
+                clockImg.onload = () => renderGrid();
+            }
+            // Рисуем секунды под иконкой
+            ctx.save();
+            ctx.font = `bold ${timerFontSize}px "Castlefire", Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#222';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            const timerText = secondsLeft + 's';
+            const textY = clockY + clockRadius - timerFontSize/2;
+            // Белая обводка для читаемости
+            ctx.strokeText(timerText, clockX, textY);
+            ctx.fillText(timerText, clockX, textY);
+            ctx.restore();
+        }
     }
+
+    // --- ПК: обработка клика только через click ---
+    canvas.addEventListener('click', function(e) {
+        if (wasTouch) return; // предотвращаем ghost click после touch
+        handleCanvasClick(e);
+    });
+
+    // --- Удаляем вызовы handleCanvasClick из mouseup и других mouse событий ---
+    // (оставляем только drag-логику)
+    //
+    // Было:
+    // canvas.addEventListener('mouseup', function(e) {
+    //     ...
+    //     handleCanvasClick(e); // <-- УДАЛИТЬ!
+    // });
+    //
+    // Оставляем только drag-логику:
+    canvas.addEventListener('mousedown', function(e) {
+        mouseDown = true;
+        mouseMoved = false;
+        state.lastMouseX = e.clientX;
+        state.lastMouseY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+    });
+    canvas.addEventListener('mousemove', function(e) {
+        if (mouseDown) {
+            const dx = e.clientX - state.lastMouseX;
+            const dy = e.clientY - state.lastMouseY;
+            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+                state.offsetX += dx;
+                state.offsetY += dy;
+                state.lastMouseX = e.clientX;
+                state.lastMouseY = e.clientY;
+                renderGrid();
+                mouseMoved = true;
+            }
+        }
+    });
+    canvas.addEventListener('mouseup', function(e) {
+        canvas.style.cursor = 'grab';
+        mouseDown = false;
+        mouseMoved = false;
+    });
+    canvas.addEventListener('mouseleave', function(e) {
+        mouseDown = false;
+        mouseMoved = false;
+        canvas.style.cursor = 'grab';
+    });
 </script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Stack;
@@ -26,5 +27,8 @@ public class GameSession {
     private Stack<String> history;
     private Integer currentPlayerMove;
     private OffsetDateTime startTime;
+    @JsonIgnore
+    private UUID skipMoveTaskId;
+    private Instant endMoveTime;
 
 }

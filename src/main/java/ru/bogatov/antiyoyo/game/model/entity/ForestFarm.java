@@ -16,6 +16,11 @@ public class ForestFarm extends Entity implements Interactable, Sellable {
     }
 
     @Override
+    public Currency getStorageChanges() {
+        return Currency.of(0, 1,0);
+    }
+
+    @Override
     public Integer getLevel() {
         return 0;
     }

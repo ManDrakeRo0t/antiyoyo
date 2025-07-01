@@ -11,7 +11,10 @@ public class Fire extends Entity {
     private Integer stage;
 
     public Fire() {
-        this.stage = 4;
+        this.stage = 3;
+    }
+    public Fire(Integer stage) {
+        this.stage = stage;
     }
 
     @Override

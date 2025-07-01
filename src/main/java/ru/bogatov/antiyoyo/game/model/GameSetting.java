@@ -7,9 +7,7 @@ public class GameSetting {
 
     private Boolean undoMove;
     private Boolean grave;
-    private Integer playersCount;
-    private Boolean fogOfWar;
-    private Float earthDensity;
-    private Float treeDensity;
+    private Integer secondsToMove;
+    private Integer farmsDensity;
 
 }

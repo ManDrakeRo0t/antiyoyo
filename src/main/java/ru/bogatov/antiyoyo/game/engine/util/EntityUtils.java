@@ -20,7 +20,7 @@ public class EntityUtils {
             case FIELD -> new Field();
             case TREE -> new Tree();
             case GRAVE -> new Grave();
-            case TOWN_HALL -> new TownHall(Currency.of(10,0,0),Currency.EMPTY);
+            case TOWN_HALL -> new TownHall(Currency.of(10,0,0), Currency.EMPTY.clone());
             case STONE -> new Stone();
             case FOREST -> new Forest();
             case MINE -> new Mine();

@@ -40,6 +40,13 @@ public class MapUtils {
             Drone.class
     );
 
+    public static final Set<Class<? extends Entity>> dieableUnits = Set.of(
+            UnitStageTwo.class,
+            UnitStageOne.class,
+            UnitStageThree.class,
+            Tank.class
+    );
+
     public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
         map.values().forEach(hex -> {
             if (selfColor == hex.getColor() && hex.getEntity() instanceof Interactable interactable) {
@@ -53,7 +60,7 @@ public class MapUtils {
         });
     }
 
-    public static void updateRegionAfterMove(Map<Vector3, Hex> map, Pair<TownHall, Set<Hex>> region) {
+    public static void updateRegionAfterMove(GameSession session, Pair<TownHall, Set<Hex>> region) {
 
         TownHall townHall = region.getFirst();
         Set<Hex> territory = region.getSecond();
@@ -62,7 +69,7 @@ public class MapUtils {
         territory.forEach(hex -> {
             if (hex.getEntity() instanceof Grave) {
                 hex.setEntity(new Tree());
-                updateDefenseLevel(map, hex, 0, hex.getColor());
+                updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
             }
 //            if (hex.getEntity() instanceof Field) { Слишком много деревьев
 //                if (random.nextInt(100) <= 5) {
@@ -87,9 +94,13 @@ public class MapUtils {
 
         if (townHall.getStorage().getGold() < 0) {
             territory.forEach(hex -> {
-                if (moveableUnits.contains(hex.getEntity().getClass())) {
-                    hex.setEntity(new Grave());
-                    updateDefenseLevel(map, hex, 0, hex.getColor());
+                if (dieableUnits.contains(hex.getEntity().getClass())) {
+                    if (session.getSetting().getGrave()) {
+                        hex.setEntity(new Grave());
+                    } else {
+                        hex.setEntity(new Field());
+                    }
+                    updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
                 }
             });
             townHall.getStorage().setGold(0);
@@ -177,6 +188,15 @@ public class MapUtils {
                 .anyMatch(toCheck -> clazz.isAssignableFrom(toCheck.getEntity().getClass()));
     }
 
+    public static boolean hasInNeighbors(Map<Vector3, Hex> map, Hex hex, HexColor color, Set<Class<? extends Entity>> classSet) {
+        if (classSet.size() == 0) {
+            return !getNearestNeighborsWithSameColor(map, color, hex).isEmpty();
+        }
+        return getNearestNeighborsWithSameColor(map, color, hex)
+                .stream()
+                .anyMatch(toCheck -> classSet.contains(toCheck.getEntity().getClass()));
+    }
+
     public static boolean hasInNeighbors(Map<Vector3, Hex> map, Hex hex, Set<Class<? extends Entity>> classSet) {
         return getNearestNeighborsWithSameColor(map, hex.getColor(), hex)
                 .stream()
@@ -245,8 +265,11 @@ public class MapUtils {
     }
 
     public void updateDronesFlag(GameSession session, HexColor color) {
-        int dronesLimit = 3;
-        if (getDronesCount(session.getMap(), color) >= dronesLimit){
+        var r = findRegions(session.getMap(), color).stream().findFirst().orElse(null);
+        if (r.getFirst() == null) {
+            return;
+        }
+        if (r.getFirst().getDronesLimit() == null || getDronesCount(session.getMap(), color) >= r.getFirst().getDronesLimit()){
             getAllRegionsByColor(session.getMap(), color).forEach(region -> {
                 region.getFirst().setDronesAvailable(false);
             });
@@ -296,13 +319,12 @@ public class MapUtils {
     }
 
     public static void updatePowerAndDronesAvailability(GameSession session) {
-        float persent = 35f;
-        int dronesLimit = 3;
         session.getMap().values().forEach(hex -> {
             if (hex.getEntity() instanceof TownHall) {
                 ((TownHall) hex.getEntity()).setDronesAvailable(false);
             }
         });
+        Map<HexColor, Integer> dronesLimitPerColor = new HashMap<>();
         Map<HexColor, Set<Pair<TownHall, Integer>>> power = calculateTotalPower(session);
         Map<HexColor, Integer> totalPowerPerColor = new HashMap<>();
         power.forEach((key, value) -> totalPowerPerColor.put(key, value.stream().mapToInt(Pair::getSecond).sum()));
@@ -310,17 +332,41 @@ public class MapUtils {
         int maxPower = totalPowerPerColor.values().stream().max(Integer::compare).get();
         Set<HexColor> weakColors = new HashSet<>();
         totalPowerPerColor.forEach((key, value) -> {
-            if (PowerCalculator.getPersent(maxPower, value) < persent) {
+            float diff = PowerCalculator.getPersent(maxPower, value);
+            int limit = getDronesLimitFromDiff(diff);
+            if (limit >= 1) {
                 weakColors.add(key);
+                dronesLimitPerColor.put(key, limit);
             }
         });
         for (HexColor weakColor : weakColors) {
-
             Set<Pair<TownHall, Integer>> regions = power.get(weakColor);
-            regions.forEach(region -> region.getFirst().setDronesAvailable(true));
+            regions.forEach(region -> {
+                region.getFirst().setDronesAvailable(true);
+                region.getFirst().setDronesLimit(dronesLimitPerColor.get(weakColor));
+            });
 
         }
     }
+
+    private Integer getDronesLimitFromDiff(float diff) {
+        if (diff > 81) {
+            return 0;
+        }
+        if (diff > 64) {
+            return 1;
+        }
+        if (diff > 55) {
+            return 2;
+        }
+        if (diff > 46) {
+            return 3;
+        }
+        if (diff > 31) {
+            return 4;
+        }
+        return 5;
+     }
 
     public Integer getDronesCount(Map<Vector3, Hex> map, HexColor color) {
         return Math.toIntExact(map.values()
@@ -417,9 +463,13 @@ public class MapUtils {
 
     public static void killInRegion(GameSession session, Set<Hex> region) {
         region.stream()
-                .filter(hex -> moveableUnits.contains(hex.getEntity().getClass()))
+                .filter(hex -> dieableUnits.contains(hex.getEntity().getClass()))
                 .forEach(hex -> {
-                    hex.setEntity(new Grave());
+                    if (session.getSetting().getGrave()) {
+                        hex.setEntity(new Grave());
+                    } else {
+                        hex.setEntity(new Field());
+                    }
                     updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
                 });
     }
@@ -431,14 +481,16 @@ public class MapUtils {
 
     public static void processFarms(GameSession session) {
 
+        Integer density = Optional.ofNullable(session.getSetting()).map(GameSetting::getFarmsDensity).orElse(20);
+
         Random random = new Random();
 
         session.getMap().values().stream()
                 .filter(hex -> hex.getEntity() instanceof Farmable)
                 .forEach(farm -> {
-                    if (random.nextInt(100) <= 20) {
+                    if (random.nextInt(100) <= density) {
                         int count = random.nextInt(2);
-                        Set<Hex> n = getNeighborsInRadius(session.getMap(), 2, farm, false)
+                        Set<Hex> n = getNeighborsInRadius(session.getMap(), 1, farm, false)
                                 .stream().filter(hex -> hex.getEntity() instanceof Field).collect(Collectors.toSet());
                         int canCreate = Math.min(n.size(), count);
                         while (canCreate > 0) {
@@ -452,7 +504,21 @@ public class MapUtils {
     }
 
     public static void restoreDrones(GameSession session) {
-        session.getMap().values().stream().filter(hex -> hex.getEntity() instanceof Drone).forEach(drore -> drore.getEntity().setMovedOnThisTurn(false));
+
+        Map<HexColor, Boolean> isDronesAvailable = new HashMap<>();
+
+        session.getMap().values()
+                .stream()
+                .filter(hex -> hex.getEntity() instanceof TownHall)
+                .forEach(townHall -> isDronesAvailable.put(townHall.getColor() ,((TownHall) townHall.getEntity()).isDronesAvailable()));
+
+        session.getMap().values().stream()
+                .filter(hex -> hex.getEntity() instanceof Drone)
+                .forEach(drore -> {
+                    drore.getEntity().setMovedOnThisTurn(false);
+                });
+
+
     }
 
     public static void processFire(GameSession session) {
