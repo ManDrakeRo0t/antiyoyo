@@ -1018,10 +1018,7 @@
     function updateHexData(data) {
         if (!data) return;
         
-        // Only process message if it's for current player or for all players
-        if (data.forUser !== null && data.forUser !== state.currentPlayer) {
-            return;
-        }
+      
 
         if (data.map) {
             hexData = data;

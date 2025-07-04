@@ -686,7 +686,9 @@
             document.getElementById('leaveButton').addEventListener('click', logout);
 
             // Link new icon buttons
-            document.getElementById('questionIcon').addEventListener('click', function() { alert('Help clicked!'); });
+            document.getElementById('questionIcon').addEventListener('click', function() {
+                window.location.href = 'rules.html';
+            });
             document.getElementById('dollarIcon').addEventListener('click', function() { alert('Shop clicked!'); });
             document.getElementById('settingsIcon').addEventListener('click', function() { alert('Settings clicked!'); });
         });

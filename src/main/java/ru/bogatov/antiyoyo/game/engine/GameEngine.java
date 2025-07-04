@@ -1,11 +1,12 @@
 package ru.bogatov.antiyoyo.game.engine;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import ru.bogatov.antiyoyo.game.engine.util.*;
-import ru.bogatov.antiyoyo.game.model.*;
+import ru.bogatov.antiyoyo.game.model.GameSession;
+import ru.bogatov.antiyoyo.game.model.Move;
+import ru.bogatov.antiyoyo.game.model.Player;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
@@ -38,11 +39,11 @@ public class GameEngine {
         //delete history
         session.setHistory(new Stack<>());
         // process map
-       Player player = session.getPlayers().get(session.getCurrentPlayerMove());
-       HexColor selfColor = player.getColor();
-       MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
-               .forEach(region -> MapUtils.updateRegionAfterMove(session, region));
-       // change player
+        Player player = session.getPlayers().get(session.getCurrentPlayerMove());
+        HexColor selfColor = player.getColor();
+        MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
+                .forEach(region -> MapUtils.updateRegionAfterMove(session, region));
+        // change player
         MapUtils.checkPlayersCount(session);
         MapUtils.restoreMap(session);
         MapUtils.processFarms(session);
@@ -65,7 +66,7 @@ public class GameEngine {
         }
     }
 
-    public void undoMove(GameSession session)  {
+    public void undoMove(GameSession session) {
 
         if (!session.getSetting().getUndoMove()) {
             return;
@@ -83,7 +84,7 @@ public class GameEngine {
     }
 
 
-    private void saveState(GameSession session)  {
+    private void saveState(GameSession session) {
         if (CollectionUtils.isEmpty(session.getHistory())) {
             session.setHistory(new Stack<>());
         }
@@ -117,15 +118,13 @@ public class GameEngine {
                         session.getMap().get(available.getVector()).setIsAvailable(true);
                     });
                 }
-            } else if (entity.getClass() == TownHall.class) {
-
             }
         }
 
         if (event.getHex() == null && event.getEntityType() != null) {
             if (session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall() != null) {
                 HexCalculator.getAvailableHexesForNewEntity(session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
-                        session.getMap(), selfColor, (Interactable) EntityUtils.fromType(event.getEntityType())).forEach(hex -> {
+                        session, selfColor, (Interactable) EntityUtils.fromType(event.getEntityType())).forEach(hex -> {
                     session.getMap().get(hex.getVector()).setIsAvailable(true);
                 });
             }
@@ -134,9 +133,9 @@ public class GameEngine {
 
     private void validateMove(GameSession session, Move move) {
 
-            MoveValidator.checkPlayerOrder(session, move);
-            MoveValidator.checkFromHex(session, move);
-            MoveValidator.checkToHex(session, move);
+        MoveValidator.checkPlayerOrder(session, move);
+        MoveValidator.checkFromHex(session, move);
+        MoveValidator.checkToHex(session, move);
 
     }
 
@@ -171,7 +170,7 @@ public class GameEngine {
         }
         if (townHall != null && townHall.getEntity() instanceof TownHall townHallEntity &&
                 to.getEntity() != null && to.getEntity() instanceof Mineable mineable) {
-           townHallEntity.getStorage().add(mineable.getReward());
+            townHallEntity.getStorage().add(mineable.getReward());
         }
         if (!skipMove) {
             setEntity(session, to, EntityUtils.fromType(move.getEntityType()), session.getPlayers().get(move.getPlayer()).getColor());
@@ -182,7 +181,7 @@ public class GameEngine {
 
         if (townHall != null && !move.getRedactorMode()) {
             updateTownHallEconomy(session.getMap(), townHall);
-            MapUtils.updatePricesForTownHall(findTownHallWithRegion(session.getMap(), selfColor ,townHall));
+            MapUtils.updatePricesForTownHall(findTownHallWithRegion(session.getMap(), selfColor, townHall));
             MapUtils.updateDronesFlag(session, selfColor);
         }
 
@@ -271,7 +270,7 @@ public class GameEngine {
                     } else {
                         Hex placeForTownHall = MapUtils.findPlaceForTownHall(session.getMap(), region.getSecond());
                         if (placeForTownHall != null) {
-                            TownHall townHall = new TownHall(Currency.EMPTY.clone(),Currency.EMPTY.clone());
+                            TownHall townHall = new TownHall(Currency.EMPTY.clone(), Currency.EMPTY.clone());
                             if (placeForTownHall.getColor() == oldColor) {
                                 createdTownHall.add(townHall);
                             }
@@ -296,7 +295,7 @@ public class GameEngine {
             createdTownHall.forEach(townHall -> {
                 townHall.setStorage(storagePerTownHall.clone());
                 if (townHall.getStorage().getGold() + townHall.getStorageUpdate().getGold() < 0) {
-                    killInRegion(session ,townHall);
+                    killInRegion(session, townHall);
                 }
             });
         }

@@ -24,10 +24,16 @@ public class TaskSchedulingService {
         scheduledTasks.put(taskId, scheduledTask);
     }
 
-
-
-    public boolean containsTask(String taskId) {
-        return scheduledTasks.containsKey(taskId);
+    public boolean cancelTask(String taskId) {
+        ScheduledFuture<?> scheduledTask = scheduledTasks.get(taskId);
+        if (scheduledTask != null) {
+            scheduledTask.cancel(true);
+            scheduledTasks.remove(taskId);
+            return true;
+        }
+        return false;
     }
+
+
 
 }

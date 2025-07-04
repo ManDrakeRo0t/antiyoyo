@@ -22,6 +22,7 @@ import ru.bogatov.antiyoyo.server.job.TaskSchedulingService;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -85,6 +86,7 @@ public class GameService {
         setting.setFarmsDensity(request.getFarmsDensity());
         setting.setSecondsToMove(request.getSecondToMove());
         setting.setUndoMove(request.getUndoMove());
+        setting.setCut(request.getCut());
         return setting;
     }
 
@@ -110,6 +112,8 @@ public class GameService {
         }
         if (session.getPlayers().values().stream().allMatch(p -> p.getUserId() != null)) {
             scheduleEndMoveTask(request.getSessionId());
+            session.setStartTime(OffsetDateTime.now());
+            session.setStarted(true);
         }
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", session.getId().toString()), session);
         return session;

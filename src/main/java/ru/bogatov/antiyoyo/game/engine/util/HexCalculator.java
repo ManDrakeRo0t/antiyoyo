@@ -2,6 +2,8 @@ package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import ru.bogatov.antiyoyo.game.model.GameSession;
+import ru.bogatov.antiyoyo.game.model.GameSetting;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
@@ -31,17 +33,21 @@ public class HexCalculator {
     }
 
     public static Set<Hex> getAvailableHexesForNewEntity(UUID townHallId,
-                                                             Map<Vector3, Hex> map,
+                                                             GameSession gameSession,
                                                              HexColor selfColor,
                                                              Interactable entity) {
-        Hex townHall = foundTownHallById(map, townHallId);
+        Hex townHall = foundTownHallById(gameSession.getMap(), townHallId);
         if (townHall == null) {
             throw new IllegalArgumentException("No townHall");
         }
 
-        Set<Class<? extends Entity>> shouldHaveInNeighbors = getShouldHaveInNeighbors(entity);
-
-        Pair<TownHall, Set<Hex>> region = MapUtils.findTownHallWithRegion(map, selfColor, townHall);
+        Set<Class<? extends Entity>> shouldHaveInNeighbors;
+        if (Optional.ofNullable(gameSession.getSetting()).map(GameSetting::getCut).orElse(Boolean.FALSE)) {
+            shouldHaveInNeighbors = getShouldHaveInNeighborsWithCut(entity);
+        } else {
+            shouldHaveInNeighbors = getShouldHaveInNeighbors(entity);
+        }
+        Pair<TownHall, Set<Hex>> region = MapUtils.findTownHallWithRegion(gameSession.getMap(), selfColor, townHall);
 
 //        Set<Hex> available = region.getSecond().stream()
 //                .flatMap(hex -> addNeiboursForAttack(hex, map, entity.getAttackRadius()))
@@ -52,24 +58,23 @@ public class HexCalculator {
 //        Set<Hex> selfAvailable = region.getSecond().stream()
 //                .filter(hex -> canMoveToSelfHex(hex, selfColor, entity))
 //                .collect(Collectors.toSet());
-
-        Set<Class<? extends Entity>> finalShouldHaveInNeighbors = shouldHaveInNeighbors;
+        ;
         Set<Hex> available = region.getSecond().stream()
-                .flatMap(hex -> addNeiboursForAttack(hex, map, entity.getAttackRadius()))
-                .filter(hex -> MapUtils.hasInNeighbors(map, hex, selfColor, finalShouldHaveInNeighbors))
+                .flatMap(hex -> addNeiboursForAttack(hex, gameSession.getMap(), entity.getAttackRadius()))
+                .filter(hex -> MapUtils.hasInNeighbors(gameSession.getMap(), hex, selfColor, shouldHaveInNeighbors))
                 .filter(hex -> canMoveToEnemyHex(hex, selfColor, entity))
                 .filter(hex -> !(hex.getEntity() instanceof Farmable))
                 .collect(Collectors.toSet());
 
         Set<Hex> selfAvailable = region.getSecond().stream()
-                .filter(hex -> MapUtils.hasInNeighbors(map, hex, selfColor, finalShouldHaveInNeighbors))
+                .filter(hex -> MapUtils.hasInNeighbors(gameSession.getMap(), hex, selfColor, shouldHaveInNeighbors))
                 .filter(hex -> canMoveToSelfHex(hex, selfColor, entity))
                 .filter(hex -> !(hex.getEntity() instanceof Farmable))
                 .collect(Collectors.toSet());
 
         available.addAll(selfAvailable);
 
-       return entity.customizeAvailableHexesForNew(map, region, selfColor, available);
+       return entity.customizeAvailableHexesForNew(gameSession.getMap(), region, selfColor, available);
     }
 
     private static Set<Class<? extends Entity>> getShouldHaveInNeighbors(Interactable entity) {
@@ -79,6 +84,25 @@ public class HexCalculator {
                 shouldHaveInNeighbors = Set.of(Tower.class, BigTower.class, Factory.class, TownHall.class);
             }
             if (entity.getLevel() == 3 || entity.getLevel() == 4) {
+                shouldHaveInNeighbors = Set.of(BigTower.class, Factory.class, TownHall.class);
+            }
+        }
+        return shouldHaveInNeighbors;
+    }
+
+    private static Set<Class<? extends Entity>> getShouldHaveInNeighborsWithCut(Interactable entity) {
+        Set<Class<? extends Entity>> shouldHaveInNeighbors = Set.of();
+        if (dieableUnits.contains(entity.getClass())) {
+            if (entity.getLevel() == 1) {
+                shouldHaveInNeighbors = Set.of(Tower.class, BigTower.class, Factory.class, TownHall.class, UnitStageTwo.class, UnitStageThree.class, Tank.class);
+            }
+            if (entity.getLevel() == 2) {
+                shouldHaveInNeighbors = Set.of(Tower.class, BigTower.class, Factory.class, TownHall.class, UnitStageThree.class, Tank.class);
+            }
+            if (entity.getLevel() == 3) {
+                shouldHaveInNeighbors = Set.of(BigTower.class, Factory.class, TownHall.class, Tank.class);
+            }
+            if (entity.getLevel() == 4) {
                 shouldHaveInNeighbors = Set.of(BigTower.class, Factory.class, TownHall.class);
             }
         }

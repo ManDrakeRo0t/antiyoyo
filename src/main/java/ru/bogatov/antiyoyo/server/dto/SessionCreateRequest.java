@@ -12,5 +12,6 @@ public class SessionCreateRequest {
     private Boolean grave;
     private Integer farmsDensity;
     private Boolean undoMove;
+    private Boolean cut;
 
 }

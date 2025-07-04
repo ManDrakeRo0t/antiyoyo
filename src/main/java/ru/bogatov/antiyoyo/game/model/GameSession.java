@@ -15,7 +15,6 @@ import java.util.UUID;
 @Data
 public class GameSession {
 
-    private Integer forUser;
     private UUID id;
     private UUID winnerId;
     private String name;
@@ -27,6 +26,7 @@ public class GameSession {
     private Stack<String> history;
     private Integer currentPlayerMove;
     private OffsetDateTime startTime;
+    private boolean started;
     @JsonIgnore
     private UUID skipMoveTaskId;
     private Instant endMoveTime;

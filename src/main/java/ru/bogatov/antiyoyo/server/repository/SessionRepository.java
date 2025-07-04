@@ -3,6 +3,7 @@ package ru.bogatov.antiyoyo.server.repository;
 import org.springframework.stereotype.Repository;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,10 @@ public class SessionRepository {
 
     public GameSession getSession(UUID id) {
         return storage.get(id);
+    }
+
+    public List<GameSession> getSessions() {
+        return storage.values().stream().filter(session -> !session.isStarted()).toList();
     }
 
 

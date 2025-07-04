@@ -9,5 +9,6 @@ public class GameSetting {
     private Boolean grave;
     private Integer secondsToMove;
     private Integer farmsDensity;
+    private Boolean cut;
 
 }

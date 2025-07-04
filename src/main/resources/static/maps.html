@@ -383,6 +383,12 @@
                         Отмена хода
                     </label>
                 </div>
+                <div class="form-group">
+                    <label for="cut">
+                        <input type="checkbox" id="cut" name="cut">
+                        Разрез 
+                    </label>
+                </div>
                 <div class="settings-buttons">
                     <button type="button" class="cancel-button" onclick="closeSettingsModal()">Отмена</button>
                     <button type="submit" class="create-button">Создать игру</button>
@@ -745,6 +751,7 @@
             document.getElementById('farmsDensity').value = '20';
             document.getElementById('farmsDensityValue').textContent = '20';
             document.getElementById('undoMove').checked = true;
+            document.getElementById('cut').checked = false;
         }
 
         function closeSettingsModal() {
@@ -768,7 +775,8 @@
                 secondToMove: parseInt(document.getElementById('secondToMove').value),
                 grave: document.getElementById('grave').checked,
                 farmsDensity: parseInt(document.getElementById('farmsDensity').value),
-                undoMove: document.getElementById('undoMove').checked
+                undoMove: document.getElementById('undoMove').checked,
+                cut : document.getElementById('cut').checked
             };
 
             try {

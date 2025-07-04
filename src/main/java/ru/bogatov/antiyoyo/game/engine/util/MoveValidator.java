@@ -1,11 +1,10 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
-import lombok.Data;
 import lombok.experimental.UtilityClass;
-import ru.bogatov.antiyoyo.game.model.*;
+import ru.bogatov.antiyoyo.game.model.GameSession;
+import ru.bogatov.antiyoyo.game.model.Move;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
-import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.Drone;
 import ru.bogatov.antiyoyo.game.model.entity.Interactable;
 
@@ -57,7 +56,7 @@ public class MoveValidator {
         if (from == null) { // Новая покупка
             availableHexes = HexCalculator.getAvailableHexesForNewEntity(
                     gameSession.getPlayers().get(gameSession.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
-                    gameSession.getMap(),
+                    gameSession,
                     gameSession.getPlayers().get(move.getPlayer()).getColor(),
                     (Interactable) EntityUtils.fromType(move.getEntityType()));
         } else { // Передвижение
