@@ -12,398 +12,275 @@
             font-weight: normal;
             font-style: normal;
         }
-
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 30%, #F0CCA5 0%, #FDEBD4 100%);
+            font-family: 'Castlefire', sans-serif;
             overflow: hidden;
-            background-color: #dcdcdc; /* Light grey from mockup */
-            font-family: 'Castlefire', sans-serif; /* Default font for entire body */
         }
-
-        #mainContentWrapper {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
+        .centered-wrapper {
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-image: url('ui-elements/background.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center center;
-            padding: 2vw;
-            box-sizing: border-box;
         }
-
-        /* Authentication Modal Styles */
-        .auth-modal {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .auth-modal, .main-menu {
             width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .auth-container {
+            max-width: 370px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            width: 90%;
-            max-width: 400px;
-            /* Removed position: relative and top: -5vh; rely on flexbox for positioning */
-            padding: 5vw;
+            background: none;
             box-sizing: border-box;
-            height: 80vh;
-            max-height: 600px;
         }
-
         .game-logo {
-            margin-top: 10vh;
-            width: clamp(100px, 20vw, 150px);
+            width: 90px;
             height: auto;
-            margin-bottom: 0; /* Removed margin-bottom */
+            margin-top: 32px;
+            margin-bottom: 8px;
         }
-
         .game-title {
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(40px, 9vw, 80px);
-            color: black;
+            font-size: 2.2rem;
+            color: #222;
             text-align: center;
-            margin-top: 1vh; /* Adjusted margin-top */
-            margin-bottom: 1vh; /* Adjusted margin-bottom */
+            margin: 0 0 8px 0;
             letter-spacing: 2px;
         }
-
-        .auth-container h2 {
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(25px, 6vw, 50px); /* Adjusted font size */
+        .menu-welcome, .menu-user-login {
+            font-size: 1.1rem;
+            color: #222;
             text-align: center;
-            margin-bottom: 2vh; /* Adjusted margin */
-            color: black;
+            margin-bottom: 16px;
         }
-
-        .auth-form {
+        /* Auth */
+        .auth-container {
+            width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 1.5vh; /* Adjusted gap */
-            width: 100%;
+            align-items: center;
         }
-
-        .auth-form input {
-            padding: 0;
-            border: none;
-            background-image: url('ui-elements/input.png');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
+        .auth-container h3 {
+            font-size: 1.2rem;
+            margin: 8px 0 16px 0;
+        }
+        .auth-form {
             width: 100%;
-            height: clamp(40px, 7vh, 55px); /* Adjusted height */
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .auth-form input {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 12px;
+            background: #fff;
             font-family: 'Castlefire', sans-serif;
-            font-size: clamp(16px, 3vw, 28px); /* Adjusted font size */
-            color: black;
+            font-size: 1.1rem;
+            color: #222;
+            text-align: center;
             box-sizing: border-box;
         }
-
         .auth-form input::placeholder {
-            color: #555;
+            color: #888;
         }
-
         .auth-form input:focus {
-            outline: none;
+            outline: 2px solid #e0b97d;
         }
-
         .auth-form button {
-            padding: 0;
+            position: relative;
+            width: 100%;
+            height: 48px;
             border: none;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            width: clamp(180px, 65vw, 250px); /* Adjusted width */
-            height: clamp(35px, 6vh, 60px); /* Adjusted height */
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(16px, 3.5vw, 30px); /* Adjusted font size */
-            color: black;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: transform 0.1s ease;
-            margin: 0 auto;
-            border-radius: 20px; /* Adjusted border-radius */
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            color: #222;
+            border-radius: 16px;
             overflow: hidden;
+            margin-top: 4px;
+            padding: 0;
         }
-        .auth-form button:active {
-            transform: translateY(2px);
+        .auth-form button .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: cover;
+            pointer-events: none;
         }
-
-        /* Specific button styles */
-        #authSubmitBtn.enter-button {
-            background-image: url('ui-elements/yellow-button.png');
-        }
-        #authSubmitBtn.signup-button {
-            background-image: url('ui-elements/yellow-button.png');
-        }
-        #authSwitchButton.signup-button {
-            background-image: url('ui-elements/gray-button.png');
-        }
-        #authSwitchButton.back-button {
-            background-image: url('ui-elements/orange-button.png');
-        }
-
-        .auth-form button:hover {
-            filter: brightness(1.1);
-        }
-        .auth-form button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
-
-        .auth-switch {
+        .auth-form button .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
             text-align: center;
-            margin-top: 1.5vh; /* Adjusted margin-top */
+            pointer-events: none;
+        }
+        .auth-switch {
+            width: 100%;
+            margin-top: 8px;
             display: flex;
             justify-content: center;
-            width: 100%;
         }
         .auth-switch button {
+            position: relative;
             background: none;
             border: none;
-            color: black;
-            text-decoration: none;
-            font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
-            width: clamp(160px, 60vw, 220px); /* Adjusted width */
-            height: clamp(30px, 5vh, 50px); /* Adjusted height */
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center;
+            color: #222;
+            font-size: 1rem;
             cursor: pointer;
-            border-radius: 20px; /* Adjusted border-radius */
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 40px;
+            border-radius: 16px;
             overflow: hidden;
+            padding: 0;
         }
-
+        .auth-switch button .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        .auth-switch button .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
         .auth-error {
             color: #f44336;
             text-align: center;
-            margin-top: 1vh;
-            font-size: clamp(12px, 2.5vw, 14px);
+            margin-top: 4px;
+            font-size: 0.95rem;
         }
-
-        /* Main Menu Styles */
-        .main-menu {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1500;
-            padding: 2vw;
-            box-sizing: border-box;
-        }
+        /* Main menu */
         .menu-buttons {
+            width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 0.5vh; /* Adjusted gap */
-            align-items: center;
-            margin-top: 5vh;
-            width: 100%;
+            gap: 14px;
+            margin: 24px 0 16px 0;
         }
         .menu-button {
-            padding: 0;
-            border: none;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            width: clamp(160px, 65vw, 120px);
-            height: clamp(30px, 5vh, 50px); /* Adjusted height */
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
-            color: black;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            margin: 0 auto;
-            border-radius: 20px; /* Adjusted border-radius */
-            overflow: hidden;
-        }
-        .menu-button:active {
-            transform: translateY(2px);
-        }
-        .menu-button:hover {
-            filter: brightness(1.1);
-        }
-
-        /* Specific main menu button styles */
-        #playButton { background-image: url('ui-elements/yellow-button.png'); }
-        #lobbiesButton, #rankingButton, #accountButton { background-image: url('ui-elements/gray-button.png'); }
-        #leaveButton { background-image: url('ui-elements/orange-button.png'); }
-
-        .menu-icons {
-            display: flex;
-            gap: 0.5vw; /* Adjusted gap */
-            flex-wrap: wrap;
-            justify-content: center;
+            position: relative;
             width: 100%;
-            margin-top: auto;
-            padding-bottom: 3.5vh; /* Adjusted padding */
-        }
-
-        .menu-icon-button {
-            padding: 0;
+            height: 54px;
             border: none;
-            background-color: transparent;
-            /* Removed background-size: 100% 100%; to avoid conflict */
-            background-repeat: no-repeat;
-            width: clamp(20px, 4vw, 40px); /* Adjusted size */
-            height: clamp(20px, 4vw, 40px); /* Adjusted size */
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: transform 0.1s ease;
-            border-radius: 50%;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.3rem;
+            color: #222;
+            border-radius: 16px;
             overflow: hidden;
+            padding: 0;
         }
-        /* Specific menu icon button styles */
-        #questionIcon { background-image: url('ui-elements/question.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
-        #dollarIcon { background-image: url('ui-elements/dollar.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
-        #settingsIcon { background-image: url('ui-elements/settings.png'), url('ui-elements/small-button.png'); background-size: contain, 100% 100%; background-repeat: no-repeat, no-repeat; background-position: center center, center center; }
-
-        .menu-icon-button:active {
-            transform: translateY(2px);
+        .menu-button .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: cover;
+            pointer-events: none;
         }
-        .menu-icon-button:hover {
-            filter: brightness(1.1);
-        }
-
-        .menu-welcome {
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(14px, 3vw, 30px); /* Adjusted font size */
-            color: black;
+        .menu-button .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
             text-align: center;
-            margin-bottom: 2vh; /* Adjusted margin */
+            pointer-events: none;
         }
-
-        .menu-user-login {
-            font-family: 'Castlefire', sans-serif;
-            font-size: clamp(25px, 6vw, 50px); /* Adjusted font size */
-            color: black;
-            text-align: center;
-            margin-top: 0; /* Adjusted margin */
-            margin-bottom: 3vh; /* Adjusted margin */
+        .menu-button:active, .auth-form button:active, .menu-icon-button:active {
+            filter: brightness(0.92);
         }
-
-        /* Media Queries */
-        @media (max-width: 768px) {
-            .auth-container {
-                padding: 4vw;
-                height: 90vh;
+        .menu-icons {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            gap: 12px;
+        }
+        .menu-icon-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: filter 0.1s;
+        }
+        .menu-icon-button img {
+            width: 38px;
+            height: 38px;
+        }
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .centered-wrapper {
+                padding: 0 4vw;
+            }
+            .auth-modal, .main-menu {
+                max-width: 98vw;
             }
             .game-logo {
-                width: clamp(80px, 18vw, 120px);
-                margin-bottom: 0; /* Adjusted for smaller screens */
+                width: 64px;
             }
-            .game-title {
-                font-size: clamp(25px, 7vw, 70px); /* Adjusted font size */
-                margin-top: 1vh; /* Adjusted for smaller screens */
-                margin-bottom: 1vh; /* Adjusted for smaller screens */
+            .menu-button, .auth-form button {
+                font-size: 1.05rem;
+                height: 44px;
             }
-            .auth-container h2 {
-                font-size: clamp(20px, 5vw, 45px); /* Adjusted font size */
-                margin-bottom: 1.5vh; /* Adjusted for smaller screens */
-            }
-            .auth-form input {
-                height: clamp(35px, 6vh, 55px); /* Adjusted height */
-                font-size: clamp(14px, 2.8vw, 28px); /* Adjusted font size */
-            }
-            .auth-form button,
-            .auth-switch button {
-                width: clamp(160px, 60vw, 220px);
-                height: clamp(35px, 6vh, 60px); /* Adjusted height */
-                font-size: clamp(16px, 3.5vw, 35px); /* Adjusted font size */
-            }
-            .auth-switch {
-                margin-top: 0.8vh;
-            }
-            .menu-buttons {
-                gap: 0.8vh; /* Adjusted gap */
-                margin-top: 2.5vh; /* Adjusted for smaller screens */
-            }
-            .menu-button {
-                width: clamp(140px, 55vw, 200px); /* Adjusted width */
-                height: clamp(30px, 5vh, 50px); /* Adjusted height */
-                font-size: clamp(14px, 3vw, 25px); /* Adjusted font size */
-            }
-            .menu-icons {
-                gap: 0.8vw; /* Adjusted gap */
-                padding-bottom: 2vh; /* Adjusted padding */
+            .menu-button .button-bg, .auth-form button .button-bg {
+                height: 44px;
             }
             .menu-icon-button {
-                width: clamp(20px, 4vw, 40px); /* Adjusted size */
-                height: clamp(20px, 4vw, 40px); /* Adjusted size */
+                width: 38px;
+                height: 38px;
             }
-            .menu-welcome {
-                font-size: clamp(16px, 3.5vw, 40px); /* Adjusted font size */
+            .menu-icon-button img {
+                width: 28px;
+                height: 28px;
             }
         }
-
-        @media (max-width: 480px) {
-            #mainContentWrapper {
-                padding: 1vw;
+        @media (min-width: 900px) {
+            .centered-wrapper {
+                min-height: 100vh;
+                justify-content: center;
+                align-items: center;
             }
-            .auth-container {
-                width: 95%;
-                padding: 3vw;
-                height: 95vh;
-            }
-            .game-logo {
-                width: clamp(70px, 15vw, 100px);
-                margin-bottom: 0; /* Adjusted for very small screens */
-            }
-            .game-title {
-                font-size: clamp(18px, 5vw, 60px); /* Adjusted font size */
-                margin-top: 0.5vh; /* Adjusted for very small screens */
-                margin-bottom: 0.5vh; /* Adjusted for very small screens */
-            }
-            .auth-container h2 {
-                font-size: clamp(14px, 3.5vw, 40px); /* Adjusted font size */
-                margin-bottom: 0.8vh; /* Adjusted for very small screens */
-            }
-            .auth-form input {
-                height: clamp(25px, 4.5vh, 50px); /* Adjusted height */
-                font-size: clamp(10px, 2vw, 25px); /* Adjusted font size */
-            }
-            .auth-form button,
-            .auth-switch button,
-            .menu-button {
-                width: clamp(100px, 45vw, 200px); /* Adjusted width */
-                height: clamp(25px, 4.5vh, 50px); /* Adjusted height */
-                font-size: clamp(12px, 2.5vw, 25px); /* Adjusted font size */
-            }
-            .auth-switch {
-                margin-top: 0.3vh;
-            }
-            .menu-buttons {
-                gap: 0.3vh; /* Adjusted gap */
-                margin-top: 1.5vh; /* Adjusted for very small screens */
-            }
-            .menu-icons {
-                gap: 0.3vw; /* Adjusted gap */
-                padding-bottom: 0.8vh; /* Adjusted padding */
-            }
-            .menu-icon-button {
-                width: clamp(18px, 3.5vw, 40px); /* Adjusted size */
-                height: clamp(18px, 3.5vw, 40px); /* Adjusted size */
-            }
-            .menu-welcome {
-                font-size: clamp(14px, 3vw, 30px); /* Adjusted font size */
+            .auth-modal, .main-menu {
+                max-width: 370px;
+                box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+                border-radius: 24px;
+                background: rgba(255,255,255,0.04);
+                padding: 32px 32px 24px 32px;
             }
         }
     </style>
 </head>
 <body>
-    <div id="mainContentWrapper">
+    <div class="centered-wrapper">
         <!-- Authentication Modal -->
         <div id="authModal" class="auth-modal" style="display: none;">
             <div class="auth-container">
@@ -413,15 +290,20 @@
                 <form class="auth-form" id="authForm">
                     <input type="text" id="loginInput" placeholder="Login" required>
                     <input type="password" id="passwordInput" placeholder="Password" required>
-                    <button type="submit" id="authSubmitBtn" class="enter-button">ENTER</button>
+                    <button type="submit" id="authSubmitBtn" class="enter-button">
+                        <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Enter" />
+                        <span class="button-text">ENTER</span>
+                    </button>
                     <div class="auth-error" id="authError" style="display: none;"></div>
                 </form>
                 <div class="auth-switch">
-                    <button type="button" id="authSwitchButton" class="signup-button">SIGN UP</button>
+                    <button type="button" id="authSwitchButton" class="signup-button">
+                        <img class="button-bg" src="ui-elements/svg/gray_button.svg" alt="Sign up" />
+                        <span class="button-text">SIGN UP</span>
+                    </button>
                 </div>
             </div>
         </div>
-
         <!-- Main Menu -->
         <div id="mainMenu" class="main-menu" style="display: none;">
             <img src="ui-elements/logo.png" alt="World Wars Logo" class="game-logo">
@@ -430,16 +312,37 @@
                 <span class="welcome-text">Hello, <span id="menuUserLogin"></span>!</span>
             </div>
             <div class="menu-buttons">
-                <button class="menu-button" id="playButton">PLAY</button>
-                <button class="menu-button" id="lobbiesButton">LOBBIES</button>
-                <button class="menu-button" id="rankingButton">REDACTOR</button>
-                <button class="menu-button" id="accountButton">ACCOUNT</button>
-                <button class="menu-button" id="leaveButton">LEAVE</button>
+                <button class="menu-button" id="playButton">
+                    <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Play" />
+                    <span class="button-text">PLAY</span>
+                </button>
+                <button class="menu-button" id="lobbiesButton">
+                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Lobbies" />
+                    <span class="button-text">LOBBIES</span>
+                </button>
+                <button class="menu-button" id="rankingButton">
+                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Ranking" />
+                    <span class="button-text">REDACTOR</span>
+                </button>
+                <button class="menu-button" id="accountButton">
+                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Account" />
+                    <span class="button-text">ACCOUNT</span>
+                </button>
+                <button class="menu-button" id="leaveButton">
+                    <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
+                    <span class="button-text">LEAVE</span>
+                </button>
             </div>
             <div class="menu-icons">
-                <button class="menu-icon-button" id="questionIcon"></button>
-                <button class="menu-icon-button" id="dollarIcon"></button>
-                <button class="menu-icon-button" id="settingsIcon"></button>
+                <button class="menu-icon-button" id="questionIcon">
+                    <img src="ui-elements/svg/rules_button.svg" alt="Rules" />
+                </button>
+                <button class="menu-icon-button" id="dollarIcon">
+                    <img src="ui-elements/svg/dollar_button.svg" alt="Shop" />
+                </button>
+                <button class="menu-icon-button" id="settingsIcon">
+                    <img src="ui-elements/svg/settings_button.svg" alt="Settings" />
+                </button>
             </div>
         </div>
     </div>
@@ -531,31 +434,27 @@
         function updateAuthUI() {
             const title = document.getElementById('authTitle');
             const submitBtn = document.getElementById('authSubmitBtn');
-            const switchBtn = document.getElementById('authSwitchButton'); // Changed ID
+            const switchBtn = document.getElementById('authSwitchButton');
 
             if (isAuthMode) {
                 if (title) title.textContent = 'REGISTRATION';
                 if (submitBtn) {
-                    submitBtn.textContent = 'ENTER';
-                    submitBtn.classList.remove('enter-button');
-                    submitBtn.classList.add('signup-button');
+                    submitBtn.querySelector('.button-text').textContent = 'ENTER';
+                    submitBtn.querySelector('.button-bg').src = 'ui-elements/svg/yellow_button.svg';
                 }
                 if (switchBtn) {
-                    switchBtn.textContent = 'BACK'; // Changed text to "Назад"
-                    switchBtn.classList.remove('signup-button');
-                    switchBtn.classList.add('back-button');
+                    switchBtn.querySelector('.button-text').textContent = 'BACK';
+                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/orange_button.svg';
                 }
             } else {
                 if (title) title.textContent = 'SIGN IN';
                 if (submitBtn) {
-                    submitBtn.textContent = 'ENTER';
-                    submitBtn.classList.remove('signup-button');
-                    submitBtn.classList.add('enter-button');
+                    submitBtn.querySelector('.button-text').textContent = 'ENTER';
+                    submitBtn.querySelector('.button-bg').src = 'ui-elements/svg/yellow_button.svg';
                 }
                 if (switchBtn) {
-                    switchBtn.textContent = 'SIGN UP'; // Changed text to "Зарегистрироваться"
-                    switchBtn.classList.remove('back-button');
-                    switchBtn.classList.add('signup-button');
+                    switchBtn.querySelector('.button-text').textContent = 'SIGN UP';
+                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/gray_button.svg';
                 }
             }
         }
@@ -590,11 +489,11 @@
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Загрузка...';
+            submitBtn.querySelector('.button-text').textContent = 'Загрузка...';
             errorDiv.style.display = 'none';
 
             try {
-                const endpoint = isAuthMode ? '/api/register' : '/api/login'; // Corrected endpoint as per new JS
+                const endpoint = isAuthMode ? '/api/register' : '/api/login';
                 const response = await fetch(`${getBackendUrl()}${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -618,7 +517,7 @@
                 showAuthError('Ошибка соединения с сервером');
             } finally {
                 submitBtn.disabled = false;
-                updateAuthUI(); // Ensure button text is restored after loading
+                updateAuthUI();
             }
         }
 
@@ -664,7 +563,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Add authentication event listeners
             const authForm = document.getElementById('authForm');
-            const authSwitchButton = document.getElementById('authSwitchButton'); // Updated ID
+            const authSwitchButton = document.getElementById('authSwitchButton');
 
             if (authForm) {
                 authForm.addEventListener('submit', handleAuthSubmit);
@@ -678,11 +577,11 @@
 
             // Link new menu buttons to existing functions
             document.getElementById('playButton').addEventListener('click', openGame);
-            document.getElementById('lobbiesButton').addEventListener('click', createRoom); // Assuming lobbies maps to createRoom
+            document.getElementById('lobbiesButton').addEventListener('click', createRoom);
             document.getElementById('rankingButton').addEventListener('click', function() { 
                 openEditor()
-             }); // Placeholder
-            document.getElementById('accountButton').addEventListener('click', function() { alert('Account clicked!'); }); // Placeholder
+             });
+            document.getElementById('accountButton').addEventListener('click', function() { alert('Account clicked!'); });
             document.getElementById('leaveButton').addEventListener('click', logout);
 
             // Link new icon buttons
