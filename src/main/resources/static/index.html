@@ -7,8 +7,7 @@
     <style>
         @font-face {
             font-family: 'Castlefire';
-            src: url('fonts/Castlefire.ttf') format('truetype'),
-                 url('fonts/Castlefire.otf') format('opentype');
+            src: url('fonts/Castlefire.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -21,60 +20,153 @@
             min-height: 100vh;
             background: radial-gradient(circle at 50% 30%, #F0CCA5 0%, #FDEBD4 100%);
             font-family: 'Castlefire', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
         }
-        .centered-wrapper {
+        .main-wrapper {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
-        .auth-modal, .main-menu {
-            width: 100%;
-            max-width: 370px;
-            margin: 0 auto;
+        .logo-block {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: none;
-            box-sizing: border-box;
-        }
-        .game-logo {
-            width: 90px;
-            height: auto;
             margin-top: 32px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .logo-img {
+            width: 120px;
+            height: auto;
         }
         .game-title {
-            font-size: 2.2rem;
+            font-size: 2.6rem;
             color: #222;
             text-align: center;
-            margin: 0 0 8px 0;
+            margin: 8px 0 0 0;
             letter-spacing: 2px;
         }
-        .menu-welcome, .menu-user-login {
-            font-size: 1.1rem;
+        .menu-welcome {
+            font-size: 1.3rem;
             color: #222;
             text-align: center;
-            margin-bottom: 16px;
+            margin: 10px 0 18px 0;
         }
-        /* Auth */
-        .auth-container {
+        .menu-buttons {
             width: 100%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin: 0 auto 18px auto;
+        }
+        .menu-button {
+            position: relative;
+            width: 100%;
+            height: 56px;
+            border: none;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.5rem;
+            color: #222;
+            border-radius: 18px;
+            overflow: hidden;
+            padding: 0;
+            transition: filter 0.1s;
+        }
+        .menu-button .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: fill;
+            pointer-events: none;
+        }
+        .menu-button .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            color: #222;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 0 #00000022;
+        }
+        .menu-button:active {
+            filter: brightness(0.92);
+        }
+        .menu-icons {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            justify-content: space-evenly;
+            margin: 32px auto 0 auto;
+            gap: 18px;
+        }
+        .menu-icon-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: filter 0.1s;
+        }
+        .menu-icon-button img {
+            width: 56px;
+            height: 56px;
+        }
+        /* AUTH MODAL */
+        .auth-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(240, 204, 165, 0.98);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-container {
+            background: none;
+            border-radius: 24px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+            padding: 32px 24px 24px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 280px;
+            max-width: 90vw;
         }
-        .auth-container h3 {
-            font-size: 1.2rem;
-            margin: 8px 0 16px 0;
+        .auth-logo {
+            width: 90px;
+            margin-bottom: 8px;
+        }
+        .auth-title {
+            font-family: 'Castlefire', sans-serif;
+            font-size: 2rem;
+            color: #222;
+            margin-bottom: 12px;
+            text-align: center;
         }
         .auth-form {
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
+            margin-bottom: 10px;
         }
         .auth-form input {
             width: 100%;
@@ -117,7 +209,7 @@
             left: 0; top: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            object-fit: cover;
+            object-fit: fill;
             pointer-events: none;
         }
         .auth-form button .button-text {
@@ -126,6 +218,16 @@
             width: 100%;
             text-align: center;
             pointer-events: none;
+            color: #222;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .auth-error {
+            color: #f44336;
+            text-align: center;
+            margin-top: 4px;
+            font-size: 0.95rem;
         }
         .auth-switch {
             width: 100%;
@@ -153,7 +255,7 @@
             left: 0; top: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            object-fit: cover;
+            object-fit: fill;
             pointer-events: none;
         }
         .auth-switch button .button-text {
@@ -163,195 +265,138 @@
             text-align: center;
             pointer-events: none;
         }
-        .auth-error {
-            color: #f44336;
-            text-align: center;
-            margin-top: 4px;
-            font-size: 0.95rem;
-        }
-        /* Main menu */
-        .menu-buttons {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin: 24px 0 16px 0;
-        }
-        .menu-button {
-            position: relative;
-            width: 100%;
-            height: 54px;
-            border: none;
-            background: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-family: 'Castlefire', sans-serif;
-            font-size: 1.3rem;
-            color: #222;
-            border-radius: 16px;
-            overflow: hidden;
-            padding: 0;
-        }
-        .menu-button .button-bg {
-            position: absolute;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            object-fit: cover;
-            pointer-events: none;
-        }
-        .menu-button .button-text {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-        }
-        .menu-button:active, .auth-form button:active, .menu-icon-button:active {
-            filter: brightness(0.92);
-        }
-        .menu-icons {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 18px;
-            gap: 12px;
-        }
-        .menu-icon-button {
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: filter 0.1s;
-        }
-        .menu-icon-button img {
-            width: 38px;
-            height: 38px;
-        }
-        /* Адаптивность */
         @media (max-width: 600px) {
-            .centered-wrapper {
-                padding: 0 4vw;
+            .main-wrapper {
+                justify-content: start;
+                align-items: center;
+                padding: 0 2vw;
             }
-            .auth-modal, .main-menu {
+            .logo-img {
+                width: 120px;
+            }
+            .game-title {
+                font-size: 2.5rem;
+            }
+            .menu-welcome {
+                font-size: 1.5rem;
+            }
+            .menu-buttons, .menu-icons {
                 max-width: 98vw;
             }
-            .game-logo {
-                width: 64px;
+            .menu-button, .menu-icon-button {
+                height: 60px;
+                min-height: 60px;
             }
-            .menu-button, .auth-form button {
-                font-size: 1.05rem;
-                height: 44px;
+            .menu-button .button-bg, .menu-icon-button img {
+                height: 60px;
             }
-            .menu-button .button-bg, .auth-form button .button-bg {
-                height: 44px;
+            .menu-button .button-text {
+                font-size: 1.5rem;
             }
             .menu-icon-button {
-                width: 38px;
-                height: 38px;
+                width: 60px;
+                height: 60px;
             }
             .menu-icon-button img {
-                width: 28px;
-                height: 28px;
+                width: 60px;
+                height: 60px;
+            }
+            .menu-buttons {
+                gap: 22px;
+            }
+            .menu-icons {
+                gap: 22px;
+                margin-top: 40px;
+            }
+            .auth-logo {
+                width: 70px;
+            }
+            .auth-title {
+                font-size: 1.5rem;
+            }
+            .auth-form button .button-text {
+                font-size: 1.1rem;
             }
         }
         @media (min-width: 900px) {
-            .centered-wrapper {
+            .main-wrapper {
                 min-height: 100vh;
                 justify-content: center;
                 align-items: center;
             }
-            .auth-modal, .main-menu {
-                max-width: 370px;
-                box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
-                border-radius: 24px;
-                background: rgba(255,255,255,0.04);
-                padding: 32px 32px 24px 32px;
+            .menu-buttons, .menu-icons {
+                max-width: 320px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="centered-wrapper">
-        <!-- Authentication Modal -->
-        <div id="authModal" class="auth-modal" style="display: none;">
-            <div class="auth-container">
-                <img src="ui-elements/logo.png" alt="World Wars Logo" class="game-logo">
-                <h2 class="game-title">World Wars</h2>
-                <h3 id="authTitle">Log in</h3>
-                <form class="auth-form" id="authForm">
-                    <input type="text" id="loginInput" placeholder="Login" required>
-                    <input type="password" id="passwordInput" placeholder="Password" required>
-                    <button type="submit" id="authSubmitBtn" class="enter-button">
-                        <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Enter" />
-                        <span class="button-text">ENTER</span>
-                    </button>
-                    <div class="auth-error" id="authError" style="display: none;"></div>
-                </form>
-                <div class="auth-switch">
-                    <button type="button" id="authSwitchButton" class="signup-button">
-                        <img class="button-bg" src="ui-elements/svg/gray_button.svg" alt="Sign up" />
-                        <span class="button-text">SIGN UP</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Main Menu -->
-        <div id="mainMenu" class="main-menu" style="display: none;">
-            <img src="ui-elements/logo.png" alt="World Wars Logo" class="game-logo">
-            <h1 class="game-title">World Wars</h1>
-            <div class="menu-welcome" id="menuWelcome">
-                <span class="welcome-text">Hello, <span id="menuUserLogin"></span>!</span>
-            </div>
-            <div class="menu-buttons">
-                <button class="menu-button" id="playButton">
-                    <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Play" />
-                    <span class="button-text">PLAY</span>
+    <div id="authModal" class="auth-modal" style="display: none;">
+        <div class="auth-container">
+            <img src="ui-elements/logo.png" alt="World Wars Logo" class="auth-logo">
+            <div class="auth-title" id="authTitle">SIGN IN</div>
+            <form class="auth-form" id="authForm">
+                <input type="text" id="loginInput" placeholder="Login" required>
+                <input type="password" id="passwordInput" placeholder="Password" required>
+                <button type="submit" id="authSubmitBtn">
+                    <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Enter" />
+                    <span class="button-text">ENTER</span>
                 </button>
-                <button class="menu-button" id="lobbiesButton">
-                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Lobbies" />
-                    <span class="button-text">LOBBIES</span>
-                </button>
-                <button class="menu-button" id="rankingButton">
-                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Ranking" />
-                    <span class="button-text">REDACTOR</span>
-                </button>
-                <button class="menu-button" id="accountButton">
-                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Account" />
-                    <span class="button-text">ACCOUNT</span>
-                </button>
-                <button class="menu-button" id="leaveButton">
-                    <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
-                    <span class="button-text">LEAVE</span>
-                </button>
-            </div>
-            <div class="menu-icons">
-                <button class="menu-icon-button" id="questionIcon">
-                    <img src="ui-elements/svg/rules_button.svg" alt="Rules" />
-                </button>
-                <button class="menu-icon-button" id="dollarIcon">
-                    <img src="ui-elements/svg/dollar_button.svg" alt="Shop" />
-                </button>
-                <button class="menu-icon-button" id="settingsIcon">
-                    <img src="ui-elements/svg/settings_button.svg" alt="Settings" />
+                <div class="auth-error" id="authError" style="display: none;"></div>
+            </form>
+            <div class="auth-switch">
+                <button type="button" id="authSwitchButton">
+                    <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Sign up" />
+                    <span class="button-text">SIGN UP</span>
                 </button>
             </div>
         </div>
     </div>
+    <div id="mainWrapper" class="main-wrapper" style="display: none;">
+        <div class="logo-block">
+            <img src="ui-elements/logo.png" alt="World Wars Logo" class="logo-img">
+            <div class="game-title">World Wars</div>
+        </div>
+        <div class="menu-welcome" id="menuWelcome">
+            Hello, <span id="menuUserLogin">...</span>!
+        </div>
+        <div class="menu-buttons">
+            <button class="menu-button" id="playButton">
+                <img class="button-bg" src="ui-elements/svg/yellow_button.svg" alt="Play" />
+                <span class="button-text">PLAY</span>
+            </button>
+            <button class="menu-button" id="lobbiesButton">
+                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Lobbies" />
+                <span class="button-text">LOBBIES</span>
+            </button>
+            <button class="menu-button" id="rankingButton">
+                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Ranking" />
+                <span class="button-text">RANKING</span>
+            </button>
+            <button class="menu-button" id="accountButton">
+                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Account" />
+                <span class="button-text">ACCOUNT</span>
+            </button>
+            <button class="menu-button" id="leaveButton">
+                <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
+                <span class="button-text">LEAVE</span>
+            </button>
+        </div>
+        <div class="menu-icons">
+            <button class="menu-icon-button" id="questionIcon">
+                <img src="ui-elements/svg/rules_button.svg" alt="Rules" />
+            </button>
+            <button class="menu-icon-button" id="dollarIcon">
+                <img src="ui-elements/svg/dollar_button.svg" alt="Shop" />
+            </button>
+            <button class="menu-icon-button" id="settingsIcon">
+                <img src="ui-elements/svg/settings_button.svg" alt="Settings" />
+            </button>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script>
-        // Backend host management
         let backendHost = window.location.hostname;
-    
-        // Initialize backend host from localStorage
         function initializeBackendHost() {
             const storedHost = localStorage.getItem('backendHost');
             if (!storedHost) {
@@ -362,20 +407,21 @@
                 backendHost = storedHost;
             }
         }
-
-        // Get backend URL for API calls
         function getBackendUrl() {
             return `http://${backendHost}:8080`;
         }
-
-        // Initialize backend host on page load
         initializeBackendHost();
-
-        // Authentication and localStorage management
         let currentUser = null;
-        let isAuthMode = false; // true for register, false for login
-
-        // Check if user is logged in on page load
+        let isAuthMode = false; // false = login, true = register
+        function showAuthModal() {
+            document.getElementById('authModal').style.display = 'flex';
+            document.getElementById('mainWrapper').style.display = 'none';
+            resetAuthForm();
+        }
+        function showMainMenu() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('mainWrapper').style.display = 'flex';
+        }
         function checkAuthStatus() {
             const userData = localStorage.getItem('userData');
             if (userData) {
@@ -392,59 +438,46 @@
                 showAuthModal();
             }
         }
-
-        // Show authentication modal
-        function showAuthModal() {
-            const authModal = document.getElementById('authModal');
-            const mainMenu = document.getElementById('mainMenu');
-            
-            if (authModal) authModal.style.display = 'flex';
-            if (mainMenu) mainMenu.style.display = 'none';
-            
-            resetAuthForm();
+        function updateUserInfo() {
+            if (currentUser) {
+                const menuUserLogin = document.getElementById('menuUserLogin');
+                if (menuUserLogin) menuUserLogin.textContent = currentUser.login;
+            }
         }
-
-        // Show main menu
-        function showMainMenu() {
-            const authModal = document.getElementById('authModal');
-            const mainMenu = document.getElementById('mainMenu');
-            
-            if (authModal) authModal.style.display = 'none';
-            if (mainMenu) mainMenu.style.display = 'flex';
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('userData');
+            showAuthModal();
         }
-
-        // Show game interface (not used directly for main menu, but kept for context)
-        function showGameInterface() {
-            // This function is likely for switching to the game.html
-            // For now, it won't do anything here as the game is on a separate page.
-            console.log("Switching to game interface (not implemented in index.html)");
+        function openEditor() {
+            window.location.href = 'redactor.html';
         }
-
-        // Reset authentication form
+        function openGame() {
+            window.location.href = 'game.html';
+        }
+        function createRoom() {
+            window.location.href = 'maps.html';
+        }
         function resetAuthForm() {
             const authForm = document.getElementById('authForm');
             const authError = document.getElementById('authError');
-            
             if (authForm) authForm.reset();
             if (authError) authError.style.display = 'none';
             updateAuthUI();
         }
-
-        // Update authentication UI based on mode
         function updateAuthUI() {
             const title = document.getElementById('authTitle');
             const submitBtn = document.getElementById('authSubmitBtn');
             const switchBtn = document.getElementById('authSwitchButton');
-
             if (isAuthMode) {
                 if (title) title.textContent = 'REGISTRATION';
                 if (submitBtn) {
-                    submitBtn.querySelector('.button-text').textContent = 'ENTER';
+                    submitBtn.querySelector('.button-text').textContent = 'SIGN UP';
                     submitBtn.querySelector('.button-bg').src = 'ui-elements/svg/yellow_button.svg';
                 }
                 if (switchBtn) {
                     switchBtn.querySelector('.button-text').textContent = 'BACK';
-                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/orange_button.svg';
+                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/red_button.svg';
                 }
             } else {
                 if (title) title.textContent = 'SIGN IN';
@@ -454,44 +487,34 @@
                 }
                 if (switchBtn) {
                     switchBtn.querySelector('.button-text').textContent = 'SIGN UP';
-                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/gray_button.svg';
+                    switchBtn.querySelector('.button-bg').src = 'ui-elements/svg/blue_button.svg';
                 }
             }
         }
-
-        // Switch between login and register modes
         function switchAuthMode() {
             isAuthMode = !isAuthMode;
             updateAuthUI();
             resetAuthForm();
         }
-
-        // Handle authentication form submission
         async function handleAuthSubmit(event) {
             event.preventDefault();
-            
             const loginInput = document.getElementById('loginInput');
             const passwordInput = document.getElementById('passwordInput');
             const submitBtn = document.getElementById('authSubmitBtn');
             const errorDiv = document.getElementById('authError');
-
             if (!loginInput || !passwordInput || !submitBtn || !errorDiv) {
                 console.error('Required authentication elements not found');
                 return;
             }
-
             const login = loginInput.value;
             const password = passwordInput.value;
-
             if (!login || !password) {
-                showAuthError('Пожалуйста, заполните все поля');
+                showAuthError('Please fill in all fields');
                 return;
             }
-
             submitBtn.disabled = true;
-            submitBtn.querySelector('.button-text').textContent = 'Загрузка...';
+            submitBtn.querySelector('.button-text').textContent = 'Loading...';
             errorDiv.style.display = 'none';
-
             try {
                 const endpoint = isAuthMode ? '/api/register' : '/api/login';
                 const response = await fetch(`${getBackendUrl()}${endpoint}`, {
@@ -501,7 +524,6 @@
                     },
                     body: JSON.stringify({ login, password })
                 });
-
                 if (response.ok) {
                     const userData = await response.json();
                     currentUser = userData;
@@ -510,18 +532,16 @@
                     updateUserInfo();
                 } else {
                     const errorData = await response.json();
-                    showAuthError(errorData.message || 'Ошибка аутентификации');
+                    showAuthError(errorData.message || 'Authentication error');
                 }
             } catch (error) {
                 console.error('Auth error:', error);
-                showAuthError('Ошибка соединения с сервером');
+                showAuthError('Connection error');
             } finally {
                 submitBtn.disabled = false;
                 updateAuthUI();
             }
         }
-
-        // Show authentication error
         function showAuthError(message) {
             const errorDiv = document.getElementById('authError');
             if (errorDiv) {
@@ -529,67 +549,21 @@
                 errorDiv.style.display = 'block';
             }
         }
-
-        // Update user info display
-        function updateUserInfo() {
-            if (currentUser) {
-                const menuUserLogin = document.getElementById('menuUserLogin');
-                
-                if (menuUserLogin) menuUserLogin.textContent = currentUser.login;
-            }
-        }
-
-        // Logout function
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('userData');
-            showAuthModal();
-        }
-
-        // Menu functions
-        function openEditor() {
-            window.location.href = 'redactor.html';
-        }
-
-        function openGame() {
-            window.location.href = 'game.html';
-        }
-
-        function createRoom() {
-            window.location.href = 'maps.html';
-        }
-
-        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            // Add authentication event listeners
-            const authForm = document.getElementById('authForm');
-            const authSwitchButton = document.getElementById('authSwitchButton');
-
-            if (authForm) {
-                authForm.addEventListener('submit', handleAuthSubmit);
-            }
-            if (authSwitchButton) {
-                authSwitchButton.addEventListener('click', switchAuthMode);
-            }
-
-            // Check authentication status on page load
-            checkAuthStatus();
-
-            // Link new menu buttons to existing functions
+            // Auth events
+            document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
+            document.getElementById('authSwitchButton').addEventListener('click', switchAuthMode);
+            // Main menu events
             document.getElementById('playButton').addEventListener('click', openGame);
             document.getElementById('lobbiesButton').addEventListener('click', createRoom);
-            document.getElementById('rankingButton').addEventListener('click', function() { 
-                openEditor()
-             });
+            document.getElementById('rankingButton').addEventListener('click', function() { openEditor(); });
             document.getElementById('accountButton').addEventListener('click', function() { alert('Account clicked!'); });
             document.getElementById('leaveButton').addEventListener('click', logout);
-
-            // Link new icon buttons
-            document.getElementById('questionIcon').addEventListener('click', function() {
-                window.location.href = 'rules.html';
-            });
+            document.getElementById('questionIcon').addEventListener('click', function() { window.location.href = 'rules.html'; });
             document.getElementById('dollarIcon').addEventListener('click', function() { alert('Shop clicked!'); });
             document.getElementById('settingsIcon').addEventListener('click', function() { alert('Settings clicked!'); });
+            // Initial auth check
+            checkAuthStatus();
         });
     </script>
 </body>

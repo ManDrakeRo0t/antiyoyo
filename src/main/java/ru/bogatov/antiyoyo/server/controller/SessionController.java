@@ -12,6 +12,7 @@ import ru.bogatov.antiyoyo.server.service.GameService;
 import ru.bogatov.antiyoyo.server.service.SessionService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -24,6 +25,18 @@ public class SessionController {
     @PostMapping
     public ResponseEntity<SessionCreateResponse> create(@RequestBody SessionCreateRequest request) {
         return ResponseEntity.ok(new SessionCreateResponse(gameService.createSession(request).getId()));
+    }
+
+    @PostMapping("/save/{id}")
+    public ResponseEntity<Void> save(@PathVariable UUID id) {
+        service.saveSessionToBase(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/restore/{id}")
+    public ResponseEntity<Void> restore(@PathVariable UUID id) {
+        gameService.restoreSession(id);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/join")

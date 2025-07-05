@@ -18,9 +18,9 @@ public class TownHall extends Entity implements Interactable {
     private Integer dronesLimit;
     private Map<EntityType, Currency> prices;
 
-    public TownHall(Currency storage, Currency storageChanges) {
+    public TownHall(Currency storage, Currency storageUpdate) {
         this.storage = storage;
-        this.storageUpdate = storageChanges;
+        this.storageUpdate = storageUpdate;
     }
 
     @Override

@@ -2,6 +2,8 @@ package ru.bogatov.antiyoyo.game.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
@@ -13,8 +15,10 @@ import java.util.Stack;
 import java.util.UUID;
 
 @Data
+@Document("sessions")
 public class GameSession {
 
+    @MongoId
     private UUID id;
     private UUID winnerId;
     private String name;
@@ -30,5 +34,6 @@ public class GameSession {
     @JsonIgnore
     private UUID skipMoveTaskId;
     private Instant endMoveTime;
+    private Integer leftSecondsToMove;
 
 }

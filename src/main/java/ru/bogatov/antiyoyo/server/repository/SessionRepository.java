@@ -1,5 +1,8 @@
 package ru.bogatov.antiyoyo.server.repository;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 
@@ -13,6 +16,12 @@ public class SessionRepository {
 
     Map<UUID, GameSession> storage = new ConcurrentHashMap<>();
 
+    private final MongoTemplate mongoTemplate;
+
+    public SessionRepository(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
     public void saveSession(GameSession session) {
         storage.put(session.getId(), session);
     }
@@ -21,8 +30,20 @@ public class SessionRepository {
         return storage.get(id);
     }
 
+    public void removeSession(UUID id) {
+        storage.remove(id);
+    }
+
     public List<GameSession> getSessions() {
         return storage.values().stream().filter(session -> !session.isStarted()).toList();
+    }
+
+    public void saveSessionToBase(GameSession session) {
+        mongoTemplate.save(session);
+    }
+
+    public GameSession restoreSession(UUID sessionId) {
+        return mongoTemplate.findOne(new Query().addCriteria(Criteria.where("id").is(sessionId)), GameSession.class);
     }
 
 

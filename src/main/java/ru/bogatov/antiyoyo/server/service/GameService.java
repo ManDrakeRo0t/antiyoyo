@@ -39,6 +39,7 @@ public class GameService {
     private final SimpMessagingTemplate messagingTemplate;
     private final GameMapService gameMapService;
     private final TaskSchedulingService taskSchedulingService;
+    private final SessionService sessionService;
 
 
     public void validateGameMap(GameMap gameMap) {
@@ -60,7 +61,7 @@ public class GameService {
             case BEFORE_MOVE -> gameEngine.handleBeforeMoveClick(session, event);
             case FINISH_TURN -> {
                 gameEngine.endMove(session);
-                scheduleEndMoveTask(UUID.fromString(sessionId));
+                scheduleEndMoveTask(UUID.fromString(sessionId), null);
             }
             case GET_SESSION -> {
             }
@@ -90,16 +91,21 @@ public class GameService {
         return setting;
     }
 
-    public void scheduleEndMoveTask(UUID sessionId) {
+    public void scheduleEndMoveTask(UUID sessionId, Instant when) {
         GameSession gameSession = sessionRepository.getSession(sessionId);
         if (gameSession.getSkipMoveTaskId() != null) {
             taskSchedulingService.cancelTask(gameSession.getSkipMoveTaskId().toString());
         }
-        Instant nextTimeToSkip = Instant.now().plusSeconds(gameSession.getSetting().getSecondsToMove());
+        Instant nextTimeToSkip = when != null ? when : Instant.now().plusSeconds(gameSession.getSetting().getSecondsToMove());
         UUID nextTaskId = UUID.randomUUID();
         gameSession.setSkipMoveTaskId(nextTaskId);
         gameSession.setEndMoveTime(nextTimeToSkip);
         taskSchedulingService.scheduleTask(nextTaskId.toString(), new EndMoveTask(sessionId, sessionRepository, gameEngine, messagingTemplate, this), nextTimeToSkip);
+    }
+
+    public void restoreSession(UUID id) {
+        GameSession gameSession = sessionService.restoreSession(id);
+        scheduleEndMoveTask(gameSession.getId(), Instant.now().plusSeconds(gameSession.getLeftSecondsToMove()));
     }
 
     public GameSession joinSession(SessionJoinRequest request) {
@@ -111,7 +117,7 @@ public class GameService {
             player.setUserId(request.getUserId());
         }
         if (session.getPlayers().values().stream().allMatch(p -> p.getUserId() != null)) {
-            scheduleEndMoveTask(request.getSessionId());
+            scheduleEndMoveTask(request.getSessionId(), null);
             session.setStartTime(OffsetDateTime.now());
             session.setStarted(true);
         }
