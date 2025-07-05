@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Hexagon Grid Game</title>
+    <title>World Wars</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
@@ -18,7 +18,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f0f0f0;
+            background: radial-gradient(circle at 50% 30%, #F0CCA5 0%, #FDEBD4 100%);
             font-family: 'Castlefire', sans-serif; /* Apply Castlefire font */
         }
         #container {
@@ -41,36 +41,83 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 32px 24px 24px 24px;
+            background-color: rgba(240, 204, 165, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
             transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 320px;
+            max-width: 90vw;
         }
         #sessionInput.hidden {
             opacity: 0;
             pointer-events: none;
         }
         #sessionInput input {
-            padding: 8px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 300px;
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 12px;
+            background: #fff;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.1rem;
+            color: #222;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+        }
+        #sessionInput input::placeholder {
+            color: #888;
+        }
+        #sessionInput input:focus {
+            outline: 2px solid #e0b97d;
+        }
+        #sessionInput .button-container {
+            display: flex;
+            gap: 14px;
+            width: 100%;
         }
         #sessionInput button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
+            position: relative;
+            width: 100%;
+            height: 48px;
             border: none;
-            border-radius: 4px;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            color: #222;
+            border-radius: 16px;
+            overflow: hidden;
+            padding: 0;
         }
-        #sessionInput button:hover {
-            background-color: #45a049;
+        #sessionInput button .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: fill;
+            pointer-events: none;
+        }
+        #sessionInput button .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            color: #222;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
         }
         #sessionInput button:disabled {
-            background-color: #ccc;
+            opacity: 0.5;
             cursor: not-allowed;
         }
         #connectionStatus {
@@ -93,7 +140,7 @@
             background-repeat: no-repeat;
             background-position: center;
             border-radius: 5px; /* Adjusted to be slightly rounded rectangular */
-            background-color: #F7E5A7; /* Match controlPanel background */
+            background-color: #f0cca5fa; /* Match controlPanel background */
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
@@ -124,7 +171,7 @@
             transform: translateX(-50%);
             z-index: 1000;
             padding: 15px;
-            background-color: #F7E5A7;
+            background-color: #f0cca5fa;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: flex; /* Always flex */
@@ -144,7 +191,7 @@
             white-space: nowrap; /* Кнопки в одну строку */
             padding-bottom: 4px; /* Для видимости скролла */
             scrollbar-width: thin;
-            scrollbar-color: #d4af37 #F7E5A7;
+            scrollbar-color: #d4af37 #f0cca5fa;
             max-width: 90vw; /* Не выходить за экран */
         }
         .unit-buttons-container::-webkit-scrollbar {
@@ -155,7 +202,7 @@
             border-radius: 4px;
         }
         .unit-buttons-container::-webkit-scrollbar-track {
-            background: #F7E5A7;
+            background: #f0cca5fa;
         }
         .unit-button-container {
             display: flex;
@@ -183,7 +230,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #F7E5A7;
+            background-color: #f0cca5fa;
             transition: all 0.3s ease;
         }
         .unit-button:hover {
@@ -219,7 +266,7 @@
             left: 20px;
             z-index: 1000;
             padding: 10px 15px; /* Adjusted padding */
-            background-color: #F7E5A7; /* Match controlPanel background */
+            background-color: #f0cca5fa; /* Match controlPanel background */
             border-radius: 10px; /* Match controlPanel border-radius */
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: flex;
@@ -423,7 +470,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #F7E5A7; /* Match controlPanel background */
+            background-color: #f0cca5fa; /* Match controlPanel background */
             padding: 5px 10px; /* Adjusted padding */
             border-radius: 10px; /* Match controlPanel border-radius */
             font-size: 18px; /* Larger font for turn indicator */
@@ -501,18 +548,24 @@
                 border-radius: 7px;
             }
             #sessionInput {
-                top: 8px;
-                padding: 10px;
-                border-radius: 8px;
+                top: 20px;
+                padding: 24px 16px 16px 16px;
+                border-radius: 20px;
+                min-width: 280px;
             }
             #sessionInput input {
-                width: 70vw;
+                width: 100%;
                 font-size: 1.1em;
-                padding: 10px;
+                height: 48px;
+            }
+            #sessionInput .button-container {
+                gap: 10px;
             }
             #sessionInput button {
-                font-size: 1em;
-                padding: 10px 14px;
+                height: 44px;
+            }
+            #sessionInput button .button-text {
+                font-size: 1.1rem;
             }
             .unit-buttons-container {
                 gap: 6px;
@@ -527,7 +580,7 @@
             transform: translateX(-50%);
             z-index: 1000;
             padding: 5px 10px;
-            background-color: #F7E5A7;
+            background-color: #f0cca5fa;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: flex;
@@ -537,12 +590,185 @@
             width: clamp(125px, 25vw, 200px);
             box-sizing: border-box;
         }
+        .color-waiting-panel {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 32px 24px 24px 24px;
+            background-color: rgba(240, 204, 165, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 320px;
+            max-width: 90vw;
+        }
+        .cw-title {
+            font-family: 'Castlefire', sans-serif;
+            font-size: 2rem;
+            color: #222;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .cw-icons-row {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+        .cw-icon-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .cw-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 2px;
+        }
+        .cw-users-label {
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            color: #222;
+            background: #fff3;
+            border-radius: 10px;
+            padding: 2px 12px;
+            margin-top: 2px;
+        }
+        .cw-ranking-label {
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            color: #222;
+            background: #fff3;
+            border-radius: 10px;
+            padding: 2px 12px;
+            margin-top: 2px;
+        }
+        .cw-select-label {
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.3rem;
+            color: #222;
+            margin: 10px 0 10px 0;
+            text-align: center;
+        }
+        .cw-color-circles {
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .cw-color-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 4px solid #222;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
+            box-shadow: 0 2px 8px #0001;
+        }
+        .cw-color-circle.selected {
+            transform: scale(1.18);
+            box-shadow: 0 4px 16px #0002;
+        }
+        .cw-select-btn {
+            position: relative;
+            width: 180px;
+            height: 48px;
+            border: none;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            color: #222;
+            border-radius: 16px;
+            overflow: hidden;
+            padding: 0;
+        }
+        .cw-select-btn .button-bg {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            object-fit: fill;
+            pointer-events: none;
+        }
+        .cw-select-btn .button-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            color: #222;
+            font-family: 'Castlefire', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .cw-select-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        @media (max-width: 600px) {
+            .color-waiting-panel {
+                min-width: 0;
+                max-width: 99vw;
+                padding: 12px 4vw 12px 4vw;
+                border-radius: 16px;
+            }
+            .cw-title {
+                font-size: 1.2rem;
+            }
+            .cw-icons-row {
+                gap: 16px;
+            }
+            .cw-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .cw-color-circles {
+                gap: 12px;
+            }
+            .cw-color-circle {
+                width: 40px;
+                height: 40px;
+                border-width: 3px;
+            }
+            .cw-color-circle.selected {
+                transform: scale(1.22);
+            }
+            .cw-select-btn {
+                width: 120px;
+                height: 38px;
+                border-radius: 10px;
+            }
+            .cw-select-btn .button-text {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="sessionInput">
         <input type="text" id="sessionId" placeholder="Enter session UUID">
-        <button onclick="connectToSession()">Connect</button>
+        <div class="button-container">
+            <button onclick="goBack()">
+                <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Back" />
+                <span class="button-text">BACK</span>
+            </button>
+            <button onclick="connectToSession()">
+                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Connect" />
+                <span class="button-text">CONNECT</span>
+            </button>
+        </div>
     </div>
     <div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
         <div style="display: flex; align-items: center; gap: 5px;">
@@ -612,35 +838,39 @@
         <button class="action-button" id="endTurnBtn" onclick="endTurn()" title="End Turn"></button>
     </div>
 
-    <!-- Waiting for players overlay -->
-    <div id="waitingOverlay" class="waiting-overlay" style="display: none;">
-        <div class="waiting-content">
-            <h2 class="waiting-title">Ждем подключения игроков</h2>
-            <div class="waiting-info">
-                Подключено: <span id="connectedPlayers" class="player-count">0</span> / <span id="totalPlayers" class="player-count">0</span>
+    <!-- Color & waiting panel (NEW) -->
+    <div id="colorWaitingPanel" class="color-waiting-panel" style="display: none;">
+        <div class="cw-title">Connection success!</div>
+        <div class="cw-icons-row">
+            <div class="cw-icon-block">
+                <img src="ui-elements/svg/connected-users.svg" class="cw-icon" alt="Users" />
+                <div class="cw-users-label">
+                    <span id="cwConnectedPlayers">0</span> / <span id="cwTotalPlayers">0</span>
+                </div>
+            </div>
+            <div class="cw-icon-block">
+                <img src="ui-elements/svg/ranking.svg" class="cw-icon" alt="Ranking" />
+                <div class="cw-ranking-label">Ranking</div>
             </div>
         </div>
-    </div>
-
-    <!-- Color selection panel -->
-    <div id="colorSelectionPanel" class="color-selection-panel" style="display: none;">
-        <h3 class="color-selection-title">Выберите цвет</h3>
-        <div class="color-buttons">
-            <!-- Color buttons will be created dynamically -->
+        <div id="cwColorBlock" style="display: none;">
+            <div class="cw-select-label">Select your color:</div>
+            <div class="cw-color-circles"></div>
+            <button id="cwSelectBtn" class="cw-select-btn" disabled>
+                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Select" />
+                <span class="button-text">SELECT</span>
+            </button>
         </div>
-        <button id="joinButton" class="join-button" onclick="joinSession()" disabled>Присоединиться</button>
     </div>
-
+    <!-- Current turn indicator -->
+    <div id="currentTurnIndicator" class="current-turn-indicator">
+        <div class="current-turn-icon"></div>
+    </div>
     <!-- Game status overlay -->
     <div id="gameStatusOverlay" class="game-status-overlay" style="display: none;">
         <div class="game-status-content">
             <h2 id="gameStatusTitle" class="game-status-title"></h2>
         </div>
-    </div>
-
-    <!-- Current turn indicator -->
-    <div id="currentTurnIndicator" class="current-turn-indicator">
-        <div class="current-turn-icon"></div>
     </div>
 
 <script>
@@ -694,7 +924,7 @@
         minHexSize: 10,
         maxHexSize: 60,
         showCoordinates: false,
-        backgroundColor: '#F7E5A7',
+        backgroundColor: '#f0cca5fa',
         existingHexColor: '#cccccc',
         missingHexColor: '#4b8bde',
         gridColor: '#000000',
@@ -847,6 +1077,11 @@
         return preloadedImages[entityType];
     }
 
+    // Function to go back to main menu
+    function goBack() {
+        window.location.href = 'index.html';
+    }
+
     // WebSocket connection functions
     function connectToSession() {
         const sessionInput = document.getElementById('sessionId');
@@ -869,7 +1104,9 @@
                 brokerURL: getWebSocketUrl(),
                 reconnectDelay: 200,
                 onConnect: function (frame) {
-                    sessionInput.classList.add('hidden');
+                    // Hide session input immediately when connected
+                    const sessionInputDiv = document.getElementById('sessionInput');
+                    sessionInputDiv.classList.add('hidden');
 
                     const subscription = stompClient.subscribe(destPath, function (message) {
                         const payload = JSON.parse(message.body);
@@ -878,17 +1115,24 @@
                     });
 
                     sendGetSession();
+                    
+                    setTimeout(() => {sendGetSession()}, 1000);
+
+
                     state.selectedUnit = null;
                     updateUnitButtons();
+
                 },
                 onDisconnect: function() {
-                    sessionInput.classList.remove('hidden');
+                    const sessionInputDiv = document.getElementById('sessionInput');
+                    sessionInputDiv.classList.remove('hidden');
                 }
             };
             
             stompClient = new StompJs.Client(stompConfig);
             stompClient.activate();
         }
+    
     }
 
     function onError(error) {
@@ -908,6 +1152,8 @@
             type: "GET_SESSION"
         };
         sendMessage(message);
+    
+
     }
 
     // Update control panel visibility based on selected town hall
@@ -1057,13 +1303,18 @@
 
     // Check player status and show appropriate UI
     function checkPlayerStatus() {
-        if (!hexData.players) return;
-
+        // Если данных о игроках нет, показываем панель ожидания
+        if (!hexData.players || Object.keys(hexData.players).length === 0) {
+            const colorWaitingPanel = document.getElementById('colorWaitingPanel');
+            colorWaitingPanel.style.display = 'flex';
+            // Можно добавить кастомное сообщение, если нужно
+            return;
+        }
+        updatePlayerCounter();
         const players = hexData.players;
         const totalPlayers = Object.keys(players).length;
         const connectedPlayers = Object.values(players).filter(player => player.userId !== null).length;
         const hasUnconnectedPlayers = Object.values(players).some(player => player.userId === null);
-        
         // Find the player number for the current user
         let currentPlayerNumber = null;
         let currentColor = null;
@@ -1073,26 +1324,18 @@
                 currentColor = player.color
             }
         });
-        
         // Update currentPlayer if found
         if (currentPlayerNumber !== null) {
             state.currentPlayer = currentPlayerNumber;
             state.currentColor = currentColor;
         }
-        
         // Check if current user is already in the game
         const currentUserInGame = Object.values(players).some(player => player.userId === currentUser.id);
-
-        // Update player count display
-        document.getElementById('connectedPlayers').textContent = connectedPlayers;
-        document.getElementById('totalPlayers').textContent = totalPlayers;
-
+        // Показываем новую панель всегда, если не все игроки подключены или пользователь не в игре
         if (hasUnconnectedPlayers || !currentUserInGame) {
-            // Show waiting overlay or color selection
             showWaitingUI(currentUserInGame, hasUnconnectedPlayers);
             isGameReady = false;
         } else {
-            // All players connected and current user is in game
             hideWaitingUI();
             isGameReady = true;
         }
@@ -1124,6 +1367,8 @@
         
         // If no special status, hide game status overlay
         hideGameStatusOverlay();
+
+        
     }
 
     // Show destroyed player message
@@ -1159,6 +1404,7 @@
     // Hide game status overlay
     function hideGameStatusOverlay() {
         const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+        if (!gameStatusOverlay) return;
         gameStatusOverlay.style.display = 'none';
     }
 
@@ -1195,123 +1441,115 @@
 
     // Show appropriate waiting UI
     function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
-        const waitingOverlay = document.getElementById('waitingOverlay');
-        const colorSelectionPanel = document.getElementById('colorSelectionPanel');
-        const controlPanel = document.getElementById('controlPanel');
-        // const actionButtonsPanel = document.getElementById('actionButtonsPanel');
-        // Hide game controls
-        controlPanel.style.display = 'none';
-        // actionButtonsPanel.style.display = 'none';
+        const colorWaitingPanel = document.getElementById('colorWaitingPanel');
+        const cwColorBlock = document.getElementById('cwColorBlock');
+        colorWaitingPanel.style.display = 'flex';
         if (currentUserInGame) {
-            // User is in game but waiting for others
-            waitingOverlay.style.display = 'flex';
-            colorSelectionPanel.style.display = 'none';
+            cwColorBlock.style.display = 'none';
         } else {
-            // User needs to join - show available colors
-            waitingOverlay.style.display = 'none';
-            colorSelectionPanel.style.display = 'block';
+            cwColorBlock.style.display = 'block';
             updateAvailableColors();
         }
     }
 
     // Hide waiting UI and show game controls
     function hideWaitingUI() {
-        const waitingOverlay = document.getElementById('waitingOverlay');
-        const colorSelectionPanel = document.getElementById('colorSelectionPanel');
-        // const actionButtonsPanel = document.getElementById('actionButtonsPanel');
-        waitingOverlay.style.display = 'none';
-        colorSelectionPanel.style.display = 'none';
-        // actionButtonsPanel.style.display = 'flex';
+        const colorWaitingPanel = document.getElementById('colorWaitingPanel');
+        colorWaitingPanel.style.display = 'none';
     }
 
     // Update available colors based on players structure
     function updateAvailableColors() {
         if (!hexData.players) return;
-
-        const colorButtonsContainer = document.querySelector('.color-buttons');
-        colorButtonsContainer.innerHTML = ''; // Clear existing buttons
-
+        const colorCirclesContainer = document.querySelector('.cw-color-circles');
+        colorCirclesContainer.innerHTML = '';
         // Get colors only from players where userId is null (available slots)
         const availableColors = Object.values(hexData.players)
             .filter(player => player.userId === null)
             .map(player => player.color);
-
         // Color mapping for display
         const colorMap = {
-            'YELLOW': { bg: '#ffff00', name: 'Желтый' },
-            'ORANGE': { bg: '#ffa500', name: 'Оранжевый' },
-            'RED': { bg: '#ff0000', name: 'Красный' },
-            'BLUE': { bg: '#0000ff', name: 'Синий' },
-            'GREEN': { bg: '#00ff00', name: 'Зеленый' },
-            'PURPLE': { bg: '#800080', name: 'Фиолетовый' },
-            'BLACK' : { bg: '#000000', name: 'Черный' }
+            'YELLOW': '#ffff00',
+            'ORANGE': '#ffa500',
+            'RED': '#ff0000',
+            'BLUE': '#0000ff',
+            'GREEN': '#00ff00',
+            'PURPLE': '#800080',
+            'BLACK' : '#000000'
         };
-
-        // Create color buttons for each available color
-        availableColors.forEach(color => {
-            if (colorMap[color]) {
-                const colorButton = document.createElement('div');
-                colorButton.className = 'color-select-button';
-                colorButton.style.backgroundColor = colorMap[color].bg;
-                colorButton.setAttribute('data-color', colorMap[color].name);
-                colorButton.onclick = (event) => selectColor(color, event.target); /* Pass event.target */
-                colorButtonsContainer.appendChild(colorButton);
-            }
-        });
-
+        if (availableColors.length === 0) {
+            const msg = document.createElement('div');
+            msg.textContent = 'Нет доступных цветов';
+            msg.style.fontFamily = 'Castlefire, sans-serif';
+            msg.style.fontSize = '1.1rem';
+            msg.style.color = '#222';
+            colorCirclesContainer.appendChild(msg);
+        } else {
+            availableColors.forEach(color => {
+                if (colorMap[color]) {
+                    const circle = document.createElement('div');
+                    circle.className = 'cw-color-circle';
+                    circle.style.backgroundColor = colorMap[color];
+                    circle.setAttribute('data-color', color);
+                    circle.onclick = function() {
+                        document.querySelectorAll('.cw-color-circle').forEach(btn => btn.classList.remove('selected'));
+                        circle.classList.add('selected');
+                        selectedColor = color;
+                        document.getElementById('cwSelectBtn').disabled = false;
+                    };
+                    colorCirclesContainer.appendChild(circle);
+                }
+            });
+        }
         // Reset selection
         selectedColor = null;
-        document.getElementById('joinButton').disabled = true;
-        document.getElementById('joinButton').textContent = 'Присоединиться';
+        document.getElementById('cwSelectBtn').disabled = true;
     }
 
-    // Select color for joining
-    function selectColor(color, targetButton) { /* Added targetButton parameter */
-        selectedColor = color;
-        
-        // Update UI
-        document.querySelectorAll('.color-select-button').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-        targetButton.classList.add('selected'); /* Use targetButton */
-        
-        // Enable join button
-        document.getElementById('joinButton').disabled = false;
-    }
-
-    // Join session with selected color
-    async function joinSession() {
-        if (!selectedColor || !currentUser || !sessionId) {
-            alert('Пожалуйста, выберите цвет');
-            return;
+    // Кнопка SELECT
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectBtn = document.getElementById('cwSelectBtn');
+        if (selectBtn) {
+            selectBtn.onclick = async function() {
+                if (!selectedColor || !currentUser || !sessionId) {
+                    alert('Пожалуйста, выберите цвет');
+                    return;
+                }
+                try {
+                    selectBtn.disabled = true;
+                    selectBtn.querySelector('.button-text').textContent = '...';
+                    const response = await fetch(`${getBackendUrl()}/api/sessions/join`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId: sessionId, userId: currentUser.id, color: selectedColor })
+                    });
+                    if (response.ok) {
+                        // Скрыть блок выбора цвета, оставить только счетчик
+                        document.getElementById('cwColorBlock').style.display = 'none';
+                    } else {
+                        const errorData = await response.json();
+                        alert(errorData.error || 'Ошибка присоединения к игре');
+                        selectBtn.disabled = false;
+                        selectBtn.querySelector('.button-text').textContent = 'SELECT';
+                    }
+                } catch (error) {
+                    alert('Ошибка соединения с сервером');
+                    selectBtn.disabled = false;
+                    selectBtn.querySelector('.button-text').textContent = 'SELECT';
+                }
+            };
         }
+    });
 
-        try {
-            const response = await fetch(`${getBackendUrl()}/api/sessions/join`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    sessionId: sessionId,
-                    userId: currentUser.id,
-                    color: selectedColor
-                })
-            });
-
-            if (response.ok) {
-                // Color selection will be hidden when next update comes
-                document.getElementById('joinButton').disabled = true;
-                document.getElementById('joinButton').textContent = 'Присоединяемся...';
-                state.currentColor = selectedColor; /* Changed selectColor to selectedColor */
-            } else {
-                const errorData = await response.json();
-                alert(errorData.error || 'Ошибка присоединения к игре');
-            }
-        } catch (error) {
-            console.error('Error joining session:', error);
-            alert('Ошибка соединения с сервером');
-        }
+    // Обновление счетчика игроков
+    function updatePlayerCounter() {
+        if (!hexData.players) return;
+        const totalPlayers = Object.keys(hexData.players).length;
+        const connectedPlayers = Object.values(hexData.players).filter(player => player.userId !== null).length;
+        const cwConnected = document.getElementById('cwConnectedPlayers');
+        const cwTotal = document.getElementById('cwTotalPlayers');
+        if (cwConnected) cwConnected.textContent = connectedPlayers;
+        if (cwTotal) cwTotal.textContent = totalPlayers;
     }
 
     // Canvas functions
