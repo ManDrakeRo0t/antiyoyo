@@ -2,36 +2,58 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Правила игры</title>
+    <title>World Wars - Rules</title>
+    <link rel="icon" type="image/png" href="ui-elements/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        html, body {
+        @font-face {
+            font-family: 'Castlefire';
+            src: url('fonts/Castlefire.ttf') format('truetype'),
+                 url('fonts/Castlefire.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        html {
             height: 100%;
             margin: 0;
-            padding: 0;
         }
         body {
-            min-height: 100vh;
-            background: url('ui-elements/background.png') no-repeat center center fixed;
-            background-size: cover;
+            min-height: 100%;
+            margin: 0;
+            background: #f0cba3;
             font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-            color: #2d1a00;
             overflow: auto;
         }
         .rules-container {
-            max-width: 800px;
-            margin: 32px auto 32px auto;
-            background: rgba(255, 248, 220, 0.92);
+            width: 100%;
+            max-width: 960px;
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #fff8dceb;
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-            padding: 32px 24px;
+            padding: 6px 24px;
             font-size: 1.15rem;
             line-height: 1.7;
             position: relative;
+            scrollbar-width: none;        /* для Firefox */
+            -ms-overflow-style: none;     /* для IE и Edge */
+            user-select: none;
         }
-        h2, h3 {
+        .rules-container::-webkit-scrollbar {
+            display: none;                /* для Chrome, Safari и Opera */
+        }
+        .rules-title {
             text-align: center;
-            margin-top: 1.5em;
+            font-family: 'Castlefire';
+            font-size: 50px;
+            margin-bottom: 12px;
+            pointer-events: none;
+            user-select: none;
+        }
+        h3 {
+            text-align: center;
+            margin-top: 0.5em;
             margin-bottom: 0.5em;
         }
         .icon {
@@ -43,39 +65,110 @@
         ul, ol {
             margin-left: 1.5em;
         }
-        @media (max-width: 600px) {
-            .rules-container {
-                padding: 12px 4vw;
-                font-size: 1em;
-            }
-            h2, h3 {
-                font-size: 1.1em;
-            }
+        .back-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
         }
+        .svg-btn {
+            width: 650px;
+            height: 222px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            transform-origin: center center;
+            will-change: transform;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin-bottom: 32px;
+        }
+        .svg-btn:hover, .svg-btn:focus {
+            transform: scale(1.08);
+            box-shadow: none;
+            z-index: 2;
+        }
+        .svg-btn:active {
+            transform: scale(0.92);
+            transition: transform 0.1s ease-out;
+        }
+        .svg-btn-text {
+            position: absolute;
+            left: 0; top: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 100px;
+            color: #222;
+            pointer-events: none;
+            letter-spacing: 2px;
+            user-select: none;
+            transform: none !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        @media (min-width: 390px)  {
+            .rules-container { max-width: 365px; max-height: 600px; margin: auto; padding: 6px 12px; }
+            .rules-title { font-size: 32px; margin-bottom: 0px; }
+            
+            .back-button { margin-top: 16px; }
+            .svg-btn { width: 240px; height: 60px; margin-bottom: 0px;}
+            .svg-btn-text { font-size: 35px; }
+        }
+        @media (min-width: 600px) {
+            .rules-container { max-width: 1100px; max-height: 650px; margin: auto; }
+            .rules-title { font-size: 45px; margin-bottom: 12px; }
+            
+            .back-button { margin-top: 45px; }
+            .svg-btn { width: 320px; height: 80px; }
+            .svg-btn-text { font-size: 45px; }
+        }
+        @media (min-width: 2560px)  {
+            .rules-container { max-width: 1200px; max-height: 1128px; margin: auto; }
+            .rules-title { font-size: 50px; margin-bottom: 12px; }
+            
+            .back-button { margin-top: 50px; }
+            .svg-btn { width: 320px; height: 90px; margin-bottom: 32px; }
+            .svg-btn-text { font-size: 50px; }
+        }
+        
+        
     </style>
 </head>
 <body>
 <div class="rules-container">
-    <h2>Правила игры</h2>
+    <div class="rules-title">RULES</div>
     <b>Цвет.</b><br>
     Игра начинается с выбора цвета вашего государства.
     <br><br>
     <b>Ход.</b><br>
-    В игре есть иконки <img src="ui-elements/flag.svg" class="icon" alt="Флаг"> и <img src="ui-elements/clock.svg" class="icon" alt="Таймер"> которые сообщают о текущем ходе.<br>
-    В данном примере ход у желтого государства, а таймер показывает время оставшееся до конца хода.<br>
-    Есть иконки, позволяющие управлять своим ходом.<br>
+    В игре есть иконки <img src="ui-elements/flag.svg" class="icon" alt="Флаг"> и <img src="images/clock.png" class="icon" alt="Таймер"> которые сообщают о текущем ходе.<br>
+    В данном примере ход у желтого государства, а таймер показывает оставшееся время до конца хода.<br>
+    <br>
+    Есть иконки, позволяющие управлять своим ходом:<br>
     <img src="ui-elements/undo-move.svg" class="icon" alt="Отмена"> - дает возможность отменить последнее действие на вашем ходу.<br>
     <img src="ui-elements/end-turn.svg" class="icon" alt="Завершить ход"> - при нажатии, преждевременно завершает ваш ход.<br>
     <br>
     <b>Государство.</b><br>
-    У каждого цвета в игре есть свое главное здание - государство <img src="images/town-hall.png" class="icon" alt="Государство">. Их может быть несколько для каждого цвета.<br>
+    У каждого цвета в игре есть свое главное здание - государство <img src="images/town-hall.png" class="icon" alt="Государство">.<br>
+    Их может быть несколько для каждого цвета.<br>
+    <br>
     За каждое отдельное государство своего цвета, выбрав его, можно совершать различные действия, например: создавать юнитов, строить фермы, заводы и башни.<br>
     Соответственно у каждого отдельного государства есть своя территория и свои ресурсы.<br>
     <br>
     <b>Ресурсы.</b><br>
-    В игре есть 3 вида ресурсов. Это золото - <img src="ui-elements/income.png" class="icon" alt="Золото">, дерево - <img src="ui-elements/tree.png" class="icon" alt="Дерево"> и камень - <img src="ui-elements/stone.png" class="icon" alt="Камень">.<br>
-    Золото добывается с помощью захваченных клеток, где каждая клетка увеличивает доход на +1. А также при построении ферм <img src="images/factory.png" class="icon" alt="Ферма">, которые увеличивают доход на +4, но требуют дерева и камня.<br>
-    Деревья, как и камни, можно добыть 3-умя способами:<br>
+    В игре существует 3 вида ресурсов:<br> 
+    Золото - <img src="ui-elements/income.png" class="icon" alt="Золото"><br>
+    Дерево - <img src="ui-elements/tree.png" class="icon" alt="Дерево"><br>
+    Камень - <img src="ui-elements/stone.png" class="icon" alt="Камень"><br>
+    <br> 
+    Золото добывается с помощью захваченных клеток, где каждая клетка увеличивает доход на +1.<br>
+    А также при построении ферм <img src="images/factory.png" class="icon" alt="Ферма">, которые увеличивают доход на +4, но требуют дерева и камня.<br>
+    <br>
+    Деревья, как и камни, можно добыть 3-мя способами:<br>
     1. Это сбор единоразовых ресурсов, при перемещении своего юнита на клетку с ресурсом: <img src="images/tree.png" class="icon" alt="Деревья"> и <img src="images/stone.png" class="icon" alt="Камни">, которые дают 3 соответствующего ресурса сразу.<br>
     2. Это захваченные месторождения, при захвате своим юнитом клетки с месторождением. <img src="images/forest.png" class="icon" alt="Большие деревья"> и <img src="images/mine.png" class="icon" alt="Гора"> дают +1 соответствующего ресурса за ход.<br>
     3. Построение лесопилки - <img src="images/forest-farm.png" class="icon" alt="Лесопилка"> и завода - <img src="images/mine-farm.png" class="icon" alt="Завод">, подробнее о них расписано в "Здания".<br>
@@ -85,28 +178,47 @@
     Месторождения остаются на всю игру и не могут быть уничтожены.<br>
     <br>
     <b>Здания.</b><br>
-    Всего существует 4 здания: государство - <img src="images/town-hall.png" class="icon" alt="Государство">, ферма - <img src="images/factory.png" class="icon" alt="Ферма">, лесопилка - <img src="images/forest-farm.png" class="icon" alt="Лесопилка"> и завод - <img src="images/mine-farm.png" class="icon" alt="Завод">.<br>
-    Строить фермы можно только вокруг государства и других ферм. Каждая следующая ферма стоит дороже предыдущей.<br>
+    Всего существует 4 здания:
+    <br> 
+    Государство - <img src="images/town-hall.png" class="icon" alt="Государство"><br>
+    Ферма - <img src="images/factory.png" class="icon" alt="Ферма"><br>
+    Лесопилка - <img src="images/forest-farm.png" class="icon" alt="Лесопилка"><br>
+    Завод - <img src="images/mine-farm.png" class="icon" alt="Завод"><br>
+    <br> 
+    Строить фермы можно только вокруг государства и других ферм.<br>
+    Каждая следующая ферма стоит дороже предыдущей.<br>
+    <br>
     Лесопилка и завод имеют фиксированную стоимость и их можно строить на любой своей клетке. Построенные таким образом здания, увеличат доход соответствующего ресурса на +1 за ход.<br>
     Другое дело, строить лесопилку или завод рядом с месторождением, таким образом увеличивая доходность соответствующего здания еще на +3.<br>
     Однако, последующие ваши здания, построенные у конкретного месторождения будут приносить так же +1 соответствующего ресурса.<br>
     <br>
     <b>Юниты.</b><br>
-    Есть 5 типов юнитов. Они отличаются стоимостью, содержанием, силой, защитой и радиусом перемещения.<br>
+    Всего есть 5 типов юнитов. Они отличаются стоимостью, содержанием, силой, защитой и радиусом хода.<br>
+    <br>
     Создание любого юнита на свободную клетку приравнивается к действию, а значит только созданным юнитом сходить не получится.<br>
     Сила юнита также является его защитой, которую он распространяет от себя в радиусе 1, для своих клеток.<br>
-    Во первых, это войска - которые могут быть созданы вокруг: <img src="images/town-hall.png" class="icon" alt="Государство"> - государства, <img src="images/factory.png" class="icon" alt="Ферма"> - фермы и башен: <img src="images/tower.png" class="icon" alt="Башня 1">, <img src="images/big_tower.png" class="icon" alt="Башня 2">.<br>
-    [1] <img src="images/unit1.png" class="icon" alt="Рядовой"> - Рядовой : имеет силу 1, радиус перемещения 3, обходится в 2 золота за ход.<br>
-    [2] <img src="images/unit2.png" class="icon" alt="Солдат"> - Солдат : имеет силу 2, радиус перемещения 3, обходится в 6 золота за ход.<br>
-    [3] <img src="images/unit3.png" class="icon" alt="Танк"> - Танк : имеет силу 3, радиус перемещения 2, обходится в 18 золота за ход.<br>
-    [4] <img src="images/tank.png" class="icon" alt="Истребитель"> - Истребитель : имеет силу 4, радиус перемещения 2, обходится в 54 золота за ход.<br>
-    Также существует вложенность, что вокруг юнитов из войск можно создать более слабых юнитов. Например, вокруг <img src="images/tank.png" class="icon" alt="Истребитель"> можно создать: <img src="images/unit3.png" class="icon" alt="Танк">, <img src="images/unit2.png" class="icon" alt="Солдат">, <img src="images/unit1.png" class="icon" alt="Рядовой">. А вокруг <img src="images/unit2.png" class="icon" alt="Солдат"> только <img src="images/unit1.png" class="icon" alt="Рядовой">.<br>
     <br>
-    Существует последний тип юнитов, это <img src="images/drone.png" class="icon" alt="Дрон"> - Дрон. Он отличается от остальных юнитов своим перемещением и целью.<br>
-    Дрон имеет радиус перемещения в 4 клетки, при чем не важно - чьи это клетки и какая у них защита, главное требование - свободные.<br>
-    При перемещении дрона на определенные сущности, он уничтожает их, оставляя за собой огонь (Подробнее в "Огонь") - целью дрона могут стать:<br>
-    Вражеские юниты, а именно : <img src="images/unit1.png" class="icon" alt="Рядовой"> - рядовой и <img src="images/unit2.png" class="icon" alt="Солдат"> - солдат.<br>
-    Вражеские здания, а именно : <img src="images/factory.png" class="icon" alt="Ферма"> - ферма, <img src="images/forest-farm.png" class="icon" alt="Лесопилка"> - лесопилка, <img src="images/mine-farm.png" class="icon" alt="Завод"> - завод.<br>
+    Во первых, это войска - которые могут быть созданы вокруг: 
+    <img src="images/town-hall.png" class="icon" alt="Государство"> - государства, <br> 
+    <img src="images/factory.png" class="icon" alt="Ферма"> - ферм и башен: <img src="images/tower.png" class="icon" alt="Башня 1">, <img src="images/big_tower.png" class="icon" alt="Башня 2">.<br>
+    <br> 
+    1. Рядовой - <img src="images/unit1.png" class="icon" alt="Рядовой"> : имеет силу 1, радиус хода 3, обходится в 2 золота за ход.<br>
+    2. Солдат - <img src="images/unit2.png" class="icon" alt="Солдат"> : имеет силу 2, радиус хода 3, обходится в 6 золота за ход.<br>
+    3. Танк - <img src="images/unit3.png" class="icon" alt="Танк"> : имеет силу 3, радиус хода 2, обходится в 18 золота за ход.<br>
+    4. Истребитель - <img src="images/tank.png" class="icon" alt="Истребитель"> : имеет силу 4, радиус хода 2, обходится в 54 золота за ход.<br>
+    <br>
+    Также существует вложенность, что вокруг юнитов из войск можно создать более слабых юнитов.<br>
+    Например, вокруг истребителя - <img src="images/tank.png" class="icon" alt="Истребитель"> можно создать: <img src="images/unit3.png" class="icon" alt="Танк">, <img src="images/unit2.png" class="icon" alt="Солдат">, <img src="images/unit1.png" class="icon" alt="Рядовой">.<br>
+    А вокруг <img src="images/unit2.png" class="icon" alt="Солдат"> только <img src="images/unit1.png" class="icon" alt="Рядовой">.<br>
+    Ну и конечно же, при создании, учитывается защита нечейной или вражеской клетки.<br>
+    <br>
+    И последний тип юнитов, это дрон - <img src="images/drone.png" class="icon" alt="Дрон">.<br>
+    Он отличается от остальных юнитов своим перемещением и целью.<br>
+    Дрон имеет радиус хода в 4 клетки, при чем не важно - чьи это клетки и какая у них защита, главное требование - свободные.<br>
+    При перемещении дрона на определенные сущности, он уничтожает их, оставляя за собой огонь - <img src="images/fire.png" class="icon" alt="Огонь"> (Подробнее в "Огонь").<br>
+    Целью дрона могут стать:<br>
+    Вражеские юниты : <img src="images/unit1.png" class="icon" alt="Рядовой"> - рядовой и <img src="images/unit2.png" class="icon" alt="Солдат"> - солдат.<br>
+    Вражеские здания : <img src="images/factory.png" class="icon" alt="Ферма"> - ферма, <img src="images/forest-farm.png" class="icon" alt="Лесопилка"> - лесопилка, <img src="images/mine-farm.png" class="icon" alt="Завод"> - завод.<br>
     Дроны будут доступны только слабым государствам и их количество зависит от разницы мощи с самым сильным государством в игре (Подробнее в "Мощность").<br>
     <br>
     <b>Башни.</b><br>
@@ -126,7 +238,13 @@
     31% - 1% = 5 дронов.<br>
     <br>
     <b>Огонь.</b><br>
-    <img src="images/fire.png" class="icon" alt="Огонь"> - Огонь появляется после уничтножения конкретной сущности дроном и блокирует использование клетки в части перемещения на нее и постройки зданий на определенное количество ходов.<br>
+    Огонь - <img src="images/fire.png" class="icon" alt="Огонь"> появляется после уничтножения конкретной сущности дроном и блокирует использование клетки в части перемещения на нее, постройки зданий и в экономическом плане.<br>
+    <br>
+    У огня есть 3 стадии: сильный, средний и слабый. С каждым ходом игрока, имеющего у себя огонь - он угасает. А если огонь был слабый - то просто гаснет.<br>
+    Сильный огонь появляется при уничтожении зданий: <img src="images/factory.png" class="icon" alt="Ферма">, <img src="images/forest-farm.png" class="icon" alt="Лесопилка">, <img src="images/mine-farm.png" class="icon" alt="Завод"><br>
+    Средний огонь появляется при уничтожении <img src="images/unit2.png" class="icon" alt="Солдат"><br>
+    Слабый огонь появляется при уничтножении <img src="images/unit1.png" class="icon" alt="Рядовой"><br>
+    Игрок имеющий определенную стадию огня, получает соответствующий минус к доходу. 3тья стадия огня снимает 3 золота за ход.<br>
     <br>
     <b>Экономика.</b><br>
     Так как войска и башни содержатся за золото, важно следить за тем, чтобы вашего дохода золота хватало на покрытие ваших потребностей.<br>
@@ -157,6 +275,12 @@
     Прежде чем стоить сильных юнитов, надо убедиться, что прибыль способна покрыть затраты на их содержание.<br>
     Разрезайте территории врагов на части, чтобы разрушить их экономику и уничтножить войска.<br>
 </div>
+
+<div class="back-button">
+    <div class="svg-btn" onclick="window.location.href='index.html'">
+        <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+        <span class="svg-btn-text">BACK</span>
+    </div>
+</div>
 </body>
 </html>
-

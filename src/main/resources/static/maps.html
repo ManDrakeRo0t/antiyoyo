@@ -1,832 +1,1046 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Maps - Antiyoyo</title>
+    <title>World Wars - Maps</title>
+    <link rel="icon" type="image/png" href="ui-elements/icon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            overflow-y: auto;
+        @font-face {
+            font-family: 'Castlefire';
+            src: url('fonts/Castlefire.ttf') format('truetype'),
+                 url('fonts/Castlefire.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
         }
-
-        /* Header */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background-color: #333;
-            color: white;
+        html {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            min-height: 100%;
+            margin: 0;
+            background: #f0cba3;
+            font-family: 'Castlefire';
+            overflow: auto;
+        }
+        .maps-container {
+            width: 100%;
+            max-width: 960px;
+            height: 600px;
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #fff8dceb;
+            border-radius: 24px;
+            padding: 6px 24px;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            position: relative;
+            scrollbar-width: none;        /* для Firefox */
+            -ms-overflow-style: none;     /* для IE и Edge */
+        }
+        .maps-container::-webkit-scrollbar {
+            display: none;                /* для Chrome, Safari и Opera */
+        }
+        .maps-title {
+            text-align: center;
+            font-family: 'Castlefire';
+            font-size: 50px;
+            margin-bottom: 12px;
+            pointer-events: none;
+            user-select: none;
+        }
+        .map-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .map-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            justify-content: center;
         }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-        }
-
-        .back-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .back-button:hover {
-            background-color: #45a049;
-        }
-
-        /* Maps List */
-        .maps-container {
-            margin-top: 100px;
-            padding: 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            padding-bottom: 40px;
-        }
-
-        .maps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .map-card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-
-        .map-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        }
-
-        .map-card h3 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 1.2rem;
-        }
-
-        .map-info {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-
-        .map-actions {
+        .map-name-field {
+            position: relative;
+            width: 340px;
+            height: 60px;
             display: flex;
-            gap: 10px;
+            align-items: center;
         }
-
-        .action-button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .preview-button {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .preview-button:hover {
-            background-color: #1976D2;
-        }
-
-        .create-game-button {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .create-game-button:hover {
-            background-color: #45a049;
-        }
-
-        /* Modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .map-name-bg {
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+            position: absolute;
+            pointer-events: none;
+            user-select: none;
         }
-
-        .modal-content {
-            background-color: white;
-            border-radius: 10px;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
+        .map-name-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 44px;
+            color: #222;
+            z-index: 2;
+            pointer-events: none;
+            user-select: none;
+            box-sizing: border-box;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        .modal-title {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .close-button {
+        .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red {
+            width: 120px;
+            height: 60px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            transform-origin: center center;
+            will-change: transform;
             background: none;
             border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #666;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
+        }
+        .svg-btn:hover, .svg-btn-blue:hover, .svg-btn-yellow:hover, .svg-btn-red:hover {
+            transform: scale(1.08);
+            z-index: 2;
+        }
+        .svg-btn:active, .svg-btn-blue:active, .svg-btn-yellow:active, .svg-btn-red:active {
+            transform: scale(0.92);
+            transition: transform 0.1s ease-out;
+        }
+        .svg-btn-text {
+            position: absolute;
+            display: flex; 
+            align-items: center; 
             justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 1.25rem;
+            letter-spacing: 2px;
+            color: #222;
+            pointer-events: none;
+            user-select: none;
         }
-
-        .close-button:hover {
-            color: #333;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        /* Map Preview Canvas */
-        .map-preview-container {
-            width: 800px;
-            height: 600px;
+        .svg-btn-search {
+            width: 60px;
+            height: 60px;
             position: relative;
-            overflow: hidden;
-            background-color: white;
-        }
-
-        .map-preview-canvas {
-            display: block;
-            background-color: white;
-        }
-
-        /* Session ID Modal */
-        .session-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
+            display: flex;
             align-items: center;
-            z-index: 2001;
-        }
-
-        .session-modal-content {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            max-width: 400px;
-        }
-
-        .session-id {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 1.2rem;
-            margin: 20px 0;
-            word-break: break-all;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-        }
-
-        /* Settings Modal */
-        .settings-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
             justify-content: center;
-            align-items: center;
-            z-index: 2001;
-        }
-
-        .settings-modal-content {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            width: 400px;
-            max-width: 90%;
-        }
-
-        .settings-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .form-group input[type="number"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-        }
-
-        .form-group input[type="range"] {
-            width: 100%;
-        }
-
-        .range-value {
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .settings-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .settings-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
         }
+        .svg-btn-search:hover { transform: scale(1.12); }
+        .svg-btn-search:active { transform: scale(0.96); }
+        /* Модальные окна */
+        .modal-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .modal-bg.active { display: flex; }
+        .modal-container {
+            background: #fff8dceb;
+            border-radius: 24px;
+            padding: 32px 32px 24px 32px;
+            min-width: 400px;
+            max-width: 96vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .modal-title {
+            font-family: 'Castlefire';
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 24px;
+            color: #222;
+        }
+        /* GAME SETTINGS */
+        .settings-fields {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .input-wrapper {
+            position: relative;
+            width: 320px;
+            height: 60px;
+        }
+        .input-bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0; top: 0;
+            z-index: 1;
+            pointer-events: none;
+            user-select: none;
+        }
+        .input-field {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: 'Castlefire';
+            font-size: 44px;
+            color: #222;
+            padding: 0 40px;
+            z-index: 2;
+            box-sizing: border-box;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .input-field::placeholder { color: #a1966d; opacity: 1; }
+        /* Убираем стрелки у input[type=number] */
+        .input-field[type=number]::-webkit-inner-spin-button,
+        .input-field[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .onoff-group {
+            display: flex;
+            flex-direction: row;
+            gap: 18px;
+            margin: 12px 0 18px 0;
+            align-items: center;
+            justify-content: center;
+        }
+        .onoff-btn {
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        .onoff-btn:hover { transform: scale(1.12); }
+        .onoff-btn img[alt="onoff"] {
+            width: 100%;
+            position: absolute;
+            z-index: 1;
+            pointer-events: none;
+            user-select: none;
+        }
+        .onoff-icon {
+            width: 70px;
+            object-fit: contain;
+            display: block;
+            z-index: 2;
+        }
+        .settings-actions {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        /* GAME CREATED */
+        .session-id-wrapper {
+            position: relative;
+            width: 320px;
+            height: 60px;
+            margin: 18px 0 24px 0;
+        }
+        .session-id-bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0; top: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+        .created-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        .canvas-preview {
+            width: 800px; 
+            height: 600px; 
+            background: #fff; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .create-button-preview {
+            margin-top: 24px;
+        }
+        .back-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        @media (min-width: 2560px)   {
+            .maps-container { max-width: 1200px; height: 1128px; max-height: 1128px; margin: auto; } /*Все в нем*/
+            .maps-title { font-size: 50px; margin-bottom: 12px; } /*Заголовок и отступ вниз*/
 
-        .settings-buttons .cancel-button {
-            background-color: #f44336;
-            color: white;
-        }
 
-        .settings-buttons .create-button {
-            background-color: #4CAF50;
-            color: white;
+            .map-list { gap: 18px; } /*Отступы между картами в контейнере*/
+            .map-name-field, .input-wrapper { width: 480px; height: 100px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-text { font-size: 50px; } /*Размер текста названия карты*/
+            .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
+            .svg-btn-search { width: 90px; height: 90px; } /*Кнопка превью у карты*/
+
+            .modal-title { font-size: 50px; margin-bottom: 24px; } /*Заголовки поп-апов*/
+
+            .input-field { font-size: 50px;  padding: 0 40px;  } /*Поля для ввода*/
+
+            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 320px; height: 90px; } /*СВГ кнопки*/
+            .svg-btn-text { font-size: 50px; } /*Размер текста СВГ кнопок*/
+ 
+            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
+            .modal-container { border-radius: 24px;  padding: 32px;  min-width: 400px;  max-width: 96%; } /*Поп-апы*/
+
+            .canvas-preview { width: 800px;  height: 600px; } /*Канвас превью*/
+            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
+
+            .settings-fields { width: 100%; gap: 18px; } /*Отступы между поляви ввода на поп-апе*/
+            .onoff-group { gap: 18px; margin: 12px 0 30px 0; } /*Отступы между чекбоксами*/
+            .onoff-btn { width: 140px; height: 140px; } /*Кнопки чекбоксов*/
+            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
+            .onoff-icon { width: 70px; } /*Размер пнг внутри кнопок*/
+
+            .session-id-wrapper { width: 480px; height: 100px; margin: 0px 0 24px 0; } /*Поле с сессией на GAME CREATED*/
+            .created-actions { gap: 6px; margin-top: 12px; } /*Отступы кнопок на GAME CREATED*/
+
+            .back-button { margin-top: 50px; } /*Назад на экране*/
         }
+        @media (min-width: 600px) and (max-width: 2000px) {
+            .maps-container { max-width: 1100px; height: 650px; max-height: 650px; margin: auto; } /*Все в нем*/
+            .maps-title { font-size: 45px; margin-bottom: 12px; } /*Заголовок и отступ вниз*/
+
+
+            .map-list { gap: 12px; } /*Отступы между картами в контейнере*/
+            .map-name-field, .input-wrapper { width: 460px; height: 95px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-text { font-size: 45px; } /*Размер текста названия карты*/
+            .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
+            .svg-btn-search { width: 80px; height: 80px; } /*Кнопка превью у карты*/
+
+            .modal-title { font-size: 45px; margin-bottom: 0px; } /*Заголовки поп-апов*/
+
+            .input-field { font-size: 45px;  padding: 0 32px;  } /*Поля для ввода*/
+
+            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 320px; height: 80px; } /*СВГ кнопки*/
+            .svg-btn-text { font-size: 45px; } /*Размер текста СВГ кнопок*/
+ 
+            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
+            .modal-container { border-radius: 24px;  padding: 24px;  min-width: 400px;  max-width: 96%; } /*Поп-апы*/
+
+            .canvas-preview { width: 650px;  height: 500px; } /*Канвас превью*/
+            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
+
+            .settings-fields { width: 100%; gap: 18px; } /*Отступы между поляви ввода на поп-апе*/
+            .onoff-group { gap: 18px; margin: 6px 0 16px 0; } /*Отступы между чекбоксами*/
+            .onoff-btn { width: 130px; height: 130px; } /*Кнопки чекбоксов*/
+            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
+            .onoff-icon { width: 62px; } /*Размер пнг внутри кнопок*/
+
+            .session-id-wrapper { width: 460px; height: 95px; margin: 0px 0 12px 0; } /*Поле с сессией на GAME CREATED*/
+            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
+
+            .back-button { margin-top: 45px; } /*Назад на экране*/
+        }
+        @media (min-width: 390px) and (max-width: 599px)  {
+            .maps-container { max-width: 365px; max-height: 600px; margin: auto; padding: 6px 12px; } /*Все в нем*/
+            .maps-title { font-size: 32px; margin-bottom: 0px; } /*Заголовок и отступ вниз*/
+
+            .map-list { gap: 2px; } /*Отступы между картами в контейнере*/
+            
+            .map-name-field, .input-wrapper { width: 280px; height: 70px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-text { font-size: 35px; } /*Размер текста названия карты*/
+            .map-row { gap: 6px; } /*Отступ между названием и кнопкой превью*/
+            .svg-btn-search { width: 60px; height: 60px; } /*Кнопка превью у карты*/
+
+            .modal-title { font-size: 32px; margin-bottom: 0px; } /*Заголовки поп-апов*/
+
+            .input-field { font-size: 35px;  padding: 0 10px;  } /*Поля для ввода*/
+
+            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 240px; height: 60px; font-weight: normal; } /*СВГ кнопки*/
+            .svg-btn-text { font-size: 35px; } /*Размер текста СВГ кнопок*/
+ 
+            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
+            .modal-container { border-radius: 24px;  padding: 14px;  min-width: 370px;  max-width: 46%; } /*Поп-апы*/
+
+            .canvas-preview { width: 300px;  height: 300px; } /*Канвас превью*/
+            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
+
+            .settings-fields { width: 100%; gap: 6px; } /*Отступы между поляви ввода на поп-апе*/
+            .onoff-group { gap: 14px; margin: 4px 0 12px 0; } /*Отступы между чекбоксами*/
+            .onoff-btn { width: 80px; height: 80px; } /*Кнопки чекбоксов*/
+            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
+            .onoff-icon { width: 45px; } /*Размер пнг внутри кнопок*/
+
+            .session-id-wrapper { width: 280px; height: 70px; margin: 0px; } /*Поле с сессией на GAME CREATED*/
+            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
+
+            .back-button { margin-top: 16px; } /*Назад на экране*/
+        }
+          
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Карты</h1>
-        <button class="back-button" onclick="goBack()">← Назад</button>
+<div class="maps-container">
+    <div class="maps-title">LOBBIES</div>
+    <div id="mapsList" class="map-list">
+        LOAD MAPS...
     </div>
-
-    <div class="maps-container">
-        <div id="mapsList" class="loading">
-            Загрузка карт...
+</div>
+<!-- Модальное окно превью карты -->
+<div id="mapModal" class="modal-bg">
+    <div class="modal-container">
+        <div class="modal-title" id="mapModalTitle">PREVIEW</div>
+        <div class="modal-title" id="mapPlayersCount"></div>
+        <div class="canvas-preview">
+            <canvas id="mapPreviewCanvas"></canvas>
         </div>
-    </div>
-
-    <!-- Map Preview Modal -->
-    <div id="mapModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="mapModalTitle" class="modal-title">Превью карты</h2>
-                <button class="close-button" onclick="closeMapModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="map-preview-container">
-                    <canvas id="mapPreviewCanvas"></canvas>
-                </div>
+        <div class="create-button-preview">
+            <div class="svg-btn-blue" id="previewCreateBtn">
+                <img src="ui-elements/svg/blue_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <span class="svg-btn-text">CREATE</span>
             </div>
         </div>
     </div>
-
-    <!-- Session ID Modal -->
-    <div id="sessionModal" class="session-modal">
-        <div class="session-modal-content">
-            <h2>Игра создана!</h2>
-            <p>ID сессии:</p>
-            <div id="sessionId" class="session-id"></div>
-            <button class="action-button create-game-button" onclick="closeSessionModal()">Закрыть</button>
+</div>
+<!-- Модальное окно GAME SETTINGS -->
+<div id="settingsModal" class="modal-bg">
+    <div class="modal-container">
+        <div class="modal-title">GAME SETTINGS</div>
+        <form id="settingsForm" autocomplete="off">
+            <div class="settings-fields">
+                <div class="input-wrapper">
+                    <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="seconds-bg">
+                    <input type="number" id="secondToMove" class="input-field" placeholder="TIME FOR MOVE" min="1" value="" required>
+                </div>
+                <div class="input-wrapper">
+                    <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="density-bg">
+                    <input type="number" id="farmsDensity" class="input-field" placeholder="FARM DENSITY" min="0" max="100" value="" required>
+                </div>
+                <div class="onoff-group">
+                    <button type="button" class="onoff-btn" id="graveBtn" onclick="toggleOnOff(this)">
+                        <img src="ui-elements/svg/button_on.svg" alt="onoff" id="graveBtnImg">
+                        <img src="images/grave.png" class="onoff-icon" alt="grave">
+                    </button>
+                    <button type="button" class="onoff-btn" id="undoBtn" onclick="toggleOnOff(this)">
+                        <img src="ui-elements/svg/button_on.svg" alt="onoff" id="undoBtnImg">
+                        <img src="images/undo.png" class="onoff-icon" alt="undo">
+                    </button>
+                    <button type="button" class="onoff-btn" id="cutBtn" onclick="toggleOnOff(this)">
+                        <img src="ui-elements/svg/button_off.svg" alt="onoff" id="cutBtnImg">
+                        <img src="images/cut.png" class="onoff-icon" alt="cut">
+                    </button>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button type="submit" class="svg-btn-yellow">
+                    <img src="ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                    <span class="svg-btn-text">CREATE</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Модальное окно GAME CREATED -->
+<div id="createdModal" class="modal-bg">
+    <div class="modal-container">
+        <div class="modal-title">GAME CREATED!</div>
+        <div class="session-id-wrapper">
+            <img src="ui-elements/svg/enter_field.svg" class="session-id-bg" alt="session-bg">
+            <input type="text" class="input-field" id="sessionId" readonly value="SESSION_ID">
+            <!-- Кнопка копирования -->
+            <button id="copySessionIdBtn" type="button" style="position:absolute; right:-54px; top:50%; transform:translateY(-50%); width:48px; height:48px; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                <img src="ui-elements/svg/circle_button_for_color.svg" alt="Copy" style="width:44px; height:44px; pointer-events:none; user-select:none;">
+            </button>
+        </div>
+        <div class="created-actions">
+            <div class="svg-btn-red" onclick="window.location.href='index.html'">
+                <img src="ui-elements/svg/red_button.svg" alt="MAIN" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <span class="svg-btn-text">MAIN</span>
+            </div>
+            <div class="svg-btn-yellow" onclick="window.location.href='play.html'"> <!-- onclick="goPlayWithSessionId() - На мобилке не робит -->
+                <img src="ui-elements/svg/yellow_button.svg" alt="PLAY" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <span class="svg-btn-text">PLAY</span>
+            </div>
         </div>
     </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="settings-modal">
-        <div class="settings-modal-content">
-            <h2>Настройки игры</h2>
-            <form id="settingsForm" class="settings-form">
-                <div class="form-group">
-                    <label for="secondToMove">Секунды на ход</label>
-                    <input type="number" id="secondToMove" name="secondToMove" value="60" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label for="grave">
-                        <input type="checkbox" id="grave" name="grave" checked>
-                        Могилы
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label for="farmsDensity">Плотность ферм: <span id="farmsDensityValue">20</span></label>
-                    <input type="range" id="farmsDensity" name="farmsDensity" min="0" max="100" value="20" 
-                           oninput="document.getElementById('farmsDensityValue').textContent = this.value">
-                </div>
-                <div class="form-group">
-                    <label for="undoMove">
-                        <input type="checkbox" id="undoMove" name="undoMove" checked>
-                        Отмена хода
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label for="cut">
-                        <input type="checkbox" id="cut" name="cut">
-                        Разрез 
-                    </label>
-                </div>
-                <div class="settings-buttons">
-                    <button type="button" class="cancel-button" onclick="closeSettingsModal()">Отмена</button>
-                    <button type="submit" class="create-button">Создать игру</button>
-                </div>
-            </form>
-        </div>
+</div>
+<div class="back-button">
+    <div class="svg-btn-red" onclick="window.location.href='index.html'">
+        <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+        <span class="svg-btn-text">BACK</span>
     </div>
+</div>
+<script>
+// --- Константы и переменные ---
+let backendHost = window.location.hostname;
+let maps = [];
+let currentMapId = null;
+let currentMapName = '';
+let currentMapData = null;
+let mapCanvas = null;
+let mapCtx = null;
 
-    <script>
-        // Backend host management
-        let backendHost = window.location.hostname;
-    
-    // Initialize backend host from localStorage
-        function initializeBackendHost() {
-            const storedHost = localStorage.getItem('backendHost');
-            if (!storedHost) {
-                currentHost = window.location.hostname;
-                localStorage.setItem('backendHost', currentHost);
-                backendHost = currentHost;
+// --- Backend host management ---
+function initializeBackendHost() {
+    const storedHost = localStorage.getItem('backendHost');
+    if (!storedHost) {
+        currentHost = window.location.hostname;
+        localStorage.setItem('backendHost', currentHost);
+        backendHost = currentHost;
+    } else {
+        backendHost = storedHost;
+    }
+}
+function getBackendUrl() {
+    return `http://${backendHost}:8080`;
+}
+initializeBackendHost();
+
+// --- Загрузка и отображение карт ---
+document.addEventListener('DOMContentLoaded', function() {
+    loadMaps();
+});
+
+async function loadMaps() {
+    try {
+        const response = await fetch(`${getBackendUrl()}/api/maps`);
+        if (response.ok) {
+            maps = await response.json();
+            displayMaps();
+        } else {
+            document.getElementById('mapsList').innerHTML = 'Ошибка загрузки карт';
+        }
+    } catch (error) {
+        document.getElementById('mapsList').innerHTML = 'Ошибка соединения с сервером';
+    }
+}
+
+function displayMaps() {
+    const mapsList = document.getElementById('mapsList');
+    if (!maps || maps.length === 0) {
+        mapsList.innerHTML = '<p>Карты не найдены</p>';
+        return;
+    }
+    mapsList.innerHTML = '';
+    maps.forEach(map => {
+        const row = document.createElement('div');
+        row.className = 'map-row';
+        // 1. Название карты в enter_field.svg
+        const nameField = document.createElement('div');
+        nameField.className = 'map-name-field';
+        const nameBg = document.createElement('img');
+        nameBg.src = 'ui-elements/svg/enter_field.svg';
+        nameBg.className = 'map-name-bg';
+        nameBg.alt = 'map-bg';
+        const nameText = document.createElement('span');
+        nameText.className = 'map-name-text';
+        nameText.textContent = map.name;
+        nameField.appendChild(nameBg);
+        nameField.appendChild(nameText);
+        // 2. Кнопка превью (search_button)
+        const previewBtn = document.createElement('div');
+        previewBtn.className = 'svg-btn-search';
+        previewBtn.title = 'Превью';
+        const searchImg = document.createElement('img');
+        searchImg.src = 'ui-elements/svg/search_button.svg';
+        searchImg.alt = 'preview';
+        searchImg.style.width = '100%';
+        searchImg.style.height = '100%';
+        searchImg.style.pointerEvents = 'none';
+        previewBtn.appendChild(searchImg);
+        previewBtn.onclick = () => previewMap(map.id, map.name);
+        // Добавляем в строку
+        row.appendChild(nameField);
+        row.appendChild(previewBtn);
+        mapsList.appendChild(row);
+    });
+}
+
+// --- Модальное окно превью карты ---
+function previewMap(mapId, mapName) {
+    // Находим объект карты по id, чтобы получить playersCount
+    const mapObj = maps.find(m => m.id === mapId);
+    fetch(`${getBackendUrl()}/api/maps/${mapId}`)
+        .then(res => res.json())
+        .then(data => {
+            currentMapData = data;
+            document.getElementById('mapModalTitle').textContent = `${mapName}`;
+            // Показываем количество игроков
+            if (mapObj && mapObj.playersCount !== undefined) {
+                document.getElementById('mapPlayersCount').textContent = `PLAYERS: ${mapObj.playersCount}`;
             } else {
-                backendHost = storedHost;
+                document.getElementById('mapPlayersCount').textContent = '';
             }
+            document.getElementById('mapModal').classList.add('active');
+            setTimeout(() => {
+                initMapPreview();
+                // Назначаем обработчик на CREATE в превью
+                const btn = document.getElementById('previewCreateBtn');
+                btn.onclick = function() {
+                    closeMapModal();
+                    showSettingsModal(mapId, mapName);
+                };
+            }, 100);
+        })
+        .catch(() => alert('Ошибка загрузки карты'));
+}
+function closeMapModal() {
+    document.getElementById('mapModal').classList.remove('active');
+    currentMapData = null;
+    if (mapCanvas) {
+        mapCanvas.removeEventListener('mousedown', handleMapMouseDown);
+        mapCanvas.removeEventListener('mousemove', handleMapMouseMove);
+        mapCanvas.removeEventListener('mouseup', handleMapMouseUp);
+        mapCanvas.removeEventListener('mouseleave', handleMapMouseUp);
+        mapCanvas.removeEventListener('wheel', handleMapWheel);
+        // --- Touch events for mobile scroll ---
+        mapCanvas.removeEventListener('touchstart', handleMapTouchStart);
+        mapCanvas.removeEventListener('touchmove', handleMapTouchMove);
+        mapCanvas.removeEventListener('touchend', handleMapTouchEnd);
+    }
+}
+// --- Превью карты (canvas) ---
+const entityImages = {
+    'BIG_TOWER': 'images/big_tower.png',
+    'TOWER': 'images/tower.png',
+    'FACTORY': 'images/factory.png',
+    'UNIT_1': 'images/unit1.png',
+    'UNIT_2': 'images/unit2.png',
+    'UNIT_3': 'images/unit3.png',
+    'TANK': 'images/tank.png',
+    'TOWN_HALL': 'images/town-hall.png',
+    'TREE': 'images/tree.png',
+    'GRAVE': 'images/grave.png',
+    'STONE': 'images/stone.png',
+    'MINE': 'images/mine.png',
+    'MINE_FARM': 'images/mine-farm.png',
+    'FOREST': 'images/forest.png',
+    'FOREST_FARM': 'images/forest-farm.png',
+    'SHIELD': 'images/shield.png',
+    'DRONE': 'images/drone.png'
+};
+const preloadedImages = {};
+function preloadImages() {
+    Object.entries(entityImages).forEach(([type, path]) => {
+        const img = new Image();
+        img.src = path;
+        preloadedImages[type] = img;
+    });
+}
+preloadImages();
+function getEntityImage(entityType) {
+    return preloadedImages[entityType];
+}
+const mapState = {
+    offsetX: 0,
+    offsetY: 0,
+    isDragging: false,
+    lastMouseX: 0,
+    lastMouseY: 0,
+    scale: 1,
+    minScale: 0.5,
+    maxScale: 3
+};
+const config = {
+    hexSize: 25,
+    backgroundColor: '#ffffff',
+    gridColor: '#000000'
+};
+function initMapPreview() {
+    mapCanvas = document.getElementById('mapPreviewCanvas');
+    mapCtx = mapCanvas.getContext('2d');
+    mapState.offsetX = 0;
+    mapState.offsetY = 0;
+    // Мелкий масштаб по умолчанию для мобильных
+    if (window.innerWidth <= 600 || /Mobi|Android/i.test(navigator.userAgent)) {
+        mapState.scale = 0.7;
+        mapState.minScale = 0.2;
+    } else {
+        mapState.scale = 0.8;
+        mapState.minScale = 0.3;
+    }
+    resizeMapCanvas();
+    renderMapPreview();
+    mapCanvas.addEventListener('mousedown', handleMapMouseDown);
+    mapCanvas.addEventListener('mousemove', handleMapMouseMove);
+    mapCanvas.addEventListener('mouseup', handleMapMouseUp);
+    mapCanvas.addEventListener('mouseleave', handleMapMouseUp);
+    mapCanvas.addEventListener('wheel', handleMapWheel, { passive: false });
+    // --- Touch events for mobile scroll ---
+    mapCanvas.addEventListener('touchstart', handleMapTouchStart, { passive: false });
+    mapCanvas.addEventListener('touchmove', handleMapTouchMove, { passive: false });
+    mapCanvas.addEventListener('touchend', handleMapTouchEnd, { passive: false });
+}
+function resizeMapCanvas() {
+    const container = mapCanvas.parentElement;
+    mapCanvas.width = container.clientWidth;
+    mapCanvas.height = container.clientHeight;
+}
+function renderMapPreview() {
+    if (!mapCtx || !currentMapData || !currentMapData.map) return;
+    mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+    mapCtx.fillStyle = config.backgroundColor;
+    mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+    const size = config.hexSize * mapState.scale;
+    currentMapData.map.forEach(hex => {
+        if (!hex || !hex.vector) return;
+        const pixelPos = cubeToPixel(hex.vector);
+        drawHexagon(pixelPos.x, pixelPos.y, size, hex);
+    });
+}
+function cubeToPixel(cube) {
+    const size = config.hexSize * mapState.scale;
+    const x = size * (3/2) * cube.x;
+    const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
+    return {
+        x: (mapCanvas.width / 2) + x + mapState.offsetX,
+        y: (mapCanvas.height / 2) + y + mapState.offsetY
+    };
+}
+function drawHexagon(x, y, size, hex) {
+    mapCtx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = 2 * Math.PI / 6 * i;
+        const xi = x + size * Math.cos(angle);
+        const yi = y + size * Math.sin(angle);
+        if (i === 0) {
+            mapCtx.moveTo(xi, yi);
+        } else {
+            mapCtx.lineTo(xi, yi);
         }
-        
-        // Get backend URL for API calls
-        function getBackendUrl() {
-            return `http://${backendHost}:8080`;
+    }
+    mapCtx.closePath();
+    const colorMap = {
+        'EMPTY': '#cccccc',
+        'RED': '#ff0000',
+        'BLUE': '#0000ff',
+        'GREEN': '#00ff00',
+        'YELLOW': '#ffff00',
+        'PURPLE': '#800080',
+        'ORANGE': '#ffa500',
+        'BLACK': '#000000',
+        'WHITE': '#ffffff'
+    };
+    mapCtx.fillStyle = colorMap[hex.color] || config.backgroundColor;
+    mapCtx.fill();
+    mapCtx.lineWidth = 1;
+    mapCtx.strokeStyle = config.gridColor;
+    mapCtx.stroke();
+    let entityType = null;
+    if (hex.entity) {
+        if (typeof hex.entity === 'string') {
+            entityType = hex.entity;
+        } else if (typeof hex.entity === 'object' && hex.entity.type) {
+            entityType = hex.entity.type;
         }
-        
-        // Initialize backend host on page load
-        initializeBackendHost();
-        
-        // Global variables
-        let maps = [];
-        let currentMapData = null;
-        let mapCanvas = null;
-        let mapCtx = null;
-
-        // Map preview state
-        const mapState = {
-            offsetX: 0,
-            offsetY: 0,
-            isDragging: false,
-            lastMouseX: 0,
-            lastMouseY: 0,
-            scale: 1,
-            minScale: 0.5,
-            maxScale: 3
-        };
-
-        const config = {
-            hexSize: 25,
-            backgroundColor: '#ffffff',
-            gridColor: '#000000'
-        };
-
-        // Entity images
-        const entityImages = {
-            'BIG_TOWER': 'images/big_tower.png',
-            'TOWER': 'images/tower.png',
-            'FACTORY': 'images/factory.png',
-            'UNIT_1': 'images/unit1.png',
-            'UNIT_2': 'images/unit2.png',
-            'UNIT_3': 'images/unit3.png',
-            'TANK': 'images/tank.png',
-            'TOWN_HALL': 'images/town-hall.png',
-            'TREE': 'images/tree.png',
-            'GRAVE': 'images/grave.png',
-            'STONE': 'images/stone.png',
-            'MINE': 'images/mine.png',
-            'MINE_FARM': 'images/mine-farm.png',
-            'FOREST': 'images/forest.png',
-            'FOREST_FARM': 'images/forest-farm.png',
-            'SHIELD': 'images/shield.png',
-            'DRONE': 'images/drone.png'
-        };
-
-        // Preload images
-        const preloadedImages = {};
-        function preloadImages() {
-            Object.entries(entityImages).forEach(([type, path]) => {
-                const img = new Image();
-                img.src = path;
-                preloadedImages[type] = img;
-            });
+    }
+    if (entityType && entityType !== 'FIELD') {
+        const img = getEntityImage(entityType);
+        if (
+            img &&
+            img.complete &&
+            img.naturalWidth !== 0 &&
+            img.naturalHeight !== 0
+        ) {
+            const iconSize = size * 0.6;
+            mapCtx.drawImage(img, x - iconSize/2, y - iconSize/2, iconSize, iconSize);
         }
+    }
+}
+function handleMapMouseDown(e) {
+    if (e.button === 1 || e.button === 2) {
+        mapState.isDragging = true;
+        mapState.lastMouseX = e.clientX;
+        mapState.lastMouseY = e.clientY;
+        mapCanvas.style.cursor = 'grabbing';
+    }
+}
+function handleMapMouseMove(e) {
+    if (mapState.isDragging) {
+        const dx = e.clientX - mapState.lastMouseX;
+        const dy = e.clientY - mapState.lastMouseY;
+        mapState.offsetX += dx;
+        mapState.offsetY += dy;
+        mapState.lastMouseX = e.clientX;
+        mapState.lastMouseY = e.clientY;
+        renderMapPreview();
+    }
+}
+function handleMapMouseUp() {
+    mapState.isDragging = false;
+    mapCanvas.style.cursor = 'grab';
+}
+function handleMapWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -1 : 1;
+    const scaleFactor = 1.1;
+    const mouseX = e.clientX - mapCanvas.offsetLeft;
+    const mouseY = e.clientY - mapCanvas.offsetTop;
+    const worldX = (mouseX - mapCanvas.width/2 - mapState.offsetX) / mapState.scale;
+    const worldY = (mouseY - mapCanvas.height/2 - mapState.offsetY) / mapState.scale;
+    const newScale = delta > 0 ?
+        Math.min(mapState.scale * scaleFactor, mapState.maxScale) :
+        Math.max(mapState.scale / scaleFactor, mapState.minScale);
+    if (newScale !== mapState.scale) {
+        mapState.offsetX = mouseX - mapCanvas.width/2 - worldX * newScale;
+        mapState.offsetY = mouseY - mapCanvas.height/2 - worldY * newScale;
+        mapState.scale = newScale;
+        renderMapPreview();
+    }
+}
+// --- Touch scroll logic Mobile---
+let lastTouchX = 0;
+let lastTouchY = 0;
+let isTouchDragging = false;
+let pinchStartDist = 0;
+let pinchStartScale = 1;
+let pinchCenter = { x: 0, y: 0 };
+function handleMapTouchStart(e) {
+    if (e.touches.length === 1) {
+        isTouchDragging = true;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        isTouchDragging = false;
+        pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
+        pinchStartScale = mapState.scale;
+        pinchCenter = getTouchCenter(e.touches[0], e.touches[1]);
+    }
+}
+function handleMapTouchMove(e) {
+    if (e.touches.length === 1 && isTouchDragging) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const dx = touch.clientX - lastTouchX;
+        const dy = touch.clientY - lastTouchY;
+        mapState.offsetX += dx;
+        mapState.offsetY += dy;
+        lastTouchX = touch.clientX;
+        lastTouchY = touch.clientY;
+        renderMapPreview();
+    } else if (e.touches.length === 2) {
+        e.preventDefault();
+        const dist = getTouchDist(e.touches[0], e.touches[1]);
+        let newScale = pinchStartScale * (dist / pinchStartDist);
+        newScale = Math.max(mapState.minScale, Math.min(mapState.maxScale, newScale));
+        // Центр pinch
+        const center = getTouchCenter(e.touches[0], e.touches[1]);
+        // Корректируем offset так, чтобы масштабирование происходило относительно центра pinch
+        const prevWorldX = (center.x - mapCanvas.offsetLeft - mapCanvas.width/2 - mapState.offsetX) / mapState.scale;
+        const prevWorldY = (center.y - mapCanvas.offsetTop - mapCanvas.height/2 - mapState.offsetY) / mapState.scale;
+        mapState.scale = newScale;
+        mapState.offsetX = center.x - mapCanvas.offsetLeft - mapCanvas.width/2 - prevWorldX * newScale;
+        mapState.offsetY = center.y - mapCanvas.offsetTop - mapCanvas.height/2 - prevWorldY * newScale;
+        renderMapPreview();
+    }
+}
+function handleMapTouchEnd(e) {
+    isTouchDragging = false;
+}
+function getTouchDist(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+function getTouchCenter(t1, t2) {
+    return {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+    };
+}
 
-        function getEntityImage(entityType) {
-            return preloadedImages[entityType];
-        }
-
-        // Load maps on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            preloadImages();
-            loadMaps();
+// --- GAME SETTINGS ---
+function showSettingsModal(mapId, mapName) {
+    currentMapId = mapId;
+    currentMapName = mapName;
+    document.getElementById('settingsModal').classList.add('active');
+    // Сброс значений
+    document.getElementById('secondToMove').value = '';
+    document.getElementById('farmsDensity').value = '';
+    // ON/OFF кнопки: все выключены по умолчанию
+    setOnOff('graveBtn', false);
+    setOnOff('undoBtn', false);
+    setOnOff('cutBtn', false);
+}
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('active');
+    currentMapId = null;
+}
+function setOnOff(btnId, isOn) {
+    const btn = document.getElementById(btnId);
+    const img = btn.querySelector('img[alt="onoff"]');
+    if (isOn) {
+        btn.classList.add('active');
+        img.src = 'ui-elements/svg/button_on.svg';
+    } else {
+        btn.classList.remove('active');
+        img.src = 'ui-elements/svg/button_off.svg';
+    }
+}
+function toggleOnOff(button) {
+    const img = button.querySelector('img[alt="onoff"]');
+    const isActive = button.classList.contains('active');
+    if (isActive) {
+        button.classList.remove('active');
+        img.src = 'ui-elements/svg/button_off.svg';
+    } else {
+        button.classList.add('active');
+        img.src = 'ui-elements/svg/button_on.svg';
+    }
+}
+// --- Отправка формы создания игры ---
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!currentMapId) return;
+    const formData = {
+        mapId: currentMapId,
+        secondToMove: parseInt(document.getElementById('secondToMove').value),
+        grave: document.getElementById('graveBtn').classList.contains('active'),
+        farmsDensity: parseInt(document.getElementById('farmsDensity').value),
+        undoMove: document.getElementById('undoBtn').classList.contains('active'),
+        cut: document.getElementById('cutBtn').classList.contains('active')
+    };
+    try {
+        const response = await fetch(`${getBackendUrl()}/api/sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
         });
-
-        async function loadMaps() {
-            try {
-                const response = await fetch(`${getBackendUrl()}/api/maps`);
-                if (response.ok) {
-                    maps = await response.json();
-                    displayMaps();
-                } else {
-                    document.getElementById('mapsList').innerHTML = 'Ошибка загрузки карт';
-                }
-            } catch (error) {
-                console.error('Error loading maps:', error);
-                document.getElementById('mapsList').innerHTML = 'Ошибка соединения с сервером';
-            }
+        if (response.ok) {
+            const data = await response.json();
+            closeSettingsModal();
+            document.getElementById('sessionId').value = data.sessionId;
+            document.getElementById('createdModal').classList.add('active');
+        } else {
+            const errorData = await response.json();
+            alert(errorData.error || 'Ошибка создания игры');
         }
+    } catch (error) {
+        alert('Ошибка соединения с сервером');
+    }
+});
+// --- GAME CREATED ---
+function closeCreatedModal() {
+    document.getElementById('createdModal').classList.remove('active');
+}
 
-        function displayMaps() {
-            const mapsList = document.getElementById('mapsList');
-            
-            if (maps.length === 0) {
-                mapsList.innerHTML = '<p>Карты не найдены</p>';
-                return;
-            }
-
-            const mapsGrid = document.createElement('div');
-            mapsGrid.className = 'maps-grid';
-
-            maps.forEach(map => {
-                const mapCard = document.createElement('div');
-                mapCard.className = 'map-card';
-                mapCard.innerHTML = `
-                    <h3>${map.name}</h3>
-                    <div class="map-info">
-                        <div>ID: ${map.id}</div>
-                        <div>Игроков: ${map.playersCount}</div>
-                    </div>
-                    <div class="map-actions">
-                        <button class="action-button preview-button" onclick="previewMap('${map.id}', '${map.name}')">
-                            Превью
-                        </button>
-                        <button class="action-button create-game-button" onclick="createGame('${map.id}')">
-                            Создать игру
-                        </button>
-                    </div>
-                `;
-                mapsGrid.appendChild(mapCard);
-            });
-
-            mapsList.innerHTML = '';
-            mapsList.appendChild(mapsGrid);
-        }
-
-        async function previewMap(mapId, mapName) {
-            try {
-                const response = await fetch(`${getBackendUrl()}/api/maps/${mapId}`);
-                if (response.ok) {
-                    currentMapData = await response.json();
-                    document.getElementById('mapModalTitle').textContent = `Превью: ${mapName}`;
-                    document.getElementById('mapModal').style.display = 'flex';
-                    
-                    // Initialize canvas
-                    setTimeout(() => {
-                        initMapPreview();
-                    }, 100);
-                } else {
-                    alert('Ошибка загрузки карты');
-                }
-            } catch (error) {
-                console.error('Error loading map:', error);
-                alert('Ошибка соединения с сервером');
-            }
-        }
-
-        function initMapPreview() {
-            mapCanvas = document.getElementById('mapPreviewCanvas');
-            mapCtx = mapCanvas.getContext('2d');
-            
-            // Reset state
-            mapState.offsetX = 0;
-            mapState.offsetY = 0;
-            mapState.scale = 1;
-            
-            resizeMapCanvas();
-            renderMapPreview();
-            
-            // Add event listeners
-            mapCanvas.addEventListener('mousedown', handleMapMouseDown);
-            mapCanvas.addEventListener('mousemove', handleMapMouseMove);
-            mapCanvas.addEventListener('mouseup', handleMapMouseUp);
-            mapCanvas.addEventListener('mouseleave', handleMapMouseUp);
-            mapCanvas.addEventListener('wheel', handleMapWheel, { passive: false });
-        }
-
-        function resizeMapCanvas() {
-            const container = mapCanvas.parentElement;
-            mapCanvas.width = container.clientWidth;
-            mapCanvas.height = container.clientHeight;
-        }
-
-        function renderMapPreview() {
-            if (!mapCtx || !currentMapData || !currentMapData.map) return;
-
-            mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-            mapCtx.fillStyle = config.backgroundColor;
-            mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
-
-            const size = config.hexSize * mapState.scale;
-
-            currentMapData.map.forEach(hex => {
-                if (!hex || !hex.vector) return;
-                
-                const pixelPos = cubeToPixel(hex.vector);
-                drawHexagon(pixelPos.x, pixelPos.y, size, hex);
-            });
-        }
-
-        function cubeToPixel(cube) {
-            const size = config.hexSize * mapState.scale;
-            const x = size * (3/2) * cube.x;
-            const y = size * (Math.sqrt(3)/2 * cube.x + Math.sqrt(3) * cube.z);
-            return {
-                x: (mapCanvas.width / 2) + x + mapState.offsetX,
-                y: (mapCanvas.height / 2) + y + mapState.offsetY
-            };
-        }
-
-        function drawHexagon(x, y, size, hex) {
-            mapCtx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = 2 * Math.PI / 6 * i;
-                const xi = x + size * Math.cos(angle);
-                const yi = y + size * Math.sin(angle);
-                if (i === 0) {
-                    mapCtx.moveTo(xi, yi);
-                } else {
-                    mapCtx.lineTo(xi, yi);
-                }
-            }
-            mapCtx.closePath();
-            
-            // Fill with color
-            const colorMap = {
-                'EMPTY': '#cccccc',
-                'RED': '#ff0000',
-                'BLUE': '#0000ff',
-                'GREEN': '#00ff00',
-                'YELLOW': '#ffff00',
-                'PURPLE': '#800080',
-                'ORANGE': '#ffa500',
-                'BLACK': '#000000',
-                'WHITE': '#ffffff'
-            };
-            
-            mapCtx.fillStyle = colorMap[hex.color] || config.backgroundColor;
-            mapCtx.fill();
-            
-            // Draw border
-            mapCtx.lineWidth = 1;
-            mapCtx.strokeStyle = config.gridColor;
-            mapCtx.stroke();
-
-            // Draw entity icon if present
-            let entityType = null;
-            if (hex.entity) {
-                if (typeof hex.entity === 'string') {
-                    entityType = hex.entity;
-                } else if (typeof hex.entity === 'object' && hex.entity.type) {
-                    entityType = hex.entity.type;
-                }
-            }
-            if (entityType && entityType !== 'FIELD') {
-                const img = getEntityImage(entityType);
-                if (img && img.complete) {
-                    const iconSize = size * 0.6;
-                    // Если DRONE, рисуем кружок ownerColor
-                    if (entityType === 'DRONE' && hex.entity && hex.entity.ownerColor) {
-                        const colorMap = {
-                            'EMPTY': '#cccccc',
-                            'RED': '#ff0000',
-                            'BLUE': '#0000ff',
-                            'GREEN': '#00ff00',
-                            'YELLOW': '#ffff00',
-                            'PURPLE': '#800080',
-                            'ORANGE': '#ffa500',
-                            'BLACK': '#000000',
-                            'WHITE': '#ffffff'
-                        };
-                        mapCtx.beginPath();
-                        mapCtx.arc(x, y + iconSize * 0.45, iconSize * 0.18, 0, 2 * Math.PI);
-                        mapCtx.fillStyle = colorMap[hex.entity.ownerColor] || '#000';
-                        mapCtx.globalAlpha = 0.85;
-                        mapCtx.fill();
-                        mapCtx.globalAlpha = 1.0;
-                    }
-                    mapCtx.drawImage(img, 
-                        x - iconSize/2, 
-                        y - iconSize/2, 
-                        iconSize, 
-                        iconSize
-                    );
-                }
-            }
-        }
-
-        // Mouse event handlers for map preview
-        function handleMapMouseDown(e) {
-            if (e.button === 1 || e.button === 2) { // Middle or right click
-                mapState.isDragging = true;
-                mapState.lastMouseX = e.clientX;
-                mapState.lastMouseY = e.clientY;
-                mapCanvas.style.cursor = 'grabbing';
-            }
-        }
-
-        function handleMapMouseMove(e) {
-            if (mapState.isDragging) {
-                const dx = e.clientX - mapState.lastMouseX;
-                const dy = e.clientY - mapState.lastMouseY;
-                mapState.offsetX += dx;
-                mapState.offsetY += dy;
-                mapState.lastMouseX = e.clientX;
-                mapState.lastMouseY = e.clientY;
-                renderMapPreview();
-            }
-        }
-
-        function handleMapMouseUp() {
-            mapState.isDragging = false;
-            mapCanvas.style.cursor = 'grab';
-        }
-
-        function handleMapWheel(e) {
-            e.preventDefault();
-
-            const delta = e.deltaY > 0 ? -1 : 1;
-            const scaleFactor = 1.1;
-
-            const mouseX = e.clientX - mapCanvas.offsetLeft;
-            const mouseY = e.clientY - mapCanvas.offsetTop;
-            const worldX = (mouseX - mapCanvas.width/2 - mapState.offsetX) / mapState.scale;
-            const worldY = (mouseY - mapCanvas.height/2 - mapState.offsetY) / mapState.scale;
-
-            const newScale = delta > 0 ?
-                Math.min(mapState.scale * scaleFactor, mapState.maxScale) :
-                Math.max(mapState.scale / scaleFactor, mapState.minScale);
-
-            if (newScale !== mapState.scale) {
-                mapState.offsetX = mouseX - mapCanvas.width/2 - worldX * newScale;
-                mapState.offsetY = mouseY - mapCanvas.height/2 - worldY * newScale;
-                mapState.scale = newScale;
-                renderMapPreview();
-            }
-        }
-
-        let currentMapId = null;
-
-        function showSettingsModal(mapId) {
-            currentMapId = mapId;
-            document.getElementById('settingsModal').style.display = 'flex';
-            
-            // Reset form to default values
-            document.getElementById('secondToMove').value = '60';
-            document.getElementById('grave').checked = true;
-            document.getElementById('farmsDensity').value = '20';
-            document.getElementById('farmsDensityValue').textContent = '20';
-            document.getElementById('undoMove').checked = true;
-            document.getElementById('cut').checked = false;
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
-            currentMapId = null;
-        }
-
-        // Update createGame function to show settings modal
-        function createGame(mapId) {
-            showSettingsModal(mapId);
-        }
-
-        // Add form submit handler
-        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!currentMapId) return;
-
-            const formData = {
-                mapId: currentMapId,
-                secondToMove: parseInt(document.getElementById('secondToMove').value),
-                grave: document.getElementById('grave').checked,
-                farmsDensity: parseInt(document.getElementById('farmsDensity').value),
-                undoMove: document.getElementById('undoMove').checked,
-                cut : document.getElementById('cut').checked
-            };
-
-            try {
-                const response = await fetch(`${getBackendUrl()}/api/sessions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    closeSettingsModal();
-                    document.getElementById('sessionId').textContent = data.sessionId;
-                    document.getElementById('sessionModal').style.display = 'flex';
-                } else {
-                    const errorData = await response.json();
-                    alert(errorData.error || 'Ошибка создания игры');
-                }
-            } catch (error) {
-                console.error('Error creating game:', error);
-                alert('Ошибка соединения с сервером');
-            }
+function goPlayWithSessionId() {
+    const sessionId = document.getElementById('sessionId').value;
+    window.location.href = `game.html?session=${encodeURIComponent(sessionId)}`;
+}
+function copySessionId() {
+    const sessionIdText = document.getElementById('sessionId').value;
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(sessionIdText).then(() => {
+            // Можно добавить визуальный фидбек
+        }).catch(() => {
+            fallbackCopyTextToClipboard(sessionIdText);
         });
-
-        function closeMapModal() {
-            document.getElementById('mapModal').style.display = 'none';
-            currentMapData = null;
-            
-            // Remove event listeners
-            if (mapCanvas) {
-                mapCanvas.removeEventListener('mousedown', handleMapMouseDown);
-                mapCanvas.removeEventListener('mousemove', handleMapMouseMove);
-                mapCanvas.removeEventListener('mouseup', handleMapMouseUp);
-                mapCanvas.removeEventListener('mouseleave', handleMapMouseUp);
-                mapCanvas.removeEventListener('wheel', handleMapWheel);
-            }
+    } else {
+        fallbackCopyTextToClipboard(sessionIdText);
+    }
+}
+function fallbackCopyTextToClipboard(text) {
+    // Для мобильных и старых браузеров
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    // Избегаем прокрутки на мобильных
+    textArea.style.position = 'fixed';
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = 0;
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+    } catch (err) {}
+    document.body.removeChild(textArea);
+}
+// Навешиваем обработчик на кнопку копирования после загрузки DOM
+ document.addEventListener('DOMContentLoaded', function() {
+    const playBtn = document.querySelector('#createdModal .svg-btn-yellow');
+    if (playBtn) {
+        playBtn.onclick = goPlayWithSessionId;
+    }
+    const copyBtn = document.getElementById('copySessionIdBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copySessionId);
+        // Для мобильных: tap
+        copyBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            copySessionId();
+        });
+    }
+});
+function connectSession() {
+    const sessionId = document.getElementById('sessionId').value;
+    window.location.href = `game.html?sessionId=${sessionId}`;
+}
+// --- Закрытие модалок по клику вне ---
+document.addEventListener('mousedown', function(e) {
+    document.querySelectorAll('.modal-bg.active').forEach(modal => {
+        const container = modal.querySelector('.modal-container');
+        let node = e.target;
+        let inside = false;
+        while (node) {
+            if (node === container) { inside = true; break; }
+            node = node.parentNode;
         }
-
-        function closeSessionModal() {
-            document.getElementById('sessionModal').style.display = 'none';
+        if (!inside) {
+            modal.classList.remove('active');
+            if (modal.id === 'mapModal') closeMapModal();
+            if (modal.id === 'settingsModal') closeSettingsModal();
+            if (modal.id === 'createdModal') closeCreatedModal();
         }
-
-        function goBack() {
-            window.location.href = 'index.html';
-        }
-
-        // Prevent context menu on canvas
-        document.addEventListener('contextmenu', e => e.preventDefault());
-    </script>
+    });
+});
+// --- Навигация назад ---
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeMapModal();
+        closeSettingsModal();
+        closeCreatedModal();
+    }
+});
+// Добавляю эффект уменьшения для onoff-btn при нажатии
+const onoffBtns = document.querySelectorAll('.onoff-btn');
+onoffBtns.forEach(btn => {
+    btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.96)');
+    btn.addEventListener('mouseup', () => btn.style.transform = '');
+    btn.addEventListener('mouseleave', () => btn.style.transform = '');
+});
+</script>
 </body>
 </html>

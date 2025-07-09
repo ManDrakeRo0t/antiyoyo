@@ -683,8 +683,23 @@ function resizeCanvas() {
     renderGrid();
 }
 
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
 function init() {
     loadCurrentUser();
+    // --- Проверка query параметра session ---
+    const sessionParam = getQueryParam('session');
+    if (sessionParam && sessionParam.trim() !== '') {
+        const sessionInput = document.getElementById('sessionId');
+        if (sessionInput) {
+            sessionInput.value = sessionParam.trim();
+        }
+        // sessionId будет установлен в connectToSession
+        connectToSession();
+    }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     preloadImages();

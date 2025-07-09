@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>World Wars - Editor</title>
-    <link rel="icon" type="image/png" href="/ui-elements/icon.png">
+    <link rel="icon" type="image/png" href="ui-elements/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         @font-face {
@@ -13,16 +13,15 @@
             font-weight: normal;
             font-style: normal;
         }
-        html, body {
+        html {
             height: 100%;
             margin: 0;
-            padding: 0;
         }
         body {
-            min-height: 100vh;
+            min-height: 100%;
+            margin: 0;
             background: #fff8dceb;
             font-family: 'Castlefire';
-            color: #2d1a00;
             overflow: hidden;
         }
         .top-menu {
@@ -37,7 +36,6 @@
             align-items: center;
             padding: 0 20px;
             z-index: 1000;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             flex-wrap: nowrap;
             gap: 8px;
             justify-content: flex-start;
@@ -78,9 +76,9 @@
             outline: none;
             background: transparent;
             font-family: 'Castlefire';
-            font-size: 24px;
-            color: #7a6a4d;
-            padding: 0 20px;
+            font-size: 44px;
+            color: #222;
+            padding: 0 40px;
             z-index: 2;
             box-sizing: border-box;
             text-align: center;
@@ -95,9 +93,6 @@
         .input-field[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
-        }
-        .input-field[type=number] {
-            -moz-appearance: textfield;
         }
         .tool-button {
             width: 70px;
@@ -131,7 +126,6 @@
             transition: opacity 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1);
             position: absolute;
             background: #fff8dceb;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1002;
             border-radius: 16px;
             padding: 15px;
@@ -164,6 +158,10 @@
         .color-button.selected {
             box-shadow: 0 0 0 4px #ffe066, 0 2px 8px rgba(0,0,0,0.12);
             background-color: #fffbe6;
+            transform: scale(1.18);
+            z-index: 2;
+        }
+        .color-button:hover, .color-button:focus {
             transform: scale(1.18);
             z-index: 2;
         }
@@ -249,53 +247,178 @@
         .dropdown.open .dropdown-content {
             display: block;
         }
-        @media (min-width: 2560px) {
+        @media (min-width: 390px) and (max-width: 599px) { 
+        .top-menu {
+            height: auto;
+            padding: 20px;
+            display: block;
+            flex-direction: column;
+            align-items: stretch;
+            white-space: nowrap;
+        }
+        .top-menu > .menu-section {
+            display: inline-block;
+            vertical-align: top;
+        }
+        /* Первый ряд - поля ввода и APPLY кнопка */
+        .top-menu > .menu-section:nth-child(-n+3) {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .top-menu > .menu-section:nth-child(3) {
+            margin-top: 2px;
+            margin-bottom: 6px;
+            transform: translateX(-13%); /* Компенсируем существующий отступ */
+        }
+        /* Второй ряд - контейнер для инструментов с горизонтальным скроллом */
+        .tool-buttons-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+        }
+        /* Принудительно размещаем tool-button в одну строку */
+        .top-menu > .menu-section:nth-child(n+4):not(:nth-last-child(-n+2)) {
+            display: inline-block;
+            white-space: nowrap;
+        }
+        /* Общие стили для элементов */
+        .input-wrapper {
+            width: 200px; height: 40px;
+            margin-left: 0;
+            margin-bottom: 8px;
+        }
+        .tool-button {
+            /*width: 50px;*/
+            width: 70px;
+            height: 60px;
+            /*flex-shrink: 0;*/
+            /*margin-left: 97%;*/
+
+        }
+
+        .dropdown-content {
+            margin-top: 2px;
+        }
+        /* Третий ряд - action кнопки (CREATE и BACK) */
+        .top-menu > .menu-section:nth-last-child(-n+2) {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .svg-btn {
+            width: 180px;
+            height: 40px;
+            margin-top: 0;
+            margin-left: 25%;
+        }
+        /* Остальные стили */
+        #container {
+            width: 100%;
+            height: 40%;
+            padding-top: 150px;
+        }
+        .input-field {
+            font-size: 25px;
+            padding: 0 30px;
+        }
+        
+        .dropdown-grid {
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 2px;
+        }
+        .color-button {
+            margin-left: 2px;
+            margin-top: 5px;
+            width: 24px;
+            height: 24px;
+        }
+        .dropdown-tool-icon {
+            width: 35px;
+            height: 35px;
+        }
+        .svg-btn-text {
+            font-size: 25px;
+        }
+        }   
+        @media (min-width: 600px) and (max-width: 2059px) {
+            .top-menu { height: 100px; padding: 0px; gap: 4px; }
+            #container { width: 100vw; height: 100vh; margin-top: 100px; }
+
+            .input-wrapper { width: 300px; height: 70px; margin-left: 10px;}
+            .input-field { font-size: 40px; padding: 0 30px; }
+
+            .tool-button { width: 75px; height: 75px; font-size: 24px; }
+
+            .dropdown-content { padding: 12px; margin-top: 16px; }
+            .dropdown-grid { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 24px; }
+            .color-button { width: 45px; height: 45px; }
+            .dropdown-tool-icon { width: 50px; height: 50px; }
+
+            .svg-btn { width: 200px; height: 60px;  }
+            .svg-btn-text { font-size: 40px; }
+        }
+        @media (min-width: 2560px)  {
+            .top-menu { height: 120px; padding: 0 20px; gap: 8px; }
+            #container { width: 100vw; height: 100vh; margin-top: 120px; }
+
             .input-wrapper { width: 480px; height: 100px; }
-            .input-field { font-size: 50px;}
+            .input-field { font-size: 50px; padding: 0 40px; }
+
             .tool-button { width: 100px; height: 100px; font-size: 24px; }
+
+            .dropdown-content { padding: 15px; margin-top: 20px; }
+            .dropdown-grid { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 24px; }
+            .color-button { width: 60px; height: 60px; }
+            .dropdown-tool-icon { width: 60px; height: 60px; }
+
             .svg-btn { width: 320px; height: 90px; }
             .svg-btn-text { font-size: 50px; }
         }
+        
+        
+        
     </style>
 </head>
 <body>
     <div class="top-menu">
         <div class="menu-section">
             <div class="input-wrapper">
-                <img src="/ui-elements/svg/enter_field.svg" class="input-bg" alt="name-bg">
+                <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="name-bg">
                 <input type="text" id="levelName" class="input-field" placeholder="MAP NAME" autocomplete="off">
             </div>
         </div>
         <div class="menu-section">
             <div class="input-wrapper">
-                <img src="/ui-elements/svg/enter_field.svg" class="input-bg" alt="size-bg">
+                <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="size-bg">
                 <input type="number" id="mapSize" class="input-field" placeholder="MAP SIZE" min="1" max="20" autocomplete="off">
             </div>
         </div>
         <div class="menu-section">
             <div class="svg-btn" onclick="generateMap()">
-                <img src="/ui-elements/svg/blue_button.svg" alt="APPLY" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/blue_button.svg" alt="APPLY" style="width:100%;height:100%;pointer-events:none;user-select:none;">
                 <span class="svg-btn-text">APPLY</span>
             </div>
         </div>
         <div class="menu-section">
             <button class="tool-button" onclick="selectTool('deleteHex')" title="Удалить гексагон">
-                <img src="/ui-elements/svg/remove_gex.svg" alt="remove gex" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/remove_gex.svg" alt="remove gex" style="width:100%;height:100%;pointer-events:none;user-select:none;">
             </button>
         </div>
         <div class="menu-section">
             <button class="tool-button" onclick="selectTool('delete')" title="Удалить юнита">
-                <img src="/ui-elements/svg/remove_unit.svg" alt="remove unit" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/remove_unit.svg" alt="remove unit" style="width:100%;height:100%;pointer-events:none;user-select:none;">
             </button>
         </div>
         <div class="menu-section">
             <button class="tool-button" onclick="selectTool('color')" title="Создать гексагон">
-                <img src="/ui-elements/svg/create_gex.svg" alt="create gex" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/create_gex.svg" alt="create gex" style="width:100%;height:100%;pointer-events:none;user-select:none;">
             </button>
         </div>
         <div class="menu-section dropdown" id="colorDropdown" tabindex="0">
             <button class="tool-button" title="Выбрать цвет" id="colorDropdownBtn">
-                <img src="/ui-elements/svg/select_color.svg" alt="select color" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/select_color.svg" alt="select color" style="width:100%;height:100%;pointer-events:none;user-select:none;">
             </button>
             <div class="dropdown-content">
                 <div class="dropdown-grid">
@@ -313,7 +436,7 @@
         </div>
         <div class="menu-section dropdown" id="unitDropdown" tabindex="0">
             <button class="tool-button" title="Создать юнита" id="unitDropdownBtn">
-                <img src="/ui-elements/svg/create_unit.svg" alt="create unit" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/create_unit.svg" alt="create unit" style="width:100%;height:100%;pointer-events:none;user-select:none;">
             </button>
             <div class="dropdown-content">
                 <div class="dropdown-grid">
@@ -334,13 +457,13 @@
         </div>
         <div class="menu-section">
             <div class="svg-btn" onclick="saveMap()">
-                <img src="/ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
                 <span class="svg-btn-text">CREATE</span>
             </div>
         </div>
         <div class="menu-section">
             <div class="svg-btn" onclick="goBack()">
-                <img src="/ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;pointer-events:none;user-select:none;">
                 <span class="svg-btn-text">BACK</span>
             </div>
         </div>

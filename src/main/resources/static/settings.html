@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Wars - Settings</title>
+    <link rel="icon" type="image/png" href="ui-elements/icon.png">
+    <style>
+        @font-face {
+            font-family: 'Castlefire';
+            src: url('fonts/Castlefire.ttf') format('truetype'),
+                 url('fonts/Castlefire.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        html {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            min-height: 100%;
+            margin: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: #f0cba3;
+            font-family: 'Castlefire';
+            user-select: none;
+        }
+        .logo {
+            width: 180px;
+            height: auto;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: block;
+            pointer-events: none;
+            user-select: none;
+        }
+        .title {
+            font-family: 'Castlefire';
+            font-size: 64px;
+            color: #222;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+            user-select: none;
+        }
+        .greeting {
+            font-family: 'Castlefire';
+            font-size: 32px;
+            color: #222;
+            text-align: center;
+            margin: 16px 0 32px 0;
+            line-height: 1;
+            user-select: none;
+        }
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            margin-bottom: 40px;
+        }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            width: 700px;
+            height: 120px;
+            position: relative;
+            gap: 0;
+        }
+        .setting-label {
+            display: flex;
+            align-items: center;
+            font-family: 'Castlefire';
+            font-size: 38px;
+            color: #222;
+            padding-left: 110px;
+            letter-spacing: 2px;
+            z-index: 2;
+            height: 100%;
+        }
+        .setting-num {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Castlefire';
+            font-size: 38px;
+            color: #222;
+            z-index: 3;
+        }
+        .setting-btn {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 220px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            z-index: 2;
+            overflow: hidden;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            transform-origin: center center;
+            will-change: transform;
+        }
+        .setting-btn:hover, .setting-btn:focus {
+            transform: translateY(-50%) scale(1.08);
+            z-index: 2;
+        }
+        .setting-btn:active {
+            transform: translateY(-50%) scale(1);
+            transition: transform 0.1s ease-out;
+        }
+        .setting-btn img {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            user-select: none;
+        }
+        .setting-btn-text {
+            position: absolute;
+            left: 0; top: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 38px;
+            color: #222;
+            pointer-events: none;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+        .back-btn {
+            width: 320px;
+            height: 90px;
+            margin: 40px auto 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            transform-origin: center center;
+            will-change: transform;
+        }
+        .back-btn:hover, .back-btn:focus {
+            transform: scale(1.08);
+            z-index: 2;
+        }
+        .back-btn:active {
+            transform: scale(1);
+            transition: transform 0.1s ease-out;
+        }
+        .back-btn img {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            user-select: none;
+        }
+        .back-btn-text {
+            position: absolute;
+            left: 0; top: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 50px;
+            color: #222;
+            pointer-events: none;
+            letter-spacing: 2px;
+            user-select: none;
+        }
+        @media (min-width: 2560px) and (max-height: 6560px) {
+            .logo { width: 320px; }
+            .title { font-size: 100px; }
+            .greeting { font-size: 50px; }
+
+            .settings-list { gap: 0px; }
+            .setting-row { width: 500px; height: 160px; }
+            .setting-label { font-size: 50px; padding-left: 130px; }
+            .setting-num { font-size: 64px; left: 24px; }
+            .setting-btn { width: 400px; height: 116px; left: 300px; }
+            .setting-btn-text { font-size: 50px; }
+
+            .back-btn { width: 320px; height: 90px; }
+            .back-btn-text { font-size: 50px; }
+        }
+        @media (min-width: 600px) and (max-height: 1300px) {
+            .logo { width: 300px; }
+            .title { font-size: 90px; }
+            .greeting { font-size: 45px; }
+
+            .settings-list { gap: 0px; }
+            .setting-row { width: 400px; height: 120px; }
+            .setting-label { font-size: 45px; padding-left: 110px; }
+            .setting-num { font-size: 54px; left: 20px; }
+            .setting-btn { width: 300px; height: 92px; left: 250px; }
+            .setting-btn-text { font-size: 45px; }
+
+            
+            .back-btn { width: 320px; height: 80px; margin: 20px auto 0 auto;}
+            .back-btn-text { font-size: 45px; }
+        }
+        @media (min-width: 390px) and (max-height: 932px) { 
+            .logo { width: 180px; margin-top: 20px; margin-bottom: 10px; }
+            .title { font-size: 50px; }
+            .greeting { font-size: 35px; margin: 6px 0 6px 0;}
+
+            .settings-list { gap: 6px; margin-bottom: 20px; }
+            .setting-row { width: 280px; height: 70px; gap: 0; }
+            .setting-label { font-size: 26px; padding-left: 70px; }
+            .setting-num { left: 17px; font-size: 30px; }
+            .setting-btn { right: -85px; width: 180px; height: 65px; }
+            .setting-btn-text { font-size: 30px; }
+
+            .back-btn { width: 240px; height: 60px; margin: 68px auto 0 auto; }
+            .back-btn-text { font-size: 35px; }
+        }
+    </style>
+</head>
+<body>
+    <img src="ui-elements/logo.png" alt="logo" class="logo">
+    <div class="title">World Wars</div>
+    <div class="greeting">Settings</div>
+    <div class="settings-list">
+        <div class="setting-row">
+            <img src="ui-elements/svg/field_with_button.svg" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:1;">
+            <span class="setting-num">#1</span>
+            <span class="setting-label">MUSIC</span>
+            <div class="setting-btn">
+                <img src="ui-elements/svg/button_off.svg">
+                <span class="setting-btn-text">OFF</span>
+            </div>
+        </div>
+        <div class="setting-row">
+            <img src="ui-elements/svg/field_with_button.svg" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:1;">
+            <span class="setting-num">#2</span>
+            <span class="setting-label">VOLUME</span>
+            <div class="setting-btn">
+                <img src="ui-elements/svg/button_on.svg">
+                <span class="setting-btn-text">ON</span>
+            </div>
+        </div>
+        <div class="setting-row">
+            <img src="ui-elements/svg/field_with_button.svg" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:1;">
+            <span class="setting-num">#3</span>
+            <span class="setting-label">MILITARY</span>
+            <div class="setting-btn">
+                <img src="ui-elements/svg/button_on.svg">
+                <span class="setting-btn-text">ON</span>
+            </div>
+        </div>
+        <div class="setting-row">
+            <img src="ui-elements/svg/field_with_button.svg" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:1;">
+            <span class="setting-num">#4</span>
+            <span class="setting-label">DIPLOMACY</span>
+            <div class="setting-btn">
+                <img src="ui-elements/svg/button_on.svg">
+                <span class="setting-btn-text">ON</span>
+            </div>
+        </div>
+    </div>
+    <div class="back-btn" onclick="window.location.href='index.html'">
+        <img src="ui-elements/svg/red_button.svg" alt="BACK">
+        <span class="back-btn-text">BACK</span>
+    </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.setting-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const img = btn.querySelector('img');
+            const text = btn.querySelector('.setting-btn-text');
+            if (text.textContent.trim() === 'ON') {
+                img.src = 'ui-elements/svg/button_off.svg';
+                text.textContent = 'OFF';
+            } else {
+                img.src = 'ui-elements/svg/button_on.svg';
+                text.textContent = 'ON';
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>     
