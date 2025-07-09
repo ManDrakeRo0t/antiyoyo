@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.entity.Drone;
+import ru.bogatov.antiyoyo.game.model.entity.Fire;
 import ru.bogatov.antiyoyo.game.model.entity.HexSnapshot;
 import ru.bogatov.antiyoyo.game.model.entity.TownHall;
 
@@ -42,7 +43,8 @@ public class SnapshotUtils {
                 hex.getEntity() instanceof TownHall townHall ? townHall.isDronesAvailable() : null,
                 hex.getEntity() instanceof TownHall townHall ? townHall.getDronesLimit() : null,
                 hex.getDefenseLevel(),
-                hex.getEntity().getMovedOnThisTurn()
+                hex.getEntity().getMovedOnThisTurn(),
+                hex.getEntity() instanceof Fire fire ? fire.getStage() : null
         );
     }
 
@@ -64,6 +66,9 @@ public class SnapshotUtils {
         }
         if (hex.getEntity() instanceof Drone drone) {
             drone.setOwnerColor(snapshot.getEntityOwnerColor());
+        }
+        if (hex.getEntity() instanceof Fire fire) {
+            fire.setStage(snapshot.getFireStage());
         }
         hex.getEntity().setMovedOnThisTurn(snapshot.getIsMoved());
         return hex;

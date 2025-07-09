@@ -20,4 +20,5 @@ public class HexSnapshot {
     Integer dronesLimit;
     Integer defenseLevel;
     Boolean isMoved;
+    Integer fireStage;
 }
