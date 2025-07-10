@@ -36,6 +36,3 @@ services:
       - "61613:61613"
     volumes:
       - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
-
-volumes:
-  rabbitmq:
