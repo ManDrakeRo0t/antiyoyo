@@ -24,8 +24,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
     ports:
       - '27017:27017'
-    volumes:
-      - mongodb_data:/data/db
+
 
   rabbitmq:
     image: pcloud/rabbitmq-stomp
@@ -37,6 +36,5 @@ services:
       - "5672:5672"
       - "15672:15672"
       - "61613:61613"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq/mnesia/
+
 
