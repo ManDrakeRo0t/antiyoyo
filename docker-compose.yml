@@ -1,5 +1,20 @@
 services:
 
+  server:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: secret
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: myuser
+      RABBITMQ_PASSWORD: secret
+
   mongodb:
     image: 'mongo:latest'
     environment:
@@ -21,21 +36,6 @@ services:
       - "61613:61613"
     volumes:
       - '~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/mnesia/'
-
-  server:
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - rabbitmq
-      - mongodb
-    environment:
-      MONGO_HOST: mongodb
-      MONGO_USERNAME: root
-      MONGO_PASSWORD: secret
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USERNAME: myuser
-      RABBITMQ_PASSWORD: secret
 
 volumes:
   rabbitmq:
