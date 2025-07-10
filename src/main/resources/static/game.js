@@ -2,28 +2,10 @@
 let mouseDown = false;
 let mouseMoved = false;
 // Backend host management
-let backendHost = window.location.hostname;
-
-// Initialize backend host from localStorage
-function initializeBackendHost() {
-    const storedHost = localStorage.getItem('backendHost');
-    if (!storedHost) {
-        currentHost = window.location.hostname;
-        localStorage.setItem('backendHost', currentHost);
-        backendHost = currentHost;
-    } else {
-        backendHost = storedHost;
-    }
-}
-
-// Get backend URL for API calls
-function getBackendUrl() {
-    return `http://${backendHost}:8080`;
-}
 
 // Get WebSocket URL
 function getWebSocketUrl() {
-    return `ws://${backendHost}:8080/ws`;
+    return `ws://${backendHost}/ws`;
 }
 
 // Initialize backend host on page load

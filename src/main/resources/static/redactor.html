@@ -471,29 +471,9 @@
     <div id="container">
         <canvas id="hexCanvas"></canvas>
     </div>
+    <script src="common.js"></script>
     <script>
-        // Backend host management
-        let backendHost = window.location.hostname;
-    
-    // Initialize backend host from localStorage
-        function initializeBackendHost() {
-            const storedHost = localStorage.getItem('backendHost');
-            if (!storedHost) {
-                currentHost = window.location.hostname;
-                localStorage.setItem('backendHost', currentHost);
-                backendHost = currentHost;
-            } else {
-                backendHost = storedHost;
-            }
-        }
-        
-        // Get backend URL for API calls
-        function getBackendUrl() {
-            return `http://${backendHost}:8080`;
-        }
-        
-        // Initialize backend host on page load
-        initializeBackendHost();
+
         
         // Canvas setup
         const canvas = document.getElementById('hexCanvas');
