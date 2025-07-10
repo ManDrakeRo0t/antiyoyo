@@ -9,6 +9,6 @@ function initializeBackendHost() {
     }
 }
 function getBackendUrl() {
-    return `http://${backendHost}:8080`;
+    return `https://${backendHost}`;
 }
 initializeBackendHost();
