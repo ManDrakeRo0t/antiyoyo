@@ -1,18 +1,22 @@
 spring:
 
-
   application:
     name: antiyoyo
 
   rabbitmq:
-    host: localhost
-    username: myuser
-    password: secret
+    host: ${RABBITMQ_HOST:localhost}
+    username: ${RABBITMQ_USERNAME:myuser}
+    password: ${RABBITMQ_PASSWORD:secret}
 
   data:
     mongodb:
-      host: localhost
-      database: mydatabase
-      username: root
-      password: secret
+      host: ${MONGO_HOST:localhost}
+      authentication-database: admin
+      database: ww-base
+      username: ${MONGO_USERNAME:root}
+      password: ${MONGO_PASSWORD:secret}
 
+#logging:
+#  level:
+#    root: DEBUG
+#    org.springframework.web: DEBUG
