@@ -40,6 +40,3 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia/
 
-volumes:
-  mongodb_data:
-  rabbitmq_data:
