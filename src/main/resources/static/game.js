@@ -5,7 +5,7 @@ let mouseMoved = false;
 
 // Get WebSocket URL
 function getWebSocketUrl() {
-    return `ws://${backendHost}/ws`;
+    return `wss://${backendHost}/ws`;
 }
 
 // Initialize backend host on page load
