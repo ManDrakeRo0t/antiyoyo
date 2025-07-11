@@ -5,7 +5,10 @@ let mouseMoved = false;
 
 // Get WebSocket URL
 function getWebSocketUrl() {
-    return `wss://${backendHost}/ws`;
+    if (window.location.protocol === 'https:') {
+        return `wss://${backendHost}/ws`;
+    }
+    return `ws://${backendHost}/ws`;
 }
 
 // Initialize backend host on page load

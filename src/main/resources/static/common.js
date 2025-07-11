@@ -9,6 +9,9 @@ function initializeBackendHost() {
     }
 }
 function getBackendUrl() {
-    return `https://${backendHost}`;
+    if (window.location.protocol === 'https:') {
+        return `https://${backendHost}`;
+    }
+    return `http://${backendHost}:8080`;
 }
 initializeBackendHost();
