@@ -66,7 +66,7 @@ public class GameService {
             case GET_SESSION -> {
             }
         }
-
+        session.setLastInteraction(OffsetDateTime.now());
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId), session);
 
     }
@@ -147,7 +147,7 @@ public class GameService {
         gameMap.setPlayersCount(playerCount.getFirst());
         final int[] counter = {0};
         playerCount.getSecond().forEach(color -> {
-            gameSession.getPlayers().put(counter[0], new Player(null, color, null, false));
+            gameSession.getPlayers().put(counter[0], new Player(null, color, null, false, -1));
             counter[0]++;
             MapUtils.getAllRegionsByColor(gameSession.getMap(), color)
                     .forEach(MapUtils::updateTownHallEconomy);

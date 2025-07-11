@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,17 @@ public class SessionRepository {
         storage.remove(id);
     }
 
-    public List<GameSession> getSessions() {
+    public List<GameSession> getAllSessionForRationUpdate() {
+        return storage.values().stream()
+                .filter(session -> session.getWinnerId() != null && !session.isRatingProcessed())
+                .toList();
+    }
+
+    public Collection<GameSession> getAllSessions() {
+        return storage.values();
+    }
+
+    public List<GameSession> getNotStartedSessions() {
         return storage.values().stream().filter(session -> !session.isStarted()).toList();
     }
 

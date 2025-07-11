@@ -15,5 +15,6 @@ public class Player {
     private HexColor color;
     private TownHall selectedTownHall;
     private boolean isIlluminated;
+    private int place;
 
 }

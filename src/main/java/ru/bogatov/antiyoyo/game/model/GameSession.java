@@ -30,7 +30,9 @@ public class GameSession {
     private Stack<String> history;
     private Integer currentPlayerMove;
     private OffsetDateTime startTime;
+    private OffsetDateTime lastInteraction;
     private boolean started;
+    private boolean ratingProcessed;
     @JsonIgnore
     private UUID skipMoveTaskId;
     private Instant endMoveTime;

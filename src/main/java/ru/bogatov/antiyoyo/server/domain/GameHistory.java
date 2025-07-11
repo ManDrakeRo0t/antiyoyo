@@ -8,16 +8,17 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 import java.util.UUID;
 
 @Data
-@Document("users")
+@Document("history")
 @Builder
-public class User {
+public class GameHistory {
 
     @MongoId
     private UUID id;
-    private String login;
-    private String password;
-    private Integer rating;
-    private Integer totalGames;
-    private Integer winGames;
+    private UUID userId;
+    private String sessionName;
+    private Integer playersCount;
+    private Boolean win;
+    private Integer place;
+    private Integer ratingDelta;
 
 }

@@ -2,7 +2,6 @@ package ru.bogatov.antiyoyo.server.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.user.SimpSubscription;
-import org.springframework.messaging.simp.user.SimpSubscriptionMatcher;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,7 +24,7 @@ public class SessionService {
     private final TaskSchedulingService taskSchedulingService;
 
     public List<SessionResponse> getActiveSessions() {
-        return sessionRepository.getSessions().stream().map(this::enrichToResponse).toList();
+        return sessionRepository.getNotStartedSessions().stream().map(this::enrichToResponse).toList();
     }
 
     public void saveSessionToBase(UUID sessionId) {

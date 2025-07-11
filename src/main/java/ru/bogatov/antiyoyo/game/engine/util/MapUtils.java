@@ -404,7 +404,7 @@ public class MapUtils {
 
     public static void checkPlayersCount(GameSession session) {
         Pair<Integer, Set<HexColor>> playerCount = getPlayersCount(session.getMap());
-        Integer activePlayers = Math.toIntExact(session.getPlayers().values()
+        int activePlayers = Math.toIntExact(session.getPlayers().values()
                 .stream().filter(player -> !player.isIlluminated()).count());
         if (!Objects.equals(playerCount.getFirst(), activePlayers)) {
             Set<HexColor> leftColors = playerCount.getSecond();
@@ -412,11 +412,13 @@ public class MapUtils {
                 Player winner = session.getPlayers().values().stream()
                         .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
                         .findFirst().orElse(null);
+                winner.setPlace(0);
                 session.setWinnerId(winner == null ? null : winner.getUserId());
             } else {
                 session.getPlayers().values().forEach(player -> {
                     if (!leftColors.contains(player.getColor())) {
                         player.setIlluminated(true);
+                        player.setPlace(activePlayers);
                     }
                 });
             }
