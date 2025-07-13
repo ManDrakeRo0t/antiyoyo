@@ -17,6 +17,18 @@ spring:
       username: ${MONGO_USERNAME:root}
       password: ${MONGO_PASSWORD:secret}
 
+
+management:
+  endpoint:
+    health:
+      show-details: always  # Подробный вывод здоровья
+    shutdown:
+      enabled: true         # Разрешить graceful shutdown (POST /actuator/shutdown)
+  endpoints:
+    web:
+      exposure:
+        include: "*"        # Открыть все эндпоинты
+      base-path: /actuator  # Базовый путь (по умолчанию /actuator)
 #logging:
 #  level:
 #    root: DEBUG
