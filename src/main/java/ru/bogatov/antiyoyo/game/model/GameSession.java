@@ -31,6 +31,7 @@ public class GameSession {
     private Integer currentPlayerMove;
     private OffsetDateTime startTime;
     private OffsetDateTime lastInteraction;
+    private OffsetDateTime endTime;
     private boolean started;
     private boolean ratingProcessed;
     @JsonIgnore

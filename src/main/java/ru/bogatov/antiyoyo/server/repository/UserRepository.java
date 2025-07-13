@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import ru.bogatov.antiyoyo.server.domain.User;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +17,10 @@ public class UserRepository {
 
     public UserRepository(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
+    }
+
+    public User getUsersById(UUID id) {
+        return mongoTemplate.findOne(new Query().addCriteria(Criteria.where("_id").is(id)), User.class);
     }
 
     public User saveUser(User user) {

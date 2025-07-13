@@ -14,6 +14,22 @@ public class RatingConfig {
     public static final Float FAVORITE_DELTA = 0.75F;
     public static final Float MIDDLE_DELTA = 0.5F;
 
+    public static float getDeltaMultiplier(int rank) {
+        if (rank < 200) {
+            return 0.2F;
+        }
+        if (rank < 400) {
+            return 0.4F;
+        }
+        if (rank < 600) {
+            return 0.6F;
+        }
+        if (rank < 800) {
+            return 0.8F;
+        }
+        return 1f;
+    }
+
     public static final Map<Integer, PlayerClass> players8 = Map.of(
             1, PlayerClass.of(35, 60, 80),
             2, PlayerClass.of(30, 50, 70),

@@ -8,6 +8,7 @@ import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -412,13 +413,21 @@ public class MapUtils {
                 Player winner = session.getPlayers().values().stream()
                         .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
                         .findFirst().orElse(null);
-                winner.setPlace(0);
+                winner.setPlace(1);
                 session.setWinnerId(winner == null ? null : winner.getUserId());
+                session.setEndTime(OffsetDateTime.now());
+                Player other =  session.getPlayers().values().stream()
+                        .filter(player -> player.getPlace() < 0)
+                        .findFirst().orElse(null);
+                if (other != null) {
+                    other.setPlace(2);
+                    other.setIlluminated(true);
+                }
             } else {
                 session.getPlayers().values().forEach(player -> {
                     if (!leftColors.contains(player.getColor())) {
                         player.setIlluminated(true);
-                        player.setPlace(activePlayers);
+                        player.setPlace(playerCount.getFirst() + 1);
                     }
                 });
             }

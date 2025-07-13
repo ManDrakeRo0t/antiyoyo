@@ -30,6 +30,7 @@ public class EndMoveTask implements Runnable {
 
         gameService.scheduleEndMoveTask(sessionId, null);
 
+        log.info("Sending session {}", sessionRepository.getSession(sessionId).getId());
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId.toString()), sessionRepository.getSession(sessionId));
 
     }

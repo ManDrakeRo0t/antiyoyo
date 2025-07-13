@@ -309,6 +309,9 @@ public class GameEngine {
         if (gameSession.getMap().isEmpty()) {
             throw new IllegalArgumentException("Карта пуста");
         }
+        if (playersCount.getFirst() > 8) {
+            throw new IllegalArgumentException("Максимально 8 игроков");
+        }
         MapUtils.validateAllHexAreAvailable(gameSession.getMap());
         return playersCount;
     }

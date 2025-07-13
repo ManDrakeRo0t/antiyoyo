@@ -10,6 +10,7 @@ spring:
 
   data:
     mongodb:
+      uuid-representation: standard
       host: ${MONGO_HOST:localhost}
       authentication-database: admin
       database: ww-base

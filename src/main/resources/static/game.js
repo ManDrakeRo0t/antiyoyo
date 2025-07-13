@@ -8,11 +8,10 @@ function getWebSocketUrl() {
     if (window.location.protocol === 'https:') {
         return `wss://${backendHost}/ws`;
     }
-    return `ws://${backendHost}/ws`;
+    return `ws://${backendHost}:8080/ws`;
 }
 
-// Initialize backend host on page load
-initializeBackendHost();
+
 
 // WebSocket and STOMP client variables
 let stompClient = null;

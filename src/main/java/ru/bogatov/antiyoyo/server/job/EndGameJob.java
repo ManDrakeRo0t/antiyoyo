@@ -19,7 +19,7 @@ public class EndGameJob {
     private final TaskSchedulingService taskSchedulingService;
     static final int THRESHOLD_MINUTES = 5;
 
-    @Scheduled(fixedRate = THRESHOLD_MINUTES * 60 * 1000)
+    @Scheduled(fixedRate = 3 * 60 * 1000)
     public void removeInactiveSessions() {
 
         log.info("Started remove sessions job");

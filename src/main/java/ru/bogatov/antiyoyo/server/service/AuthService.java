@@ -18,6 +18,9 @@ public class AuthService {
         return userRepository.saveUser(User.builder()
                 .id(UUID.randomUUID())
                 .login(authRequest.getLogin())
+                .rating(0)
+                .totalGames(0)
+                .winGames(0)
                 .password(authRequest.getPassword())
                 .build());
     }

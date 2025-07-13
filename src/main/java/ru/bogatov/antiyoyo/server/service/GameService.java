@@ -131,6 +131,7 @@ public class GameService {
         gameSession.setName("Session : " + gameMap.getName());
         gameSession.setCurrentPlayerMove(0);
         gameSession.setPlayers(new HashMap<>());
+        gameSession.setLastInteraction(OffsetDateTime.now());
         Map<Vector3, Hex> map = new HashMap<>();
         gameMap.getMap().forEach(h -> {
             map.put(h.getVector(), Hex.builder()
