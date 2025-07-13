@@ -11,15 +11,18 @@ spring:
   data:
     mongodb:
       uuid-representation: standard
-      host: ${MONGO_HOST:185.247.17.18}
+      host: ${MONGO_HOST:192.168.0.5}
       authentication-database: admin
       database: ww-game
       username: ${MONGO_USERNAME:gen_user}
-      password: ${MONGO_PASSWORD:o7;zGs516}u(jl}
-
+      password: ${MONGO_PASSWORD:qwertyZ1%}
 
 management:
   endpoint:
+#    configprops:
+#      show-values: ALWAYS
+#    env:
+#      show-values: ALWAYS
     health:
       show-details: always  # Подробный вывод здоровья
     shutdown:
