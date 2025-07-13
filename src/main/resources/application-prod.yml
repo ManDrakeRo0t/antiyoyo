@@ -14,8 +14,8 @@ spring:
       host: ${MONGO_HOST:localhost}
       authentication-database: admin
       database: ww-game
-      username: ${MONGO_USERNAME:root}
-      password: ${MONGO_PASSWORD:secret}
+      username: ${MONGO_USERNAME:gen_user}
+      password: ${MONGO_PASSWORD:o7;zGs516}u(jl}
 
 #logging:
 #  level:
