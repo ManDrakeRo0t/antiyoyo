@@ -8,7 +8,7 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      MONGO_HOST: 192.168.0.5
+      MONGO_HOST: 185.247.17.18
       MONGO_USERNAME: gen_user
       MONGO_PASSWORD: o7;zGs516}u(jl
       RABBITMQ_HOST: rabbitmq
