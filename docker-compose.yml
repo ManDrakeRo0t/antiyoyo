@@ -14,6 +14,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USERNAME: myuser
       RABBITMQ_PASSWORD: secret
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
 
 
   rabbitmq:

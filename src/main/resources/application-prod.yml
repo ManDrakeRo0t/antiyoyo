@@ -11,7 +11,7 @@ spring:
   data:
     mongodb:
       uuid-representation: standard
-      host: ${MONGO_HOST:localhost}
+      host: ${MONGO_HOST:192.168.0.5}
       authentication-database: admin
       database: ww-game
       username: ${MONGO_USERNAME:gen_user}
