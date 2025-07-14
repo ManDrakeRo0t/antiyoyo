@@ -209,6 +209,9 @@ function connectToSession() {
         sendGetSession()
     } else {
         const stompConfig = {
+            connectHeaders: {
+                    Authorization: getUserId(),
+            },
             brokerURL: getWebSocketUrl(),
             reconnectDelay: 200,
             onConnect: function (frame) {
@@ -220,7 +223,7 @@ function connectToSession() {
                     const payload = JSON.parse(message.body);
                     updateHexData(payload);
                     renderGrid();
-                });
+                }, {Authorization : getUserId()});
 
                 sendGetSession();
                 
@@ -250,8 +253,8 @@ function onError(error) {
 function sendMessage(message) {
     stompClient.publish({
             destination: sendPath,
-            body: JSON.stringify(message)
-            
+            body: JSON.stringify(message),
+            headers: { Authorization: getUserId() },
         });
 }
 

@@ -13,6 +13,10 @@ function checkAuthStatus() {
     }
 }
 
+function getUserId() {
+    return currentUser.id
+}
+
 function moveToLogin() {
  
     window.location.href = "login.html"
