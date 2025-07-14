@@ -55,56 +55,10 @@
             letter-spacing: 4px;
             user-select: none;
         }
-        .greeting {
-            font-family: 'Castlefire';
-            font-size: 32px;
-            color: #222;
-            text-align: center;
-            margin: 16px 0 16px 0;
-            letter-spacing: 2px;
-            line-height: 1;
-            user-select: none;
-        }
-        .stats {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 64px;
-            margin-bottom: 12px;
-        }
-        .stat-block {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .stat-icon {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
-            margin-bottom: 4px;
-        }
-        .stat-label {
-            font-family: 'Castlefire';
-            font-size: 22px;
-            color: #b23c1a;
-            background: #ffe6c0;
-            border-radius: 12px;
-            padding: 2px 18px;
-            margin-bottom: 2px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        .stat-value {
-            font-family: 'rusty_typewriter';
-            font-size: 38px;
-            color: #222;
-            margin-bottom: 2px;
-        }
-        .container {
+        .games-container {
             width: 100%;
             max-width: 800px;
-            height: 400px;
+            height: 600px;
             background: #fff8dceb;
             border-radius: 24px;
             padding: 6px 24px;
@@ -114,26 +68,16 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             user-select: none;
-            /* overflow-y: auto;  <-- убираем скролл */
-            /* overflow-x: hidden; */
             display: flex;
             flex-direction: column;
         }
-        .games-container {
+        .games-list {
             flex: 1 1 auto;
-            height: 100%;
             overflow-y: auto;
-            overflow-x: hidden;
-            background: #fff8dceb;
-            padding: 6px 24px;
-            font-size: 1.3rem;
-            line-height: 1.7;
-            position: relative;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            user-select: none;
+            min-height: 0;
         }
-        .games-container::-webkit-scrollbar {
+        .games-container::-webkit-scrollbar,
+        .games-list::-webkit-scrollbar {
             display: none;
         }
         .games-title {
@@ -151,7 +95,7 @@
             border-bottom: 2px solid #e0d0a0;
             margin-bottom: 8px;
         }
-        .header-date {
+        .header-place {
             font-family: 'Castlefire';
             font-size: 20px;
             color: #b23c1a;
@@ -159,7 +103,7 @@
             letter-spacing: 2px;
             flex: 1;
         }
-        .header-place {
+        .header-name {
             font-family: 'Castlefire';
             font-size: 20px;
             color: #b23c1a;
@@ -187,11 +131,29 @@
         .game-item:last-child {
             border-bottom: none;
         }
-        .game-date {
+        .game-place {
             font-family: 'rusty_typewriter';
             font-size: 32px;
             color: #222;
             flex: 1;
+        }
+        .user-name {
+            font-family: 'rusty_typewriter';
+            font-size: 32px;
+            color: #222;
+            flex: 1;
+            text-align: center;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            will-change: transform;
+            cursor: pointer;
+        }
+        .user-name:hover, .user-name:focus {
+            transform: scale(1.16);
+            z-index: 2;
+        }
+        .user-name:active {
+            transform: scale(0.92);
+            transition: transform 0.1s ease-out;
         }
         .game-result {
             font-family: 'rusty_typewriter';
@@ -200,13 +162,13 @@
             text-align: center;
         }
         .game-result.win {
-            color: #00BA0C;
+            color: #f73848;
         }
         .game-result.loss {
-            color: #FF0000;
+            color: #118bfd;
         }
         .game-result.safe {
-            color: #ff7b00;
+            color: #5cf51a;
         }
         .game-result.gray {
             color: #666565;
@@ -273,15 +235,10 @@
             .title { font-size: 100px; }
             .greeting { font-size: 50px; }
 
-            .stats { gap: 64px;}
-            .stat-icon { width: 120px; height: 120px; }
-            .stat-label { font-size: 32px; border-radius: 24px; }
-            .stat-value { font-size: 40px; }
-            
-            .container { max-width: 600px; height: 398px; margin-bottom: 30px; margin-top: 10px;}
+            .games-container { max-width: 600px; height: 700px; margin-bottom: 30px; margin-top: 10px;}
             .games-title { font-size: 50px; }
-            .header-date, .header-place, .header-rating { font-size: 32px; }
-            .arrow-mobile { display: none; }
+            .header-name, .header-place, .header-rating { font-size: 32px; }
+            .user-name {font-size: 32px;}
             
             .back-btn { width: 320px; height: 90px; }
             .back-btn-text { font-size: 50px; }
@@ -291,132 +248,88 @@
             .title { font-size: 85px; }
             .greeting { font-size: 45px; margin: 16px 0 24px 0;}
             
-            .stats { gap: 32px; margin-bottom: 16px;}
-            .stat-icon { width: 110px; height: 110px; }
-            .stat-label { font-size: 32px; border-radius: 24px; }
-            .stat-value { font-size: 32px; }
-
-            .container { max-width: 900px; height: 500px; }
+            .games-container { max-width: 900px; height: 500px; }
             .games-title { font-size: 45px; }
-            .header-date, .header-place, .header-rating { font-size: 22px; }        
+            .header-name, .header-place, .header-rating { font-size: 22px; }        
 
             .back-btn { width: 320px; height: 80px; }
             .back-btn-text { font-size: 45px; }
         }
         @media (min-width: 390px) and (max-height: 932px) { 
             .logo { width: 180px; margin-top: 20px; margin-bottom: 10px; display: none; }
-            .title { font-size: 50px; }
+            .title { font-size: 50px; margin-bottom: 12px;}
             .greeting { font-size: 35px; margin: 12px 0 0 0 ;}
 
-            .stats { gap: 12px; margin-top: 12px; }
-            .stat-block { gap: 8px; }
-            .stat-icon { width: 70px; height: 70px; margin-bottom: 4px; }
-            .stat-label { font-size: 24px; padding: 2px 18px; margin-bottom: 2px; }
-            .stat-value { font-size: 32px; margin-bottom: 2px; }
 
-            .container { max-width: 365px; height:300px; padding: 6px 12px;}
-            .games-container { max-width: 365px; height: 250px;  padding: 0;}
+            .games-container { max-width: 365px; height: 530px; padding: 6px 12px; }
+
+            
             .games-title { font-size: 32px; margin-bottom: 0px; }
-            .header-date, .header-place, .header-rating { font-size: 24px; }
+            .header-name, .header-place, .header-rating { font-size: 24px; }
             .game-date, .game-result, .game-score { font-size: 24px;}
             .arrow-desktop {display: none;}
 
-            .back-btn { margin-top: 24px; width: 240px; height: 60px; }
+            .back-btn { margin-top: 24px; width: 240px; height: 60px;}
             .back-btn-text { font-size: 35px; }
         }
     </style>
 </head>
 <body>
     <img src="ui-elements/logo.png" alt="logo" class="logo">
-    <div class="title">Profile</div>
-    <div class="greeting">{user_name}</div>
-    <div class="stats">
-        <div class="stat-block">
-            <img src="ui-elements/user_games_v3.png" alt="games" class="stat-icon">
-            <div class="stat-label">Games</div>
-            <div class="stat-value">267</div>
-        </div>
-        <div class="stat-block">
-            <img src="ui-elements/user_rating_v2.png" alt="rating" class="stat-icon">
-            <div class="stat-label">Rating</div>
-            <div class="stat-value">1455</div>
-        </div>
-        <div class="stat-block">
-            <img src="ui-elements/user_wins.png" alt="wins" class="stat-icon">
-            <div class="stat-label">Wins</div>
-            <div class="stat-value">189</div>
-        </div>
-    </div>
-
-    
-    <div class="container">
-        <div class="games-title">Last Games</div>
+    <div class="title">Ratings</div>
+    <div class="games-container">
+        <div class="games-title">Board</div>
         <div class="games-headers">
-            <div class="header-date">Date</div>
             <div class="header-place">Place</div>
+            <div class="header-name">Name</div>
             <div class="header-rating">Rating</div>
         </div>
-        <!-- Это для мобилы: ↓ ↑ ⇅ -->
-        <!-- Это для ПК    : 🡓 🡑 🡙 -->
-        <div class="games-container">
-        <div class="game-item">
-            <div class="game-date">14.07</div>
-            <div class="game-result">
-                <span class="game-result win">3</span> ୵ <span class="game-result gray">8</span> 
+        <div class="games-list">
+            <div class="game-item">
+                <div class="game-place"><img src="ui-elements/top_1.png" class="icon"></div>
+                <div class="user-name ">
+                    <div>sss</div>
+                </div>
+                <div class="game-score">1450</div>
             </div>
-            <div class="game-score">15<span class="game-result win">
-                <span class="arrow-desktop"> 🡑</span>
-                <span class="arrow-mobile"> ↑</span>
-            </span>
-        </div>
-        </div>
-        <div class="game-item">
-            <div class="game-date">13.07</div>
-            <div class="game-result">
-                <span class="game-result loss">6</span> ୵ <span class="game-result gray">7</span>
+            <div class="game-item">
+                <div class="game-place"><img src="ui-elements/top_2.png" class="icon"></div>
+                <div class="user-name">
+                    <div>mandrake</div>    
+                </div>
+                <div class="game-score">1298</div>
             </div>
-            <div class="game-score">50<span class= "game-result loss"> 
-                <span class="arrow-desktop"> 🡓</span>
-                <span class="arrow-mobile"> ↓</span>
-            </span>
-        </div>
-        </div>
-        <div class="game-item">
-            <div class="game-date">10.07</div>
-            <div class="game-result">
-                <span class="game-result safe">2</span> ୵ <span class="game-result gray">3</span>
+            <div class="game-item">
+                <div class="game-place"><img src="ui-elements/top_3.png" class="icon"></div>
+                <div class="user-name ">
+                    <div>uki</div>
+                </div>
+                <div class="game-score">965</div>
             </div>
-            <div class="game-score">0<span class="game-result safe">
-                <span class="arrow-desktop"> 🡙</span>
-                <span class="arrow-mobile"> ⇅</span>
-            </span>
-        </div>
-        </div>
-        <div class="game-item">
-            <div class="game-date">30.06</div>
-            <div class="game-result">
-                <span class="game-result win">4</span> ୵ <span class="game-result gray">7</span>
+            <div class="game-item">
+                <div class="game-place">#4</div>
+                <div class="user-name game-result gray">ziGuun</div>
+                <div class="game-score">873</div>
             </div>
-            <div class="game-score">10<span class="game-result win">
-                <span class="arrow-desktop"> 🡑</span>
-                <span class="arrow-mobile"> ↑</span>
-            </span>
-        </div>
-        </div>
-        <div class="game-item">
-            <div class="game-date">30.06</div>
-            <div class="game-result">
-                <span class="game-result win">1</span> ୵ <span class="game-result gray">3</span>
+            <div class="game-item">
+                <div class="game-place">#5</div>
+                <div class="user-name game-result gray">aLsn</div>
+                <div class="game-score">213</div>
             </div>
-            <div class="game-score">35<span class="game-result win">
-                <span class="arrow-desktop"> 🡑</span>
-                <span class="arrow-mobile"> ↑</span>
-            </span>
-        </div>
-        </div>
+            <div class="game-item">
+                <div class="game-place">#4</div>
+                <div class="user-name game-result gray">ziGuun</div>
+                <div class="game-score">873</div>
+            </div>
+            <div class="game-item">
+                <div class="game-place">#5</div>
+                <div class="user-name game-result gray">aLsn</div>
+                <div class="game-score">213</div>
+            </div>
+
+            
         </div>
     </div>
-
     <div class="back-btn" onclick="window.location.href='index.html'">
         <img src="ui-elements/svg/red_button.svg" alt="BACK">
         <span class="back-btn-text">BACK</span>
