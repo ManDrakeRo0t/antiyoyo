@@ -5,9 +5,9 @@ public enum HexColor {
     BLUE,
     EMPTY,
     GREEN,
-    BLACK,
-    PURPLE,
     YELLOW,
+    PURPLE,
     ORANGE,
-    WHITE
+    CIAN,
+    PINK
 }

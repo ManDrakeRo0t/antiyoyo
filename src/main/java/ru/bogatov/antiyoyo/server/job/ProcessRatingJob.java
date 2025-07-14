@@ -90,7 +90,7 @@ public class ProcessRatingJob {
             int finalDeltaRating;
             User user = usersMap.get(player.getUserId());
             if (deltaRating > 0) {
-                finalDeltaRating = (int) (deltaRating * deltaForUp);
+                finalDeltaRating = deltaRating; // * deltaForUp
             } else {
                 finalDeltaRating = (int) (deltaRating * deltaForDown * RatingConfig.getDeltaMultiplier(getUserRating(user)));
             }

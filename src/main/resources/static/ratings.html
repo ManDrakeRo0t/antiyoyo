@@ -230,6 +230,34 @@
         .arrow-desktop {
             display: inline;
         }
+        .skeleton {
+            background: linear-gradient(90deg, #ececec 25%, #f5e7c6 50%, #ececec 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.2s infinite linear;
+            border-radius: 8px;
+            min-height: 32px;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton.game-item {
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0d0a0;
+        }
+        .skeleton .game-place,
+        .skeleton .user-name,
+        .skeleton .game-score {
+            height: 32px;
+            border-radius: 8px;
+            background: none;
+        }
+        .skeleton .game-place { width: 60px; background: #ececec; }
+        .skeleton .user-name { width: 180px; background: #ececec; }
+        .skeleton .game-score { width: 80px; background: #ececec; }
         @media (min-width: 2560px) and (max-height: 6560px) {
             .logo { width: 320px; }
             .title { font-size: 100px; }
@@ -285,49 +313,7 @@
             <div class="header-rating">Rating</div>
         </div>
         <div class="games-list">
-            <div class="game-item">
-                <div class="game-place"><img src="ui-elements/top_1.png" class="icon"></div>
-                <div class="user-name ">
-                    <div>sss</div>
-                </div>
-                <div class="game-score">1450</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place"><img src="ui-elements/top_2.png" class="icon"></div>
-                <div class="user-name">
-                    <div>mandrake</div>    
-                </div>
-                <div class="game-score">1298</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place"><img src="ui-elements/top_3.png" class="icon"></div>
-                <div class="user-name ">
-                    <div>uki</div>
-                </div>
-                <div class="game-score">965</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place">#4</div>
-                <div class="user-name game-result gray">ziGuun</div>
-                <div class="game-score">873</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place">#5</div>
-                <div class="user-name game-result gray">aLsn</div>
-                <div class="game-score">213</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place">#4</div>
-                <div class="user-name game-result gray">ziGuun</div>
-                <div class="game-score">873</div>
-            </div>
-            <div class="game-item">
-                <div class="game-place">#5</div>
-                <div class="user-name game-result gray">aLsn</div>
-                <div class="game-score">213</div>
-            </div>
-
-            
+            <!-- skeleton loader -->
         </div>
     </div>
     <div class="back-btn" onclick="window.location.href='index.html'">
@@ -336,5 +322,73 @@
     </div>
     <script src="auth.js" ></script>
     <script src="common.js" ></script>
+    <script>
+    function showSkeletonLoader(gamesList, count = 7) {
+        gamesList.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'game-item skeleton';
+
+            const placeDiv = document.createElement('div');
+            placeDiv.className = 'game-place skeleton';
+            itemDiv.appendChild(placeDiv);
+
+            const userNameDiv = document.createElement('div');
+            userNameDiv.className = 'user-name skeleton';
+            itemDiv.appendChild(userNameDiv);
+
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'game-score skeleton';
+            itemDiv.appendChild(scoreDiv);
+
+            gamesList.appendChild(itemDiv);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const gamesList = document.querySelector('.games-list');
+        if (!gamesList || typeof getBackendUrl !== 'function') return;
+        // Показываем скелетон-лоадер
+        showSkeletonLoader(gamesList, 5);
+        try {
+            const response = await fetch(getBackendUrl() + '/api/users/top-rating');
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            const users = await response.json();
+            gamesList.innerHTML = '';
+            users.forEach((user, idx) => {
+                const placeDiv = document.createElement('div');
+                placeDiv.className = 'game-place';
+                if (idx === 0) {
+                    placeDiv.innerHTML = '<img src="ui-elements/top_1.png" class="icon">';
+                } else if (idx === 1) {
+                    placeDiv.innerHTML = '<img src="ui-elements/top_2.png" class="icon">';
+                } else if (idx === 2) {
+                    placeDiv.innerHTML = '<img src="ui-elements/top_3.png" class="icon">';
+                } else {
+                    placeDiv.textContent = `#${idx + 1}`;
+                }
+
+                const userNameDiv = document.createElement('div');
+                userNameDiv.className = 'user-name';
+                userNameDiv.innerHTML = `<div>${user.login}</div>`;
+
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'game-score';
+                scoreDiv.textContent = user.rating;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'game-item';
+                itemDiv.appendChild(placeDiv);
+                itemDiv.appendChild(userNameDiv);
+                itemDiv.appendChild(scoreDiv);
+
+                gamesList.appendChild(itemDiv);
+            });
+        } catch (e) {
+            gamesList.innerHTML = '<div style="text-align:center;color:#b23c1a;">Failed to load ratings</div>';
+        }
+    });
+    </script>
 </body>
 </html> 

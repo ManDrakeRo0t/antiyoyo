@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.bogatov.antiyoyo.server.dto.UserDto;
 import ru.bogatov.antiyoyo.server.service.UserService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,6 +19,11 @@ public class UserController {
     @GetMapping("/history/{id}")
     public ResponseEntity<UserDto> get(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserWithHistory(id));
+    }
+
+    @GetMapping("/top-rating")
+    public ResponseEntity<List<UserDto>> get() {
+        return ResponseEntity.ok(userService.getTopRatingUsers());
     }
 
 }

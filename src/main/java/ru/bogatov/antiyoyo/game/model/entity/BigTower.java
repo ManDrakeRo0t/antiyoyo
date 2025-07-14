@@ -20,7 +20,7 @@ public class BigTower extends Entity implements Sellable, Interactable {
 
     @Override
     public Currency getPrice(Integer unitsCount) {
-        return Currency.of(5,5,10);
+        return Currency.of(10,10,10);
     }
 
     @Override

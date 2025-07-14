@@ -2,7 +2,17 @@
 let mouseDown = false;
 let mouseMoved = false;
 // Backend host management
-
+const colorMap = {
+        'EMPTY': '#3CB371',  // серый
+        'RED': '#ff0000',    // красный
+        'BLUE': '#0000ff',   // синий
+        'GREEN': '#00ff00',  // зеленый
+        'YELLOW': '#ffff00', // желтый
+        'PURPLE': '#800080', // фиолетовый
+        'ORANGE': '#ffa500', // оранжевый
+        'PINK': '#FEC0D5',  // черный
+        'CIAN': '#23deff'   // белый
+    };
 // Get WebSocket URL
 function getWebSocketUrl() {
     if (window.location.protocol === 'https:') {
@@ -65,17 +75,7 @@ const state = {
 
 // Color mapping function
 function getColorFromName(colorName) {
-    const colorMap = {
-        'EMPTY': '#3CB371',  // серый
-        'RED': '#ff0000',    // красный
-        'BLUE': '#0000ff',   // синий
-        'GREEN': '#00ff00',  // зеленый
-        'YELLOW': '#ffff00', // желтый
-        'PURPLE': '#800080', // фиолетовый
-        'ORANGE': '#ffa500', // оранжевый
-        'BLACK': '#000000',  // черный
-        'WHITE': '#ffffff'   // белый
-    };
+    
     return colorMap[colorName] || config.existingHexColor;
 }
 
@@ -535,16 +535,9 @@ function updateCurrentTurnIndicator() {
         return;
     }
     
-    const colorHexMap = {
-        'YELLOW': '#ffff00',
-        'ORANGE': '#ffa500',
-        'RED': '#ff0000',
-        'BLUE': '#0000ff',
-        'GREEN': '#00ff00',
-        'PURPLE': '#800080'
-    };
+ 
 
-    const colorHex = colorHexMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
+    const colorHex = colorMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
 
     currentTurnIconDiv.style.backgroundColor = colorHex; /* Set background color for the flag icon via mask */
     currentTurnIndicator.style.display = 'flex'; /* Changed to flex */
@@ -579,15 +572,7 @@ function updateAvailableColors() {
         .filter(player => player.userId === null)
         .map(player => player.color);
     // Color mapping for display
-    const colorMap = {
-        'YELLOW': '#ffff00',
-        'ORANGE': '#ffa500',
-        'RED': '#ff0000',
-        'BLUE': '#0000ff',
-        'GREEN': '#00ff00',
-        'PURPLE': '#800080',
-        'BLACK' : '#000000'
-    };
+
     if (availableColors.length === 0) {
         const msg = document.createElement('div');
         msg.textContent = 'Нет доступных цветов';
@@ -1116,17 +1101,6 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
             }
             // Если DRONE, рисуем кружок ownerColor
             if (hex.entity.type === 'DRONE' && hex.entity.ownerColor) {
-                const colorMap = {
-                    'EMPTY': '#3CB371',
-                    'RED': '#ff0000',
-                    'BLUE': '#0000ff',
-                    'GREEN': '#00ff00',
-                    'YELLOW': '#ffff00',
-                    'PURPLE': '#800080',
-                    'ORANGE': '#ffa500',
-                    'BLACK': '#000000',
-                    'WHITE': '#ffffff'
-                };
                 ctx.beginPath();
                 ctx.arc(x, y - iconSize * 0.05, iconSize * 0.5, 0, 2 * Math.PI);
                 ctx.fillStyle = colorMap[hex.entity.ownerColor] || '#000';
@@ -1380,18 +1354,7 @@ function drawPowerPieChart(powerObj) {
     const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
 
     let startAngle = -Math.PI / 2; // сверху
-    // Цвета для секторов
-    const colorMap = {
-        'EMPTY': '#3CB371',
-        'RED': '#ff0000',
-        'BLUE': '#0000ff',
-        'GREEN': '#00ff00',
-        'YELLOW': '#ffff00',
-        'PURPLE': '#800080',
-        'ORANGE': '#ffa500',
-        'BLACK': '#000000',
-        'WHITE': '#ffffff'
-    };
+
     colors.forEach((color, i) => {
         const value = powerObj[color];
         if (value <= 0) return;

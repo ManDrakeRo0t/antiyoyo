@@ -15,7 +15,7 @@ public class Tank extends Entity implements Sellable, Interactable {
 
     @Override
     public Currency getStorageChanges() {
-        return Currency.of(-54, 0,0);
+        return Currency.of(-36, 0,0);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.bogatov.antiyoyo.server.repository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -17,6 +18,13 @@ public class UserRepository {
 
     public UserRepository(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
+    }
+
+    public List<User> getTopRatingUsers() {
+        Query query = new Query().addCriteria(Criteria.where("rating").ne(0))
+                .with(Sort.by(Sort.Direction.DESC, "rating"))
+                .limit(5);
+        return mongoTemplate.find(query, User.class);
     }
 
     public User getUsersById(UUID id) {

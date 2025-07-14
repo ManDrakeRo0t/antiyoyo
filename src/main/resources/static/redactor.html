@@ -346,15 +346,15 @@
             .top-menu { height: 100px; padding: 0px; gap: 4px; }
             #container { width: 100vw; height: 100vh; margin-top: 100px; }
 
-            .input-wrapper { width: 300px; height: 70px; margin-left: 10px;}
-            .input-field { font-size: 40px; padding: 0 30px; }
+            .input-wrapper { width: 260px; height: 70px; margin-left: 10px;}
+            .input-field { font-size: 35px; padding: 0 30px; }
 
-            .tool-button { width: 75px; height: 75px; font-size: 24px; }
+            .tool-button { width: 56px; height: 56px; font-size: 18px; }
 
-            .dropdown-content { padding: 12px; margin-top: 16px; }
-            .dropdown-grid { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 24px; }
-            .color-button { width: 45px; height: 45px; }
-            .dropdown-tool-icon { width: 50px; height: 50px; }
+            .dropdown-content { padding: 6px; margin-top: 8px; }
+            .dropdown-grid { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 14px; }
+            .color-button { width: 30px; height: 30px; }
+            .dropdown-tool-icon { width: 35px; height: 35px; }
 
             .svg-btn { width: 200px; height: 60px;  }
             .svg-btn-text { font-size: 40px; }
@@ -429,8 +429,8 @@
                     <div class="color-button" style="background-color: #ffff00;" onclick="selectColor('YELLOW')" title="Желтый"></div>
                     <div class="color-button" style="background-color: #800080;" onclick="selectColor('PURPLE')" title="Фиолетовый"></div>
                     <div class="color-button" style="background-color: #ffa500;" onclick="selectColor('ORANGE')" title="Оранжевый"></div>
-                    <div class="color-button" style="background-color: #000000;" onclick="selectColor('BLACK')" title="Черный"></div>
-                    <div class="color-button" style="background-color: #ffffff;" onclick="selectColor('WHITE')" title="Белый"></div>
+                    <div class="color-button" style="background-color: #fd6598;" onclick="selectColor('PINK')" title="Розовый"></div>
+                    <div class="color-button" style="background-color: #23deff;" onclick="selectColor('CIAN')" title="Циан"></div>
                 </div>
             </div>
         </div>
@@ -512,16 +512,16 @@
         // Color mapping function
         function getColorFromName(colorName) {
             const colorMap = {
-                'EMPTY': '#cccccc',
-                'RED': '#ff0000',
-                'BLUE': '#0000ff',
-                'GREEN': '#00ff00',
-                'YELLOW': '#ffff00',
-                'PURPLE': '#800080',
-                'ORANGE': '#ffa500',
-                'BLACK': '#000000',
-                'WHITE': '#ffffff'
-            };
+        'EMPTY': '#e3dfda',  // серый
+        'RED': '#ff0000',    // красный
+        'BLUE': '#0000ff',   // синий
+        'GREEN': '#00ff00',  // зеленый
+        'YELLOW': '#ffff00', // желтый
+        'PURPLE': '#800080', // фиолетовый
+        'ORANGE': '#ffa500', // оранжевый
+        'PINK': '#FEC0D5',  // черный
+        'CIAN': '#23deff'   // белый
+    };
             return colorMap[colorName] || config.backgroundColor;
         }
 
@@ -594,7 +594,7 @@
             document.querySelectorAll('.tool-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            document.querySelector('.tool-button.delete').classList.add('selected');
+           
         }
 
         // Generate map

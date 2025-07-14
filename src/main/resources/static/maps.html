@@ -723,14 +723,14 @@ function drawHexagon(x, y, size, hex) {
     mapCtx.closePath();
     const colorMap = {
         'EMPTY': '#cccccc',
-        'RED': '#ff0000',
-        'BLUE': '#0000ff',
-        'GREEN': '#00ff00',
-        'YELLOW': '#ffff00',
-        'PURPLE': '#800080',
-        'ORANGE': '#ffa500',
-        'BLACK': '#000000',
-        'WHITE': '#ffffff'
+        'RED': '#ff0000',    // красный
+        'BLUE': '#0000ff',   // синий
+        'GREEN': '#00ff00',  // зеленый
+        'YELLOW': '#ffff00', // желтый
+        'PURPLE': '#800080', // фиолетовый
+        'ORANGE': '#ffa500', // оранжевый
+        'PINK': '#FEC0D5',  // черный
+        'CIAN': '#23deff'
     };
     mapCtx.fillStyle = colorMap[hex.color] || config.backgroundColor;
     mapCtx.fill();

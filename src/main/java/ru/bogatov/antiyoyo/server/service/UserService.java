@@ -1,6 +1,7 @@
 package ru.bogatov.antiyoyo.server.service;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import org.springframework.stereotype.Service;
 import ru.bogatov.antiyoyo.server.domain.GameHistory;
 import ru.bogatov.antiyoyo.server.domain.User;
@@ -17,6 +18,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final GameHistoryRepository gameHistoryRepository;
+
+    public List<UserDto> getTopRatingUsers() {
+        return userRepository.getTopRatingUsers()
+                .stream()
+                .map(user -> UserDto.builder().login(user.getLogin()).rating(user.getRating()).build())
+                .toList();
+    }
 
     public UserDto getUserWithHistory(UUID userId) {
 
