@@ -27,11 +27,17 @@ public class EndMoveTask implements Runnable {
         log.info("End move evaluated for session : {}", sessionId);
 
         gameEngine.endMove(sessionRepository.getSession(sessionId));
+        var session = sessionRepository.getSession(sessionId);
+        if (session != null) {
+            gameService.scheduleEndMoveTask(sessionId, null);
+            log.info("Sending session {}", sessionRepository.getSession(sessionId).getId());
+            try {
+                messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId.toString()), session);
+            } catch (RuntimeException e) {
+                log.error("Error send : {}", e.getMessage());
+            }
+        }
 
-        gameService.scheduleEndMoveTask(sessionId, null);
-
-        log.info("Sending session {}", sessionRepository.getSession(sessionId).getId());
-        messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", sessionId.toString()), sessionRepository.getSession(sessionId));
 
     }
 }

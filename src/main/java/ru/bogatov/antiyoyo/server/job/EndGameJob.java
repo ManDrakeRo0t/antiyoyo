@@ -43,7 +43,9 @@ public class EndGameJob {
 
     private void removeSession(GameSession session) {
         sessionRepository.removeSession(session.getId());
-        taskSchedulingService.cancelTask(session.getSkipMoveTaskId().toString());
+        if (session.getSkipMoveTaskId() != null) {
+            taskSchedulingService.cancelTask(session.getSkipMoveTaskId().toString());
+        }
         log.info("Removed session id {}", session.getId());
     }
 }

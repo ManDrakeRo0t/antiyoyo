@@ -11,6 +11,7 @@ import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ public class GameSession {
     private UUID id;
     private UUID winnerId;
     private String name;
+    private Set<String> aliveUsersId;
     private Map<Integer, Player> players;
     private Map<Vector3, Hex> map;
     private GameSetting setting;

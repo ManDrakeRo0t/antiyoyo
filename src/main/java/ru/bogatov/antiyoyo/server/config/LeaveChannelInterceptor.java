@@ -1,16 +1,20 @@
 package ru.bogatov.antiyoyo.server.config;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import ru.bogatov.antiyoyo.server.service.SimpSessionStorage;
 
 @Slf4j
+@AllArgsConstructor
 public class LeaveChannelInterceptor implements ChannelInterceptor {
+
+    private final SimpSessionStorage simpSessionStorage;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -19,12 +23,9 @@ public class LeaveChannelInterceptor implements ChannelInterceptor {
         StompCommand command = accessor.getCommand();
 
         if (StompCommand.DISCONNECT == command) {
-            final var requestTokenHeader = accessor.getFirstNativeHeader("Authorization");
-            final var topic = accessor.getFirstNativeHeader(StompHeaders.DESTINATION);
-            //todo check simpSession
-            log.info("User leave : User Id : {} and Topic : {}", requestTokenHeader, topic);
+            simpSessionStorage.userDisconnected((String) message.getHeaders().get("simpSessionId"));
         }
 
-        return ChannelInterceptor.super.preSend(message, channel);
+        return message;
     }
 }

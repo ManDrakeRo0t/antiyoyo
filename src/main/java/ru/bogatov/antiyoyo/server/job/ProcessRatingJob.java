@@ -31,9 +31,7 @@ public class ProcessRatingJob {
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void processRating() {
         log.info("Started rating process job");
-
         sessionRepository.getAllSessionForRationUpdate().forEach(this::processRating);
-
     }
 
     public int getUserRating(User user) {

@@ -3,6 +3,7 @@ package ru.bogatov.antiyoyo.server.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.server.dto.UserDto;
 import ru.bogatov.antiyoyo.server.service.UserService;
 
@@ -24,6 +25,15 @@ public class UserController {
     @GetMapping("/top-rating")
     public ResponseEntity<List<UserDto>> get() {
         return ResponseEntity.ok(userService.getTopRatingUsers());
+    }
+
+    @GetMapping("/{userId}/active-session")
+    public ResponseEntity<UUID> getActiveSession(@PathVariable UUID userId) {
+        UUID id = userService.findActiveGameSession(userId);
+        if (id == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(id);
     }
 
 }

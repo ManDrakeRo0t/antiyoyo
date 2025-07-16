@@ -407,6 +407,19 @@ public class MapUtils {
         Pair<Integer, Set<HexColor>> playerCount = getPlayersCount(session.getMap());
         int activePlayers = Math.toIntExact(session.getPlayers().values()
                 .stream().filter(player -> !player.isIlluminated()).count());
+        if (playerCount.getFirst() == 1) {
+            Set<HexColor> leftColors = playerCount.getSecond();
+            if (leftColors.size() == 1) {
+                Player winner = session.getPlayers().values().stream()
+                        .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
+                        .findFirst().orElse(null);
+                winner.setPlace(1);
+                session.setWinnerId(winner == null ? null : winner.getUserId());
+                session.getAliveUsersId().remove(winner.getUserId().toString());
+                session.setEndTime(OffsetDateTime.now());
+            }
+            return;
+        }
         if (!Objects.equals(playerCount.getFirst(), activePlayers)) {
             Set<HexColor> leftColors = playerCount.getSecond();
             if (leftColors.size() == 1) {
@@ -415,6 +428,7 @@ public class MapUtils {
                         .findFirst().orElse(null);
                 winner.setPlace(1);
                 session.setWinnerId(winner == null ? null : winner.getUserId());
+                session.getAliveUsersId().remove(winner.getUserId().toString());
                 session.setEndTime(OffsetDateTime.now());
                 Player other =  session.getPlayers().values().stream()
                         .filter(player -> player.getPlace() < 0)
@@ -422,12 +436,14 @@ public class MapUtils {
                 if (other != null) {
                     other.setPlace(2);
                     other.setIlluminated(true);
+                    session.getAliveUsersId().remove(other.getUserId().toString());
                 }
             } else {
                 session.getPlayers().values().forEach(player -> {
                     if (!leftColors.contains(player.getColor())) {
                         player.setIlluminated(true);
                         player.setPlace(playerCount.getFirst() + 1);
+                        session.getAliveUsersId().remove(player.getUserId().toString());
                     }
                 });
             }

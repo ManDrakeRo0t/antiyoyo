@@ -27,6 +27,12 @@ public class SessionRepository {
         storage.put(session.getId(), session);
     }
 
+    public GameSession getActiveSessionForUser(String userId) {
+        return storage.values().stream()
+                .filter(session -> session.getAliveUsersId().contains(userId))
+                .findFirst().orElse(null);
+    }
+
     public GameSession getSession(UUID id) {
         return storage.get(id);
     }

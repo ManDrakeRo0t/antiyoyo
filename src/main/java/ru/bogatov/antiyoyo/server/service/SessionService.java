@@ -11,6 +11,7 @@ import ru.bogatov.antiyoyo.server.job.TaskSchedulingService;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,7 +25,8 @@ public class SessionService {
     private final TaskSchedulingService taskSchedulingService;
 
     public List<SessionResponse> getActiveSessions() {
-        return sessionRepository.getNotStartedSessions().stream().map(this::enrichToResponse).toList();
+        return sessionRepository.getNotStartedSessions().stream().map(this::enrichToResponse)
+                .sorted(Comparator.comparingInt(session -> session.getTotalUsers() - session.getConnectedUsers())).toList();
     }
 
     public void saveSessionToBase(UUID sessionId) {
@@ -48,10 +50,10 @@ public class SessionService {
     private SessionResponse enrichToResponse(GameSession gameSession) {
         SessionResponse response = new SessionResponse();
         response.setId(gameSession.getId());
+        response.setConnectedUsers((int) gameSession.getPlayers().values().stream().filter(p -> p.getUserId() != null).count());
         response.setName(gameSession.getName());
         response.setTotalUsers(gameSession.getPlayers().size());
         response.setSetting(gameSession.getSetting());
-        response.setConnectedUsers(findSubscriptions(gameSession.getId().toString()).size());
         return response;
     }
 

@@ -3,6 +3,7 @@ package ru.bogatov.antiyoyo.server.service;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.bogatov.antiyoyo.game.engine.GameEngine;
@@ -17,16 +18,14 @@ import ru.bogatov.antiyoyo.server.domain.GameEvent;
 import ru.bogatov.antiyoyo.server.domain.GameMap;
 import ru.bogatov.antiyoyo.server.dto.SessionCreateRequest;
 import ru.bogatov.antiyoyo.server.dto.SessionJoinRequest;
+import ru.bogatov.antiyoyo.server.events.GameStartedEvent;
 import ru.bogatov.antiyoyo.server.job.EndMoveTask;
 import ru.bogatov.antiyoyo.server.job.TaskSchedulingService;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -40,6 +39,7 @@ public class GameService {
     private final GameMapService gameMapService;
     private final TaskSchedulingService taskSchedulingService;
     private final SessionService sessionService;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     public void validateGameMap(GameMap gameMap) {
@@ -109,10 +109,14 @@ public class GameService {
     }
 
     public GameSession joinSession(SessionJoinRequest request) {
+        if (sessionRepository.getActiveSessionForUser(request.getUserId().toString()) != null) {
+            throw new IllegalArgumentException("You have ongoing session");
+        }
         GameSession session = sessionRepository.getSession(request.getSessionId());
         Player player = session.getPlayers()
                 .values().stream()
                 .filter(p -> p.getColor() == request.getColor()).findFirst().orElse(null);
+        session.getAliveUsersId().add(request.getUserId().toString());
         if (player.getUserId() == null) {
             player.setUserId(request.getUserId());
         }
@@ -120,6 +124,15 @@ public class GameService {
             scheduleEndMoveTask(request.getSessionId(), null);
             session.setStartTime(OffsetDateTime.now());
             session.setStarted(true);
+            eventPublisher.publishEvent(
+                    new GameStartedEvent(
+                            this,
+                            session.getId(),
+                            session.getPlayers().values()
+                                    .stream()
+                                    .map(p -> Pair.of(p.getUserId(), p.getColor())).toList()
+                    )
+            );
         }
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", session.getId().toString()), session);
         return session;
@@ -131,6 +144,7 @@ public class GameService {
         gameSession.setName("Session : " + gameMap.getName());
         gameSession.setCurrentPlayerMove(0);
         gameSession.setPlayers(new HashMap<>());
+        gameSession.setAliveUsersId(new HashSet<>());
         gameSession.setLastInteraction(OffsetDateTime.now());
         Map<Vector3, Hex> map = new HashMap<>();
         gameMap.getMap().forEach(h -> {

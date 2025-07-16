@@ -1,6 +1,55 @@
 // --- Глобальные переменные для drag/click ---
 let mouseDown = false;
 let mouseMoved = false;
+// --- Notifications ---
+let notifications = [];
+function showNotification(message) {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+    // Создать элемент
+    const notif = document.createElement('div');
+    notif.className = 'notification-message';
+    notif.textContent = message;
+    container.appendChild(notif);
+    notifications.push(notif);
+    // Стили для контейнера (позиция: снизу слева, прозрачный фон)
+    container.style.position = 'fixed';
+    container.style.left = '0';
+    container.style.bottom = '0';
+    container.style.right = '';
+    container.style.top = '';
+    container.style.zIndex = '9999';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'flex-start';
+    container.style.pointerEvents = 'none';
+    container.style.background = 'transparent';
+    container.style.padding = '0 0 24px 24px'; // отступ от краёв
+    // Стили для сообщения (белый фон, чёрный текст с opacity, border-radius, margin)
+    notif.style.position = 'relative';
+    notif.style.margin = '8px 0';
+    notif.style.padding = '0';
+    notif.style.background = 'transparent';
+    notif.style.color = 'rgba(0,0,0,0.7)';
+    notif.style.fontSize = '0.95rem';
+    notif.style.fontFamily = 'Castlefire, Arial, sans-serif';
+    notif.style.borderRadius = '';
+    notif.style.boxShadow = '';
+    notif.style.textAlign = 'left';
+    notif.style.minWidth = '120px';
+    notif.style.opacity = '1';
+    notif.style.transition = 'opacity 0.5s';
+    notif.style.userSelect = 'none';
+    notif.style.pointerEvents = 'none';
+    // Удалить через 3 секунды
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        setTimeout(() => {
+            if (container.contains(notif)) container.removeChild(notif);
+            notifications = notifications.filter(n => n !== notif);
+        }, 500);
+    }, 3000);
+}
 // Backend host management
 const colorMap = {
         'EMPTY': '#3CB371',  // серый
@@ -391,6 +440,8 @@ function updateHexData(data) {
         updateCurrentTurnIndicator(); // Update current turn display
         updateUnitButtons();
         renderGrid(); // Trigger render to start animation if needed
+    } else if (data.message) {
+        showNotification(data.message);
     } else {
         console.warn('Received payload does not contain map data:', data);
     }

@@ -9,7 +9,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-
+import ru.bogatov.antiyoyo.server.service.SimpSessionStorage;
 
 
 @Configuration
@@ -26,11 +26,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${spring.rabbitmq.password}")
     String password;
 
-    //private final JwtProvider provider;
+    private final SimpSessionStorage sessionStorage;
 
-//    public WebSocketConfig(JwtProvider provider) {
-//        this.provider = provider;
-//    }
+    public WebSocketConfig(SimpSessionStorage sessionStorage) {
+        this.sessionStorage = sessionStorage;
+    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -64,11 +64,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Bean
     public JoinChannelInterceptor joinChannelInterceptor() {
-        return new JoinChannelInterceptor();
+        return new JoinChannelInterceptor(this.sessionStorage);
     }
 
     @Bean
     public LeaveChannelInterceptor leaveChannelInterceptor() {
-        return new LeaveChannelInterceptor();
+        return new LeaveChannelInterceptor(this.sessionStorage);
     }
 }
