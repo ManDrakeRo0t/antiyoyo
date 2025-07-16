@@ -29,6 +29,14 @@ public class SessionService {
                 .sorted(Comparator.comparingInt(session -> session.getTotalUsers() - session.getConnectedUsers())).toList();
     }
 
+    public SessionResponse getSession(UUID id) {
+        GameSession gameSession = sessionRepository.getSession(id);
+        if (gameSession == null) {
+            return null;
+        }
+        return enrichToResponse(gameSession);
+    }
+
     public void saveSessionToBase(UUID sessionId) {
         GameSession gameSession = sessionRepository.getSession(sessionId);
         gameSession.setLeftSecondsToMove((int) (gameSession.getEndMoveTime().getEpochSecond() - Instant.now().getEpochSecond()));

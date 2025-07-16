@@ -5,6 +5,7 @@
     <title>World Wars</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="game.css">
+    <link rel="icon" type="image/png" href="ui-elements/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
 </head>
@@ -22,6 +23,40 @@
             </button>
         </div>
     </div>
+
+    
+        <div class="modal-container" id="victoryModal" style="display: none;">
+            <div class="modal-title">Victory</div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <img src="ui-elements/icon_victory.png" class="icon-pop-up"/>
+                <div class="pop-up-description">Congradulations!</div>
+                <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
+                    <button class="svg-btn-yellow" id="victoryMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
+                        <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                        <span class="svg-btn-text">Main</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-container" id="watchModal" style="display: none;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <img src="ui-elements/icon_defeat_v2.png" class="icon-pop-up"/>
+                <div class="pop-up-description">You were defeated, but you can watch</div>
+                <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
+                    <button class="svg-btn-yellow" id="watchMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
+                        <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                        <span class="svg-btn-text">Main</span>
+                    </button>
+                </div>
+                <button class="svg-btn-blue" id="watchWatchBtn" onclick="state.spectatorMode = true; document.getElementById('watchModal').style.display = 'none'" style="display: flex; align-items: center; justify-content: center; margin-top: 18px; width: 100%;">
+                    <img src="ui-elements/svg/blue_button.svg" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                    <span class="svg-btn-text">Watch</span>
+                </button>
+            </div>
+        </div>
+    
+    
+
     <div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
         <div style="display: flex; align-items: center; gap: 5px;">
             <div class="balance-icon"></div>
@@ -96,19 +131,26 @@
         <div class="cw-title">Connection success!</div>
         <div class="cw-icons-row">
             <div class="cw-icon-block">
-                <img src="ui-elements/svg/connected-users.svg" class="cw-icon" alt="Users" />
+                <img src="ui-elements/players_v1.png" class="cw-icon" alt="Users" />
                 <div class="cw-users-label">
                     <span id="cwConnectedPlayers">0</span> / <span id="cwTotalPlayers">0</span>
                 </div>
             </div>
             <div class="cw-icon-block">
-                <img src="ui-elements/svg/ranking.svg" class="cw-icon" alt="Ranking" />
+                <img src="ui-elements/planet.png" class="cw-icon" alt="Ranking" />
                 <div class="cw-ranking-label">Ranking</div>
             </div>
         </div>
-        <div id="cwColorBlock" style="display: none;">
-            <div class="cw-select-label">Select your color:</div>
-            <div class="cw-color-circles"></div>
+    </div>
+    <!-- Новый поп-ап выбора цвета -->
+    <div id="colorSelectModal" class="color-select-modal" style="display: none;">
+        <div class="cw-title">Select your color:</div>
+        <div class="cw-color-circles"></div>
+        <div class="color-select-actions">
+            <button id="leaveColorSelectBtn" class="cw-select-btn" onclick="window.location.href='index.html'" style="background: none;">
+                <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
+                <span class="button-text">LEAVE</span>
+            </button>
             <button id="cwSelectBtn" class="cw-select-btn" disabled>
                 <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Select" />
                 <span class="button-text">SELECT</span>

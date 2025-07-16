@@ -17,16 +17,16 @@ public class AuthService {
     public User register(AuthRequest authRequest) {
         return userRepository.saveUser(User.builder()
                 .id(UUID.randomUUID())
-                .login(authRequest.getLogin())
+                .login(authRequest.getLogin().toLowerCase())
                 .rating(0)
                 .totalGames(0)
                 .winGames(0)
-                .password(authRequest.getPassword())
+                .password(authRequest.getPassword().toLowerCase())
                 .build());
     }
 
     public User login(AuthRequest authRequest) {
-        return userRepository.findByLoginAndPassword(authRequest.getLogin(), authRequest.getPassword());
+        return userRepository.findByLoginAndPassword(authRequest.getLogin().toLowerCase(), authRequest.getPassword().toLowerCase());
     }
 
 }

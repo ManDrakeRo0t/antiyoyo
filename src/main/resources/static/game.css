@@ -5,6 +5,14 @@
             font-weight: normal;
             font-style: normal;
         }
+
+        @font-face {
+            font-family: rusty_typewriter;
+                 src: url('fonts/rusty_typewriter.ttf') format('truetype'),
+                 url('fonts/rusty_typewriter.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -586,19 +594,19 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            padding: 32px 24px 24px 24px;
-            background-color: rgba(240, 204, 165, 0.98);
+            padding: 24px;
+            background-color: #fff8dceb;
             border-radius: 24px;
             box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 320px;
-            max-width: 90vw;
+            width: 450px;
+            max-width: 96vw;
         }
         .cw-title {
             font-family: 'Castlefire', sans-serif;
-            font-size: 1.7rem;
+            font-size: 32px;
             color: #222;
             margin-bottom: 10px;
             text-align: center;
@@ -617,31 +625,29 @@
             gap: 2px;
         }
         .cw-icon {
-            width: 48px;
-            height: 48px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 2px;
         }
         .cw-users-label {
-            font-family: 'Castlefire', sans-serif;
-            font-size: 1.2rem;
-            color: #222;
-            background: #fff3;
-            border-radius: 10px;
-            padding: 2px 12px;
-            margin-top: 2px;
+            font-family: 'rusty_typewriter', sans-serif;
+            font-size: 32px;
+            color: #b23c1a;
+            background: #ffe6c0;
+            border-radius: 12px;
+            padding: 2px 18px;
         }
         .cw-ranking-label {
             font-family: 'Castlefire', sans-serif;
-            font-size: 1.2rem;
-            color: #222;
-            background: #fff3;
-            border-radius: 10px;
-            padding: 2px 12px;
-            margin-top: 2px;
+            font-size: 32px;
+            color: #b23c1a;
+            background: #ffe6c0;
+            border-radius: 12px;
+            padding: 2px 18px;
         }
         .cw-select-label {
             font-family: 'Castlefire', sans-serif;
-            font-size: 1.3rem;
+            font-size: 24px;
             color: #222;
             margin: 10px 0 10px 0;
             text-align: center;
@@ -651,11 +657,11 @@
             flex-direction: row;
             gap: 32px;
             justify-content: center;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
         .cw-color-circle {
-            width: 48px;
-            height: 48px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             border: 4px solid #222;
             box-sizing: border-box;
@@ -712,10 +718,9 @@
                 min-width: 0;
                 max-width: 99vw;
                 padding: 12px 4vw 12px 4vw;
-                border-radius: 16px;
             }
             .cw-title {
-                font-size: 1.2rem;
+                font-size: 45px;
             }
             .cw-icons-row {
                 gap: 16px;
@@ -743,3 +748,223 @@
                 font-size: 1rem;
             }
         }
+
+
+
+        /* --- Victory Modal Styles --- */
+        .modal-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .modal-bg.active { display: flex; }
+        .modal-container {
+            background: #fff8dceb;
+            border-radius: 24px;
+            padding: 24px;
+            width: 450px;
+            max-width: 96vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .modal-title {
+            font-family: 'Castlefire';
+            font-size: 50px;
+            text-align: center;
+            color: #222;
+        }
+        .icon-pop-up {
+            width: 145px; 
+            margin-bottom: 18px; 
+        }
+        .pop-up-description {
+            font-family: 'Castlefire', sans-serif; 
+            text-align: center;
+            font-size: 2rem; 
+            color: #222; 
+            margin-bottom: 24px;
+        }
+        .svg-btn-yellow, .svg-btn-blue {
+            width: 320px; 
+            height: 90px;            
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            transform-origin: center center;
+            will-change: transform;
+            background: none;
+            border: none;
+        }
+        .svg-btn-yellow:hover, .svg-btn-blue:hover {
+            transform: scale(1.08);
+            z-index: 2;
+        }
+        .svg-btn-yellow:active, .svg-btn-blue:active {
+            transform: scale(0.92);
+            transition: transform 0.1s ease-out;
+        }
+        .svg-btn-text {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Castlefire';
+            font-size: 45px;
+            letter-spacing: 2px;
+            color: #222;
+            pointer-events: none;
+            user-select: none;
+        }
+/* --- Victory Modal Position --- */
+#victoryModal.modal-container,
+#watchModal.modal-container {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1500;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+    min-width: 340px;
+    max-width: 95vw;
+    margin: 0;
+}
+
+/* Поп-ап выбора цвета снизу */
+.color-select-modal {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    z-index: 1500;
+    background: #fff8dceb;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -4px 24px 0 rgba(0,0,0,0.18);
+    padding: 24px 24px 16px 24px;
+    min-width: 260px;
+    max-width: 650px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+@media (max-width: 600px) {
+    .color-select-modal {
+        min-width: 0;
+        max-width: 99vw;
+        padding: 12px 4vw 8px 4vw;
+        border-radius: 16px 16px 0 0;
+    }
+}
+
+/* --- Color select modal circles --- */
+.color-select-modal .cw-color-circles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.color-select-modal .cw-color-circle {
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s;
+}
+.color-select-modal .cw-color-circle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px #0002;
+    z-index: 2;
+}
+/* Кнопки выбора цвета (leave/select) */
+.color-select-modal .color-select-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+/* --- Кнопки выбора цвета (LEAVE/SELECT) --- */
+.color-select-modal .cw-select-btn {
+    width: 220px;
+    height: 70px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: center center;
+    will-change: transform;
+    background: none;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0;
+}
+.color-select-modal .cw-select-btn:disabled {
+    pointer-events: none;
+    opacity: 0.7;
+    /* Отключаем эффекты */
+    transform: none !important;
+}
+.color-select-modal .cw-select-btn:not(:disabled):hover, .color-select-modal .cw-select-btn:not(:disabled):focus {
+    transform: scale(1.08);
+    z-index: 2;
+}
+.color-select-modal .cw-select-btn:not(:disabled):active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease-out;
+}
+.color-select-modal .button-text {
+    position: absolute;
+    left: 0; top: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Castlefire';
+    font-size: 42px;
+    color: #222;
+    pointer-events: none;
+    letter-spacing: 1px;
+    user-select: none;
+    transform: none !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+/* --- Цветовые кружки --- */
+.color-select-modal .cw-color-circle {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #7a6a4d;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s cubic-bezier(0.4,0,0.2,1), background-color 0.22s;
+    box-shadow: 0 2px 8px #0001;
+    background-clip: padding-box;
+    background-color: inherit;
+}
+.color-select-modal .cw-color-circle.selected {
+    box-shadow: 0 0 0 4px #ffe066, 0 2px 8px rgba(0,0,0,0.12);
+    background-color: #fffbe6;
+    transform: scale(1.18);
+    z-index: 2;
+    border-color: #7a6a4d;
+}
+.color-select-modal .cw-color-circle:hover, .color-select-modal .cw-color-circle:focus {
+    transform: scale(1.18);
+    z-index: 2;
+}
+.color-select-modal .cw-color-circle:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease-out;
+}

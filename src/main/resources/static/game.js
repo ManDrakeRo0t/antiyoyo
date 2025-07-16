@@ -1,55 +1,6 @@
 // --- Глобальные переменные для drag/click ---
 let mouseDown = false;
 let mouseMoved = false;
-// --- Notifications ---
-let notifications = [];
-function showNotification(message) {
-    const container = document.getElementById('notificationContainer');
-    if (!container) return;
-    // Создать элемент
-    const notif = document.createElement('div');
-    notif.className = 'notification-message';
-    notif.textContent = message;
-    container.appendChild(notif);
-    notifications.push(notif);
-    // Стили для контейнера (позиция: снизу слева, прозрачный фон)
-    container.style.position = 'fixed';
-    container.style.left = '0';
-    container.style.bottom = '0';
-    container.style.right = '';
-    container.style.top = '';
-    container.style.zIndex = '9999';
-    container.style.display = 'flex';
-    container.style.flexDirection = 'column';
-    container.style.alignItems = 'flex-start';
-    container.style.pointerEvents = 'none';
-    container.style.background = 'transparent';
-    container.style.padding = '0 0 24px 24px'; // отступ от краёв
-    // Стили для сообщения (белый фон, чёрный текст с opacity, border-radius, margin)
-    notif.style.position = 'relative';
-    notif.style.margin = '8px 0';
-    notif.style.padding = '0';
-    notif.style.background = 'transparent';
-    notif.style.color = 'rgba(0,0,0,0.7)';
-    notif.style.fontSize = '0.95rem';
-    notif.style.fontFamily = 'Castlefire, Arial, sans-serif';
-    notif.style.borderRadius = '';
-    notif.style.boxShadow = '';
-    notif.style.textAlign = 'left';
-    notif.style.minWidth = '120px';
-    notif.style.opacity = '1';
-    notif.style.transition = 'opacity 0.5s';
-    notif.style.userSelect = 'none';
-    notif.style.pointerEvents = 'none';
-    // Удалить через 3 секунды
-    setTimeout(() => {
-        notif.style.opacity = '0';
-        setTimeout(() => {
-            if (container.contains(notif)) container.removeChild(notif);
-            notifications = notifications.filter(n => n !== notif);
-        }, 500);
-    }, 3000);
-}
 // Backend host management
 const colorMap = {
         'EMPTY': '#3CB371',  // серый
@@ -106,6 +57,7 @@ const config = {
 // Map state
 const state = {
     currentColor: null,
+    spectatorMode: false,
     currentPlayer: 0,
     selectedUnit: null,
     editMode: false,
@@ -124,7 +76,6 @@ const state = {
 
 // Color mapping function
 function getColorFromName(colorName) {
-    
     return colorMap[colorName] || config.existingHexColor;
 }
 
@@ -521,7 +472,7 @@ function checkGameStatus() {
     // Check if game has a winner
     if (hexData.winnerId !== null && hexData.winnerId !== undefined) {
         const winnerPlayer = Object.values(players).find(player => player.userId === hexData.winnerId);
-        if (winnerPlayer) {
+        if (winnerPlayer && getUserId() === winnerPlayer.userId) {
             showWinnerMessage(winnerPlayer.color);
             return;
         }
@@ -535,32 +486,19 @@ function checkGameStatus() {
 
 // Show destroyed player message
 function showDestroyedMessage() {
-    const gameStatusOverlay = document.getElementById('gameStatusOverlay');
-    const gameStatusTitle = document.getElementById('gameStatusTitle');
-    
-    gameStatusTitle.textContent = 'Вы уничтожены';
-    gameStatusTitle.className = 'game-status-title destroyed-message';
-    gameStatusOverlay.style.display = 'flex';
+    const watchModal = document.getElementById('watchModal');
+    if (state.spectatorMode) {
+        watchModal.style.display = 'none';
+    } else {
+        watchModal.style.display = 'block';
+    }
+   
 }
 
 // Show winner message
 function showWinnerMessage(winnerColor) {
-    const gameStatusOverlay = document.getElementById('gameStatusOverlay');
-    const gameStatusTitle = document.getElementById('gameStatusTitle');
-    
-    const colorNames = {
-        'YELLOW': 'Желтый',
-        'ORANGE': 'Оранжевый',
-        'RED': 'Красный',
-        'BLUE': 'Синий',
-        'GREEN': 'Зеленый',
-        'PURPLE': 'Фиолетовый'
-    };
-    
-    const colorName = colorNames[winnerColor] || winnerColor;
-    gameStatusTitle.textContent = `Победил ${colorName}`;
-    gameStatusTitle.className = 'game-status-title winner-message';
-    gameStatusOverlay.style.display = 'flex';
+    const victoryModal = document.getElementById('victoryModal');
+    victoryModal.style.display = 'block';
 }
 
 // Hide game status overlay
@@ -586,7 +524,6 @@ function updateCurrentTurnIndicator() {
         return;
     }
     
- 
 
     const colorHex = colorMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
 
@@ -597,12 +534,12 @@ function updateCurrentTurnIndicator() {
 // Show appropriate waiting UI
 function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
     const colorWaitingPanel = document.getElementById('colorWaitingPanel');
-    const cwColorBlock = document.getElementById('cwColorBlock');
+    const colorSelectModal = document.getElementById('colorSelectModal');
     colorWaitingPanel.style.display = 'flex';
     if (currentUserInGame) {
-        cwColorBlock.style.display = 'none';
+        colorSelectModal.style.display = 'none';
     } else {
-        cwColorBlock.style.display = 'block';
+        colorSelectModal.style.display = 'flex';
         updateAvailableColors();
     }
 }
@@ -611,19 +548,20 @@ function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
 function hideWaitingUI() {
     const colorWaitingPanel = document.getElementById('colorWaitingPanel');
     colorWaitingPanel.style.display = 'none';
+    document.getElementById('colorSelectModal').style.display = 'none';
 }
 
 // Update available colors based on players structure
 function updateAvailableColors() {
     if (!hexData.players) return;
-    const colorCirclesContainer = document.querySelector('.cw-color-circles');
+    const colorCirclesContainer = document.querySelector('#colorSelectModal .cw-color-circles');
     colorCirclesContainer.innerHTML = '';
     // Get colors only from players where userId is null (available slots)
     const availableColors = Object.values(hexData.players)
         .filter(player => player.userId === null)
         .map(player => player.color);
     // Color mapping for display
-
+    
     if (availableColors.length === 0) {
         const msg = document.createElement('div');
         msg.textContent = 'Нет доступных цветов';
@@ -671,8 +609,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ sessionId: sessionId, userId: currentUser.id, color: selectedColor })
                 });
                 if (response.ok) {
-                    // Скрыть блок выбора цвета, оставить только счетчик
-                    document.getElementById('cwColorBlock').style.display = 'none';
+                    // Скрыть поп-ап выбора цвета, оставить только счетчик
+                    document.getElementById('colorSelectModal').style.display = 'none';
                 } else {
                     const errorData = await response.json();
                     alert(errorData.error || 'Ошибка присоединения к игре');
@@ -1257,6 +1195,30 @@ init();
 // Initialize unit buttons as disabled
 document.addEventListener('DOMContentLoaded', function() {
     updateUnitButtons();
+    // Добавим эффекты нажатия для цветовых кружков
+    document.querySelector('#colorSelectModal').addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('cw-color-circle')) {
+            e.target.classList.add('active');
+        }
+    });
+    document.querySelector('#colorSelectModal').addEventListener('mouseup', function(e) {
+        if (e.target.classList.contains('cw-color-circle')) {
+            e.target.classList.remove('active');
+        }
+    });
+    document.querySelector('#colorSelectModal').addEventListener('mouseleave', function(e) {
+        document.querySelectorAll('.cw-color-circle.active').forEach(el => el.classList.remove('active'));
+    });
+    document.querySelector('#colorSelectModal').addEventListener('touchstart', function(e) {
+        if (e.target.classList.contains('cw-color-circle')) {
+            e.target.classList.add('active');
+        }
+    }, {passive:true});
+    document.querySelector('#colorSelectModal').addEventListener('touchend', function(e) {
+        if (e.target.classList.contains('cw-color-circle')) {
+            e.target.classList.remove('active');
+        }
+    });
 });
 
 // --- Жесты для мобильных устройств ---
@@ -1405,7 +1367,7 @@ function drawPowerPieChart(powerObj) {
     const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
 
     let startAngle = -Math.PI / 2; // сверху
-
+    // Цвета для секторов
     colors.forEach((color, i) => {
         const value = powerObj[color];
         if (value <= 0) return;
@@ -1534,3 +1496,54 @@ canvas.addEventListener('mouseleave', function(e) {
     mouseMoved = false;
     canvas.style.cursor = 'grab';
 });
+
+// --- Notifications ---
+let notifications = [];
+function showNotification(message) {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+    // Создать элемент
+    const notif = document.createElement('div');
+    notif.className = 'notification-message';
+    notif.textContent = message;
+    container.appendChild(notif);
+    notifications.push(notif);
+    // Стили для контейнера (позиция: снизу слева, прозрачный фон)
+    container.style.position = 'fixed';
+    container.style.left = '0';
+    container.style.bottom = '0';
+    container.style.right = '';
+    container.style.top = '';
+    container.style.zIndex = '9999';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'flex-start';
+    container.style.pointerEvents = 'none';
+    container.style.background = 'transparent';
+    container.style.padding = '0 0 24px 24px'; // отступ от краёв
+    // Стили для сообщения (белый фон, чёрный текст с opacity, border-radius, margin)
+    notif.style.position = 'relative';
+    notif.style.margin = '8px 0';
+    notif.style.padding = '0';
+    notif.style.background = 'transparent';
+    notif.style.color = 'rgba(0,0,0,0.7)';
+    notif.style.fontSize = '0.95rem';
+    notif.style.fontFamily = 'Castlefire, Arial, sans-serif';
+    notif.style.borderRadius = '';
+    notif.style.boxShadow = '';
+    notif.style.textAlign = 'left';
+    notif.style.minWidth = '120px';
+    notif.style.opacity = '1';
+    notif.style.transition = 'opacity 0.5s';
+    notif.style.userSelect = 'none';
+    notif.style.pointerEvents = 'none';
+    // Удалить через 3 секунды
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        setTimeout(() => {
+            if (container.contains(notif)) container.removeChild(notif);
+            notifications = notifications.filter(n => n !== notif);
+        }, 500);
+    }, 3000);
+}
+

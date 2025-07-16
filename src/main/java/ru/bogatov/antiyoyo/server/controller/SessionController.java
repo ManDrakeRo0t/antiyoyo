@@ -44,6 +44,16 @@ public class SessionController {
         return ResponseEntity.ok(gameService.joinSession(request));
     }
 
+    @GetMapping("/{sessionId}")
+    public ResponseEntity<SessionResponse> getSessionById(@PathVariable UUID sessionId) {
+        SessionResponse response = service.getSession(sessionId);
+        if (response == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(response);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<SessionResponse>> getSessions() {
         return ResponseEntity.ok(service.getActiveSessions());

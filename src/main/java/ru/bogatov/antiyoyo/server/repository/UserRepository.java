@@ -32,7 +32,7 @@ public class UserRepository {
     }
 
     public User saveUser(User user) {
-        if (findByLogin(user.getLogin()) != null) {
+        if (findByLogin(user.getLogin().toLowerCase()) != null) {
             throw new RuntimeException("Login already taken");
         }
         return mongoTemplate.save(user);

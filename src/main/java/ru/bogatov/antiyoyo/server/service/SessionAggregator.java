@@ -78,7 +78,7 @@ public class SessionAggregator {
         UUID taskId = UUID.randomUUID();
         taskSchedulingService.scheduleTask(taskId.toString(),
                 new IlluminatePlayerTask(messagingTemplate, sessionRepository, gameSessionId, userId),
-                OffsetDateTime.now().toInstant().plusSeconds(10));
+                OffsetDateTime.now().toInstant().plusSeconds(60));
         userSessionToIlluminateTask.put(new SimpSessionStorage.UserAndSession(userId.toString(), gameSessionId.toString()), taskId);
         log.info("Created illuminate task for {} and session {}", userId, gameSessionId);
     }

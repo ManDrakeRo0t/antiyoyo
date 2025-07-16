@@ -418,6 +418,14 @@ public class MapUtils {
                 session.getAliveUsersId().remove(winner.getUserId().toString());
                 session.setEndTime(OffsetDateTime.now());
             }
+            Player other =  session.getPlayers().values().stream()
+                    .filter(player -> player.getPlace() < 0)
+                    .findFirst().orElse(null);
+            if (other != null) {
+                other.setPlace(2);
+                other.setIlluminated(true);
+                session.getAliveUsersId().remove(other.getUserId().toString());
+            }
             return;
         }
         if (!Objects.equals(playerCount.getFirst(), activePlayers)) {
