@@ -404,57 +404,21 @@ public class MapUtils {
     }
 
     public static void checkPlayersCount(GameSession session) {
-        Pair<Integer, Set<HexColor>> playerCount = getPlayersCount(session.getMap());
-        int activePlayers = Math.toIntExact(session.getPlayers().values()
-                .stream().filter(player -> !player.isIlluminated()).count());
-        if (playerCount.getFirst() == 1) {
-            Set<HexColor> leftColors = playerCount.getSecond();
-            if (leftColors.size() == 1) {
-                Player winner = session.getPlayers().values().stream()
-                        .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
-                        .findFirst().orElse(null);
-                winner.setPlace(1);
-                session.setWinnerId(winner == null ? null : winner.getUserId());
-                session.getAliveUsersId().remove(winner.getUserId().toString());
-                session.setEndTime(OffsetDateTime.now());
+        Pair<Integer, Set<HexColor>> currentActiveColors = getPlayersCount(session.getMap());
+        Set<HexColor> leftColors = currentActiveColors.getSecond();
+        session.getPlayers().values().forEach(player -> {
+            if (!leftColors.contains(player.getColor())) {
+                player.illuminate();
+                session.getAliveUsersId().remove(player.getUserId().toString());
             }
-            Player other =  session.getPlayers().values().stream()
-                    .filter(player -> player.getPlace() < 0)
+        });
+        if (currentActiveColors.getFirst() == 1) {
+            Player winner = session.getPlayers().values().stream()
+                    .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
                     .findFirst().orElse(null);
-            if (other != null) {
-                other.setPlace(2);
-                other.setIlluminated(true);
-                session.getAliveUsersId().remove(other.getUserId().toString());
-            }
-            return;
-        }
-        if (!Objects.equals(playerCount.getFirst(), activePlayers)) {
-            Set<HexColor> leftColors = playerCount.getSecond();
-            if (leftColors.size() == 1) {
-                Player winner = session.getPlayers().values().stream()
-                        .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
-                        .findFirst().orElse(null);
-                winner.setPlace(1);
-                session.setWinnerId(winner == null ? null : winner.getUserId());
-                session.getAliveUsersId().remove(winner.getUserId().toString());
-                session.setEndTime(OffsetDateTime.now());
-                Player other =  session.getPlayers().values().stream()
-                        .filter(player -> player.getPlace() < 0)
-                        .findFirst().orElse(null);
-                if (other != null) {
-                    other.setPlace(2);
-                    other.setIlluminated(true);
-                    session.getAliveUsersId().remove(other.getUserId().toString());
-                }
-            } else {
-                session.getPlayers().values().forEach(player -> {
-                    if (!leftColors.contains(player.getColor())) {
-                        player.setIlluminated(true);
-                        player.setPlace(playerCount.getFirst() + 1);
-                        session.getAliveUsersId().remove(player.getUserId().toString());
-                    }
-                });
-            }
+            session.getAliveUsersId().remove(winner.getUserId().toString());
+            session.setWinnerId(winner.getUserId());
+            session.setEndTime(OffsetDateTime.now());
         }
     }
 

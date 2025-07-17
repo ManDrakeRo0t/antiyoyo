@@ -16,6 +16,7 @@ import ru.bogatov.antiyoyo.server.repository.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.function.UnaryOperator.identity;
 
@@ -48,7 +49,11 @@ public class ProcessRatingJob {
         gameHistory.setSessionName(session.getName());
         gameHistory.setPlayers(new ArrayList<>());
 
-        List<Player> players = session.getPlayers().values().stream().sorted(Comparator.comparing(Player::getPlace)).toList();
+        List<Player> players = session.getPlayers().values().stream().sorted(Comparator.comparing(
+                Player::getIlluminateTime,
+                Comparator.nullsFirst(Comparator.reverseOrder())
+        )).toList();
+
         List<User> users = userRepository.findUsersByIds(players.stream().map(Player::getUserId).toList());
         Map<UUID, User> usersMap = users.stream().collect(Collectors.toMap(User::getId, identity()));
         Map<UUID, Integer> userIdToRating = users
@@ -61,8 +66,10 @@ public class ProcessRatingJob {
         Integer sumRating = users.stream().map(this::getUserRating).reduce(Integer::sum).orElse(0);
         Integer avgRating = sumRating / players.size();
 
-        players.forEach(player -> {
-
+        IntStream.range(0, players.size()).forEach(index -> {
+            int place = index + 1;
+            Player player = players.get(index);
+            log.info("Session {}, Color : {}, Place : {}", session.getId(), player.getColor(), place);
             HistoryPlayerEntry playerEntry = new HistoryPlayerEntry();
 
             int playerBaseDelta;
@@ -71,11 +78,11 @@ public class ProcessRatingJob {
             double proportionFromSum = (double) userIdToRating.get(player.getUserId()) / sumRating;
 
             if (proportionFromMax < RatingConfig.MIDDLE_DELTA) {
-                playerBaseDelta = ratingDeltaTable.get(player.getPlace()).getLow();
+                playerBaseDelta = ratingDeltaTable.get(place).getLow();
             } else if (proportionFromMax > RatingConfig.FAVORITE_DELTA) {
-                playerBaseDelta = ratingDeltaTable.get(player.getPlace()).getFavorite();
+                playerBaseDelta = ratingDeltaTable.get(place).getFavorite();
             } else {
-                playerBaseDelta = ratingDeltaTable.get(player.getPlace()).getMiddle();
+                playerBaseDelta = ratingDeltaTable.get(place).getMiddle();
             }
 
             double deltaK = RatingConfig.GLOBAL_DELTA * Math.abs(proportionFromMax - 1) + 1;
@@ -92,14 +99,14 @@ public class ProcessRatingJob {
             } else {
                 finalDeltaRating = (int) (deltaRating * deltaForDown * RatingConfig.getDeltaMultiplier(getUserRating(user)));
             }
-            if (player.getPlace() == 1) {
+            if (place == 1) {
                 int oldWin = user.getWinGames() == null ? 0 : user.getWinGames();
                 user.setWinGames(oldWin + 1);
             }
             int newRating = Math.max(user.getRating() + finalDeltaRating, 0);
             userRepository.updateUserStats(player.getUserId(), newRating, user.getWinGames(), user.getTotalGames() + 1);
             playerEntry.setRankDelta(finalDeltaRating);
-            playerEntry.setPlace(player.getPlace());
+            playerEntry.setPlace(place);
             playerEntry.setUserId(player.getUserId());
             gameHistory.getPlayers().add(playerEntry);
         });

@@ -88,10 +88,11 @@ public class SessionAggregator {
         UUID taskId = userSessionToIlluminateTask.get(key);
         if (taskId != null) {
             taskSchedulingService.cancelTask(taskId.toString());
+            userSessionToIlluminateTask.remove(key);
+            messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", gameSessionId.toString()), UiMessage.joined(color));
+            log.info("Canceled illuminate task for {} and session {}", userId, gameSessionId);
         }
 
-        messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", gameSessionId.toString()), UiMessage.joined(color));
-        log.info("Canceled illuminate task for {} and session {}", userId, gameSessionId);
     }
 
 }

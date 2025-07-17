@@ -5,6 +5,7 @@ import lombok.Data;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.entity.TownHall;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
@@ -15,6 +16,11 @@ public class Player {
     private HexColor color;
     private TownHall selectedTownHall;
     private boolean isIlluminated;
-    private int place;
+    private OffsetDateTime illuminateTime;
+
+    public void illuminate() {
+        isIlluminated = true;
+        illuminateTime = OffsetDateTime.now();
+    }
 
 }

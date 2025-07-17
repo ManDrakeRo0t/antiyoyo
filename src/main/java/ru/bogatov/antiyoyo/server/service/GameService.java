@@ -19,6 +19,7 @@ import ru.bogatov.antiyoyo.server.domain.GameMap;
 import ru.bogatov.antiyoyo.server.dto.SessionCreateRequest;
 import ru.bogatov.antiyoyo.server.dto.SessionJoinRequest;
 import ru.bogatov.antiyoyo.server.events.GameStartedEvent;
+import ru.bogatov.antiyoyo.server.exception.ErrorUtils;
 import ru.bogatov.antiyoyo.server.job.EndMoveTask;
 import ru.bogatov.antiyoyo.server.job.TaskSchedulingService;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
@@ -110,7 +111,7 @@ public class GameService {
 
     public GameSession joinSession(SessionJoinRequest request) {
         if (sessionRepository.getActiveSessionForUser(request.getUserId().toString()) != null) {
-            throw new IllegalArgumentException("You have ongoing session");
+            ErrorUtils.failWithBadRequest("You have ongoing session");
         }
         GameSession session = sessionRepository.getSession(request.getSessionId());
         Player player = session.getPlayers()
@@ -162,7 +163,7 @@ public class GameService {
         gameMap.setPlayersCount(playerCount.getFirst());
         final int[] counter = {0};
         playerCount.getSecond().forEach(color -> {
-            gameSession.getPlayers().put(counter[0], new Player(null, color, null, false, -1));
+            gameSession.getPlayers().put(counter[0], new Player(null, color, null, false, null));
             counter[0]++;
             MapUtils.getAllRegionsByColor(gameSession.getMap(), color)
                     .forEach(MapUtils::updateTownHallEconomy);

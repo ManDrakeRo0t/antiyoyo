@@ -24,12 +24,11 @@ public class JoinChannelInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         StompCommand command = accessor.getCommand();
 
-        if (StompCommand.SUBSCRIBE == command) {
+        if (StompCommand.SUBSCRIBE == command || StompCommand.SEND == command) {
             final var requestTokenHeader = accessor.getFirstNativeHeader("Authorization");
             final var topic = accessor.getFirstNativeHeader(StompHeaders.DESTINATION);
             log.info("User connected : User Id : {} and Topic : {}", requestTokenHeader, topic);
             simpSessionStorage.userConnected((String) message.getHeaders().get("simpSessionId"),requestTokenHeader, topic.substring(16, 52));
-
         }
 
         return message;

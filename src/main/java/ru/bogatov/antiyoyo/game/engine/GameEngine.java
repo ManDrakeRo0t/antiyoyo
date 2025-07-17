@@ -54,7 +54,9 @@ public class GameEngine {
     }
 
     public void chanePlayerOrder(GameSession session) {
-        session.setCurrentPlayerMove(findNextPlayer(session.getPlayers(), session.getCurrentPlayerMove()));
+        if(!session.getPlayers().values().stream().allMatch(Player::isIlluminated)) {
+            session.setCurrentPlayerMove(findNextPlayer(session.getPlayers(), session.getCurrentPlayerMove()));
+        }
     }
 
     private Integer findNextPlayer(Map<Integer, Player> players, Integer currentPlayer) {

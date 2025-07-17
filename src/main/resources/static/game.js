@@ -58,6 +58,7 @@ const config = {
 const state = {
     currentColor: null,
     spectatorMode: false,
+    gameStarted: false,
     currentPlayer: 0,
     selectedUnit: null,
     editMode: false,
@@ -296,7 +297,7 @@ function updateControlPanelVisibility() {
         }
         droneButtonContainer.style.display = 'none';
     }
-    if (isPlayerTurn()) {
+    if (isPlayerTurn() && state.gameStarted) {
         actionButtonsPanel.style.display = 'flex';
     } else {
         actionButtonsPanel.style.display = 'none';
@@ -375,10 +376,10 @@ function updateBalanceDisplay() {
 function updateHexData(data) {
     if (!data) return;
     
-  
 
     if (data.map) {
         hexData = data;
+        state.gameStarted = data.started
         powerByColor = data.powerByColor || null;
         // Запускаем обновление таймера при каждом новом событии
         if (data.endMoveTime) {
@@ -524,7 +525,10 @@ function updateCurrentTurnIndicator() {
         return;
     }
     
-
+    if (!state.gameStarted) {
+            currentTurnIndicator.style.display = 'none';
+            return;
+    }
     const colorHex = colorMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
 
     currentTurnIconDiv.style.backgroundColor = colorHex; /* Set background color for the flag icon via mask */
@@ -613,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('colorSelectModal').style.display = 'none';
                 } else {
                     const errorData = await response.json();
-                    alert(errorData.error || 'Ошибка присоединения к игре');
+                    alert(errorData.message || 'Ошибка присоединения к игре');
                     selectBtn.disabled = false;
                     selectBtn.querySelector('.button-text').textContent = 'SELECT';
                 }

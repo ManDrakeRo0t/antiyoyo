@@ -41,9 +41,7 @@ public class IlluminatePlayerTask implements Runnable {
             }
 
             log.info("Player illuminated : {} for session {}", player.getColor(), gameSession.getId());
-            player.setIlluminated(true);
-            Pair<Integer, Set<HexColor>> playerCount = getPlayersCount(gameSession.getMap());
-            player.setPlace(playerCount.getFirst());
+            player.illuminate();
             gameSession.getAliveUsersId().remove(userId.toString());
             messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", gameSession.getId().toString()), UiMessage.illuminated(player.getColor()));
         }
