@@ -69,7 +69,7 @@ public class ProcessRatingJob {
         IntStream.range(0, players.size()).forEach(index -> {
             int place = index + 1;
             Player player = players.get(index);
-            log.info("Session {}, Color : {}, Place : {}", session.getId(), player.getColor(), place);
+            log.info("Session {}, Color : {}, Place : {}, Time : {}", session.getId(), player.getColor(), place, player.getIlluminateTime());
             HistoryPlayerEntry playerEntry = new HistoryPlayerEntry();
 
             int playerBaseDelta;

@@ -408,8 +408,10 @@ public class MapUtils {
         Set<HexColor> leftColors = currentActiveColors.getSecond();
         session.getPlayers().values().forEach(player -> {
             if (!leftColors.contains(player.getColor())) {
-                player.illuminate();
-                session.getAliveUsersId().remove(player.getUserId().toString());
+                if (!player.isIlluminated()) {
+                    player.illuminate();
+                    session.getAliveUsersId().remove(player.getUserId().toString());
+                }
             }
         });
         if (currentActiveColors.getFirst() == 1) {

@@ -36,7 +36,7 @@ public class SessionAggregator {
     @EventListener
     @Async("gameTaskExecutor")
     public void handleUserConnected(UserConnectedEvent event) {
-        log.info("Aggregator handle joined: u {}, s {}", event.getUserId(), event.getGameSessionId());
+        //log.info("Aggregator handle joined: u {}, s {}", event.getUserId(), event.getGameSessionId());
         UUID userId = UUID.fromString(event.getUserId());
         sessionRepository.getSession(UUID.fromString(event.getGameSessionId()))
                 .getPlayers()
