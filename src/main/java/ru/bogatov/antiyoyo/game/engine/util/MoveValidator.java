@@ -6,6 +6,7 @@ import ru.bogatov.antiyoyo.game.model.Move;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.entity.Drone;
+import ru.bogatov.antiyoyo.game.model.entity.Field;
 import ru.bogatov.antiyoyo.game.model.entity.Interactable;
 
 import java.util.Objects;
@@ -54,11 +55,18 @@ public class MoveValidator {
         Set<Hex> availableHexes;
 
         if (from == null) { // Новая покупка
-            availableHexes = HexCalculator.getAvailableHexesForNewEntity(
-                    gameSession.getPlayers().get(gameSession.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
-                    gameSession,
-                    gameSession.getPlayers().get(move.getPlayer()).getColor(),
-                    (Interactable) EntityUtils.fromType(move.getEntityType()));
+            if (EntityUtils.fromType(move.getEntityType()) instanceof Field) {
+                availableHexes = HexCalculator.getAvailableHexesForField(
+                        gameSession.getPlayers().get(gameSession.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
+                        gameSession,
+                        gameSession.getPlayers().get(move.getPlayer()).getColor());
+            } else {
+                availableHexes = HexCalculator.getAvailableHexesForNewEntity(
+                        gameSession.getPlayers().get(gameSession.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
+                        gameSession,
+                        gameSession.getPlayers().get(move.getPlayer()).getColor(),
+                        (Interactable) EntityUtils.fromType(move.getEntityType()));
+            }
         } else { // Передвижение
             availableHexes = HexCalculator.getAvailableHexesForExistingEntity(
                     gameSession.getMap(), from, gameSession.getPlayers().get(move.getPlayer()).getColor()

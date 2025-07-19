@@ -257,6 +257,7 @@
         #undoBtn { background-image: url('ui-elements/undo-move.svg'); }
         #endTurnBtn { background-image: url('ui-elements/end-turn.svg'); }
         #DRONE_Btn { background-image: url('images/drone.png'); }
+        #DESTROY_Btn { background-image: url('images/demolition_btn.png'); }
 
         #balanceDisplay {
             position: fixed;

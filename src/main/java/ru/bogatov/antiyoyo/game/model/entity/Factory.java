@@ -29,7 +29,7 @@ public class Factory extends Entity implements Sellable, Interactable {
 
     @Override
     public Currency getPrice(Integer unitsCount) {
-        return Currency.of(0,4 + unitsCount  ,2 + unitsCount);
+        return Currency.of(0,4 + (unitsCount / 2)  ,2 + (unitsCount / 2));
     }
 
     @Override

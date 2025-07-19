@@ -125,10 +125,16 @@ public class GameEngine {
 
         if (event.getHex() == null && event.getEntityType() != null) {
             if (session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall() != null) {
-                HexCalculator.getAvailableHexesForNewEntity(session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid(),
-                        session, selfColor, (Interactable) EntityUtils.fromType(event.getEntityType())).forEach(hex -> {
-                    session.getMap().get(hex.getVector()).setIsAvailable(true);
-                });
+                UUID townHallId = session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid();
+                Entity entity = EntityUtils.fromType(event.getEntityType());
+                if (entity instanceof Interactable interactable) {
+                    HexCalculator.getAvailableHexesForNewEntity(townHallId, session, selfColor, interactable)
+                            .forEach(hex -> session.getMap().get(hex.getVector()).setIsAvailable(true));
+                } else if (entity instanceof Field && Boolean.TRUE.equals(session.getSetting().getDemolition())) {
+                        HexCalculator.getAvailableHexesForField(townHallId, session, selfColor)
+                                .forEach(hex -> session.getMap().get(hex.getVector()).setIsAvailable(true));
+                }
+
             }
         }
     }
@@ -145,6 +151,7 @@ public class GameEngine {
 
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
+        Entity oldEntity = to.getEntity();
         HexColor selfColor = session.getPlayers().get(move.getPlayer()).getColor();
         boolean skipMove = false;
 
@@ -185,6 +192,22 @@ public class GameEngine {
             updateTownHallEconomy(session.getMap(), townHall);
             MapUtils.updatePricesForTownHall(findTownHallWithRegion(session.getMap(), selfColor, townHall));
             MapUtils.updateDronesFlag(session, selfColor);
+
+            if (move.getEntityType() == EntityType.FIELD && townHall.getEntity() instanceof TownHall th) {
+               if (oldEntity instanceof Sellable sellable) {
+                   Currency price;
+                   if (sellable instanceof Factory f) {
+                       var region = MapUtils.findTownHallWithRegion(session.getMap(), selfColor, townHall);
+                       int count = (int) region.getSecond()
+                               .stream().filter(hex -> hex.getEntity() instanceof Factory)
+                               .count();
+                       price = sellable.getPrice(count);
+                   } else {
+                       price = sellable.getPrice(0);
+                   }
+                   th.getStorage().add(price.split(2));
+               }
+            }
         }
 
     }
@@ -221,7 +244,7 @@ public class GameEngine {
                 ((Drone) newEntity).setOwnerColor(newColor);
             } else {
                 if (dieableUnits.contains(oldEntity.getClass())) {
-                    hex.setEntity(new Fire(1));
+                    hex.setEntity(new Fire(2));
                 } else {
                     hex.setEntity(new Fire());
                 }

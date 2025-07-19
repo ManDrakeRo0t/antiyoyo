@@ -26,7 +26,7 @@ public class Forest extends Entity implements Farmable {
     @Override
     public Currency getFarm(Set<Entity> neighbors) {
         if (neighbors.stream().anyMatch(entity -> entity instanceof ForestFarm)) {
-            return Currency.of(0,3,0);
+            return Currency.of(0,5,0);
         }
         return Currency.EMPTY.clone();
     }

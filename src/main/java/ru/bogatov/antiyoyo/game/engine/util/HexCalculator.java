@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.buildings;
 import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.dieableUnits;
 
 @Slf4j
@@ -32,6 +33,16 @@ public class HexCalculator {
                 .orElse(null);
     }
 
+    public static Set<Hex> getAvailableHexesForField(UUID townHallId, GameSession gameSession, HexColor selfColor) {
+        Hex townHall = foundTownHallById(gameSession.getMap(), townHallId);
+        if (townHall == null) {
+            throw new IllegalArgumentException("No townHall");
+        }
+        Pair<TownHall, Set<Hex>> region = MapUtils.findTownHallWithRegion(gameSession.getMap(), selfColor, townHall);
+
+        return region.getSecond().stream().filter(hex -> buildings.contains(hex.getEntity().getClass())).collect(Collectors.toSet());
+    }
+
     public static Set<Hex> getAvailableHexesForNewEntity(UUID townHallId,
                                                              GameSession gameSession,
                                                              HexColor selfColor,
@@ -49,16 +60,6 @@ public class HexCalculator {
         }
         Pair<TownHall, Set<Hex>> region = MapUtils.findTownHallWithRegion(gameSession.getMap(), selfColor, townHall);
 
-//        Set<Hex> available = region.getSecond().stream()
-//                .flatMap(hex -> addNeiboursForAttack(hex, map, entity.getAttackRadius()))
-//                .filter(hex -> canMoveToEnemyHex(hex, selfColor, entity))
-//                .filter(hex -> !(hex.getEntity() instanceof Farmable))
-//                .collect(Collectors.toSet());
-//
-//        Set<Hex> selfAvailable = region.getSecond().stream()
-//                .filter(hex -> canMoveToSelfHex(hex, selfColor, entity))
-//                .collect(Collectors.toSet());
-        ;
         Set<Hex> available = region.getSecond().stream()
                 .flatMap(hex -> addNeiboursForAttack(hex, gameSession.getMap(), entity.getAttackRadius()))
                 .filter(hex -> MapUtils.hasInNeighbors(gameSession.getMap(), hex, selfColor, shouldHaveInNeighbors))

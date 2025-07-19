@@ -35,7 +35,7 @@ public class UnitStageThree extends Entity implements Sellable, Interactable {
 
     @Override
     public Integer getMoveRadius() {
-        return 2;
+        return 3;
     }
 
 }

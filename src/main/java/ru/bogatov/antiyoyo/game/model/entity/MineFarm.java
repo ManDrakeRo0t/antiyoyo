@@ -14,7 +14,7 @@ public class MineFarm extends Entity implements Interactable, Sellable {
 
     @Override
     public Currency getStorageChanges() {
-        return Currency.of(0, 0,1);
+        return Currency.of(0, 0,2);
     }
 
     @Override
@@ -34,6 +34,6 @@ public class MineFarm extends Entity implements Interactable, Sellable {
 
     @Override
     public Currency getPrice(Integer unitsCount) {
-        return Currency.of(10,1,2);
+        return Currency.of(10,0,0);
     }
 }

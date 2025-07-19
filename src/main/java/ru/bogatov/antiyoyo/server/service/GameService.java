@@ -89,6 +89,7 @@ public class GameService {
         setting.setSecondsToMove(request.getSecondToMove());
         setting.setUndoMove(request.getUndoMove());
         setting.setCut(request.getCut());
+        setting.setDemolition(request.getDemolition());
         return setting;
     }
 

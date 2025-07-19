@@ -406,6 +406,7 @@
             if (sess.setting.undoMove) { center.innerHTML += `<img src="images/undo.png" title="Undo" class="session-settings-icon">`; hasSetting = true; }
             if (sess.setting.grave) { center.innerHTML += `<img src="images/grave.png" title="Grave" class="session-settings-icon">`; hasSetting = true; }
             if (sess.setting.cut) { center.innerHTML += `<img src="images/cut.png" title="Cut" class="session-settings-icon">`; hasSetting = true; }
+            if (sess.setting.demolition) { center.innerHTML += `<img src="images/demolition.png" title="Demolition" class="session-settings-icon">`; hasSetting = true; }
             if (!hasSetting) center.innerHTML = '<span class="session-ellipsis">...</span>';
             // Справа: только значение игроков
             const right = document.createElement('div');

@@ -48,6 +48,12 @@ public class MapUtils {
             Tank.class
     );
 
+    public static final Set<Class<? extends Entity>> buildings = Set.of(
+            Factory.class,
+            ForestFarm.class,
+            MineFarm.class
+    );
+
     public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
         map.values().forEach(hex -> {
             if (selfColor == hex.getColor() && hex.getEntity() instanceof Interactable interactable) {
@@ -190,7 +196,7 @@ public class MapUtils {
     }
 
     public static boolean hasInNeighbors(Map<Vector3, Hex> map, Hex hex, HexColor color, Set<Class<? extends Entity>> classSet) {
-        if (classSet.size() == 0) {
+        if (classSet.isEmpty()) {
             return !getNearestNeighborsWithSameColor(map, color, hex).isEmpty();
         }
         return getNearestNeighborsWithSameColor(map, color, hex)

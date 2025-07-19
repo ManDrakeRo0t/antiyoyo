@@ -179,7 +179,7 @@
         }
         .input-wrapper {
             position: relative;
-            width: 320px;
+            width: 100%;
             height: 60px;
         }
         .input-bg {
@@ -301,7 +301,7 @@
 
 
             .map-list { gap: 18px; } /*Отступы между картами в контейнере*/
-            .map-name-field, .input-wrapper { width: 480px; height: 100px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-field, .input-wrapper { width: 100%; height: 100px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
             .map-name-text { font-size: 50px; } /*Размер текста названия карты*/
             .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
             .svg-btn-search { width: 90px; height: 90px; } /*Кнопка превью у карты*/
@@ -336,7 +336,7 @@
 
 
             .map-list { gap: 12px; } /*Отступы между картами в контейнере*/
-            .map-name-field, .input-wrapper { width: 460px; height: 95px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-field, .input-wrapper { width: 100%; height: 95px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
             .map-name-text { font-size: 45px; } /*Размер текста названия карты*/
             .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
             .svg-btn-search { width: 80px; height: 80px; } /*Кнопка превью у карты*/
@@ -371,7 +371,7 @@
 
             .map-list { gap: 2px; } /*Отступы между картами в контейнере*/
             
-            .map-name-field, .input-wrapper { width: 280px; height: 70px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
+            .map-name-field, .input-wrapper { width: 100%; height: 70px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
             .map-name-text { font-size: 35px; } /*Размер текста названия карты*/
             .map-row { gap: 6px; } /*Отступ между названием и кнопкой превью*/
             .svg-btn-search { width: 60px; height: 60px; } /*Кнопка превью у карты*/
@@ -453,6 +453,10 @@
                     <button type="button" class="onoff-btn" id="cutBtn" onclick="toggleOnOff(this)">
                         <img src="ui-elements/svg/button_off.svg" alt="onoff" id="cutBtnImg">
                         <img src="images/cut.png" class="onoff-icon" alt="cut">
+                    </button>
+                    <button type="button" class="onoff-btn" id="demolitionBtn" onclick="toggleOnOff(this)">
+                        <img src="ui-elements/svg/button_off.svg" alt="onoff" id="cutBtnImg">
+                        <img src="images/demolition.png" class="onoff-icon" alt="cut">
                     </button>
                 </div>
             </div>
@@ -869,9 +873,10 @@ function showSettingsModal(mapId, mapName) {
     document.getElementById('secondToMove').value = '';
     document.getElementById('farmsDensity').value = '';
     // ON/OFF кнопки: все выключены по умолчанию
-    setOnOff('graveBtn', false);
-    setOnOff('undoBtn', false);
+    setOnOff('graveBtn', true);
+    setOnOff('undoBtn', true);
     setOnOff('cutBtn', false);
+    setOnOff('demolitionBtn', false);
 }
 function closeSettingsModal() {
     document.getElementById('settingsModal').classList.remove('active');
@@ -909,7 +914,8 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
         grave: document.getElementById('graveBtn').classList.contains('active'),
         farmsDensity: parseInt(document.getElementById('farmsDensity').value),
         undoMove: document.getElementById('undoBtn').classList.contains('active'),
-        cut: document.getElementById('cutBtn').classList.contains('active')
+        cut: document.getElementById('cutBtn').classList.contains('active'),
+        demolition: document.getElementById('demolitionBtn').classList.contains('active'),
     };
     try {
         const response = await fetch(`${getBackendUrl()}/api/sessions`, {

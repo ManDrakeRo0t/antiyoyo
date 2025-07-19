@@ -62,6 +62,7 @@ const state = {
     currentPlayer: 0,
     selectedUnit: null,
     editMode: false,
+    settings: null,
     offsetX: 0,
     offsetY: 0,
     isDragging: false,
@@ -375,11 +376,12 @@ function updateBalanceDisplay() {
 // Update hex data with message filtering
 function updateHexData(data) {
     if (!data) return;
-    
+
 
     if (data.map) {
         hexData = data;
         state.gameStarted = data.started
+        state.settings = data.setting;
         powerByColor = data.powerByColor || null;
         // Запускаем обновление таймера при каждом новом событии
         if (data.endMoveTime) {
@@ -1004,6 +1006,17 @@ function updateUnitButtons() {
             }
         }
     });
+
+    if (state.settings.demolition) {
+        document.getElementById('DESTROY_Btn').disabled = false
+        document.getElementById('DESTROY_Btn').style.display = 'block'
+    } else {
+        document.getElementById('DESTROY_Btn').disabled = true
+        document.getElementById('DESTROY_Btn').style.display = 'none'
+    }
+
+
+
 }
 
 // Function to send undo move message
