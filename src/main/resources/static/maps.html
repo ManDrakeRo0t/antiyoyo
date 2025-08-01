@@ -126,6 +126,11 @@
         .create-button-preview {
             margin-top: 24px;
         }
+        .map-ellipsis {
+            font-family: rusty_typewriter;
+            font-size: 32px;
+            color: #b23c1a;
+        }
         @media (min-width: 390px) {
             .logo { width: 180px; margin-top: 10px; margin-bottom: 10px; }
             .title { font-size: 50px; }
@@ -253,7 +258,7 @@
         </div>
     </div>
     <div id="mapsList" class="container-into-container">
-        Loading maps...
+        <div class="map-ellipsis" style="text-align:center;font-size:32px;margin-top:12px;">Loading maps...</div>
     </div>
 </div>
     
@@ -366,10 +371,10 @@ async function loadMaps() {
             maps = await response.json();
             displayMaps();
         } else {
-            document.getElementById('mapsList').innerHTML = 'Ошибка загрузки карт';
+            document.getElementById('mapsList').innerHTML = '<div class="map-ellipsis" style="text-align:center;font-size:32px;margin-top:12px;">Error load maps</div>';
         }
     } catch (error) {
-        document.getElementById('mapsList').innerHTML = 'Ошибка соединения с сервером';
+        document.getElementById('mapsList').innerHTML = '<div class="map-ellipsis" style="text-align:center;font-size:32px;margin-top:12px;">Internal server error</div>';
     }
 }
 
