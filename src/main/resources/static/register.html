@@ -56,20 +56,20 @@
     <img src="ui-elements/logo.png" alt="logo" class="logo">
     <div class="title">World Wars</div>
     <div class="greeting">Registration</div>
-    <form class="form">
+    <form class="form" id="registerForm">
         <div class="input-wrapper-new">
             <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="login-bg">
-            <input type="text" id="loginInput" class="input-field-new" placeholder="Name" autocomplete="off">
+            <input type="text" id="loginInput" minlength="3" oninput="this.value=this.value.replace(/[^A-Za-z\s]/g,'');" required maxlength="10" class="input-field-new" placeholder="Name" autocomplete="off">
         </div>
         <div class="input-wrapper-new">
             <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="password-bg">
-            <input type="password" id="passwordInput" class="input-field-new" placeholder="Password" autocomplete="new-password">
+            <input type="password" id="passwordInput" minlength="3" required class="input-field-new" placeholder="Password" autocomplete="new-password">
         </div>
         <div class="buttons">
-            <div class="svg-btn" onclick="handleRegisterClick()">
-                <img src="ui-elements/svg/yellow_button.svg" alt="ENTER" style="width:100%;height:100%;">
+            <button type="submit" class="svg-btn">
+                <img src="ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;">
                 <span class="svg-btn-text">SING UP</span>
-            </div>
+            </button>
             <div class="svg-btn" onclick="window.location.href='login.html'">
                 <img src="ui-elements/svg/red_button.svg" alt="SIGN UP" style="width:100%;height:100%;">
                 <span class="svg-btn-text">BACK</span>
@@ -78,7 +78,10 @@
     </form>
     <script src="common.js" ></script>
     <script>
-        async function handleRegisterClick() {
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
             const login = document.getElementById('loginInput').value;
             const password = document.getElementById('passwordInput').value;
             try {
@@ -103,7 +106,9 @@
                 console.error('Auth error:', error);
                 alert('Connection error');
             }
-        }
+
+        })
+
     </script>
 </body>
 </html> 

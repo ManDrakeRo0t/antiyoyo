@@ -33,6 +33,7 @@ public class GameEngine {
 
         applyMove(session, move);
         MapUtils.restoreAvailability(session);
+        MapUtils.updateGlue(session);
     }
 
     public void endMove(GameSession session) {
@@ -94,10 +95,8 @@ public class GameEngine {
     }
 
     public void handleBeforeMoveClick(GameSession session, GameEvent event) {
-        session.getMap().values().forEach(hex -> hex.setIsAvailable(false));
-
+        session.getMap().values().forEach(h -> h.setGlue(false));
         HexColor selfColor = session.getPlayers().get(session.getCurrentPlayerMove()).getColor();
-
 
         if (event.getHex() == null || !HexCalculator.canInteractWithHex(session.getMap().get(event.getHex().getVector()), selfColor)) {
             if (event.getEntityType() == null) {
@@ -112,7 +111,16 @@ public class GameEngine {
             Hex hex = session.getMap().get(event.getHex().getVector());
             Entity entity = hex.getEntity();
 
+            session.getMap()
+                    .values()
+                    .stream()
+                    .filter(h ->  h.getColor() != selfColor)
+                    .forEach(h -> h.setIsAvailable(false));
+
+            result.getSecond().forEach(h -> h.setGlue(true));
+
             if (entity instanceof Interactable interactable && interactable.getClass() != TownHall.class) {
+                session.getMap().values().forEach(h -> h.setIsAvailable(false));
                 if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class) {
                     MapUtils.showDefenceForColor(session.getMap(), selfColor);
                 } else {
@@ -124,6 +132,7 @@ public class GameEngine {
         }
 
         if (event.getHex() == null && event.getEntityType() != null) {
+            session.getMap().values().forEach(h -> h.setIsAvailable(false));
             if (session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall() != null) {
                 UUID townHallId = session.getPlayers().get(session.getCurrentPlayerMove()).getSelectedTownHall().getUuid();
                 Entity entity = EntityUtils.fromType(event.getEntityType());

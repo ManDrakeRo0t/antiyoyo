@@ -21,4 +21,5 @@ public class HexSnapshot {
     Integer defenseLevel;
     Boolean isMoved;
     Integer fireStage;
+    Boolean glue;
 }

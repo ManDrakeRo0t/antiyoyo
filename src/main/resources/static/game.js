@@ -21,7 +21,12 @@ function getWebSocketUrl() {
     return `ws://${backendHost}:8080/ws`;
 }
 
-
+const selectableUnits = new Set();
+            selectableUnits.add("UNIT_1");
+            selectableUnits.add("UNIT_2");
+            selectableUnits.add("UNIT_3");
+            selectableUnits.add("TANK");
+            selectableUnits.add("DRONE");
 
 // WebSocket and STOMP client variables
 let stompClient = null;
@@ -35,7 +40,9 @@ let isGameReady = false;
 // Canvas setup
 const canvas = document.getElementById('hexCanvas');
 const ctx = canvas.getContext('2d');
-
+ctx.globalCompositeOperation = "lighter";
+ctx.shadowOffsetX = 25;
+ctx.shadowOffsetY = 25;
 // Configuration
 const config = {
     hexSize: 30,
@@ -50,7 +57,9 @@ const config = {
     selectedHexBorderWidth: 3,     // Border width for selected hex
     // Grass pattern colors - different shades of green
     grassColors: [
-        '#3CB371'
+        '#3CB371',
+        '#4bd187',
+        '#3bbf76'
     ]
 };
 
@@ -89,8 +98,12 @@ function getRandomGrassColor() {
 
 // Function to get deterministic grass color based on hex coordinates
 function getGrassColorForHex(hex) {
-    // Use hex coordinates to generate a consistent color
-    const hash = Math.abs(hex.vector.x * 73856093 + hex.vector.y * 19349663 + hex.vector.z * 83492791);
+    const { x, y, z } = hex.vector;
+
+    // Улучшенный хеш: умножение на большие простые числа + XOR
+    let hash = (x * 0x8da6b343) ^ (y * 0xd8163841) ^ (z * 0xcb1ab31f);
+    hash = Math.abs(hash);
+
     const index = hash % config.grassColors.length;
     return config.grassColors[index];
 }
@@ -99,6 +112,10 @@ function getGrassColorForHex(hex) {
 function drawTerritoryBorders(x, y, size, hex, hexData) {
     if (!hex.color || hex.color === 'EMPTY') return;
 
+     if (hex.glue) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "gold";
+      }
     // Порядок соседей для вашей системы!
     const neighbors = [
         { x: hex.vector.x,     y: hex.vector.y + 1, z: hex.vector.z - 1 }, // 0: top
@@ -136,6 +153,7 @@ function drawTerritoryBorders(x, y, size, hex, hexData) {
             const y2 = y + (size * 0.95) * Math.sin(angle2);
 
             ctx.beginPath();
+
             // if (i == 0) {
             //     ctx.strokeStyle = "#ffffff";
             // } else if (i == 1) {
@@ -146,8 +164,11 @@ function drawTerritoryBorders(x, y, size, hex, hexData) {
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.stroke();
+
         }
     }
+
+    ctx.shadowBlur = 0;
 }
 
 // Add image preloading
@@ -872,6 +893,7 @@ function handleCanvasClick(e) {
     } else {
         sendClickBeforeMove(null, null);
         state.selectedHex = null
+        state.selectedUnit = null
     }
 }
 
@@ -926,8 +948,12 @@ function onHexClick(cubicCoords) {
                 (clickedHex.color == state.currentColor && (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) || clickedHex.entity.ownerColor == state.currentColor) 
                 && state.selectedHex == null
             ) {
-            // Select the new hex
-            state.selectedHex = cubicCoords;
+
+            if (selectableUnits.has(clickedHex.entity.type)) {
+                 state.selectedHex = cubicCoords;
+            }
+
+
         }
         
         renderGrid();
@@ -1055,6 +1081,7 @@ function handleKeyDown(e) {
     
     if (e.key === 'Escape') {
         state.selectedHex = null;
+        state.selectedUnit = null;
         sendClickBeforeMove(null, null);
     }
 }
@@ -1076,18 +1103,19 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
     
     // Fill with grass pattern color
     grassColor = null
-    if (state.selectedHex && isInteractionAllowed()) {
+    if ((state.selectedHex || state.selectedUnit) && isInteractionAllowed()) {
         grassColor = getColorFromName(hex.color)
     } else {
         grassColor = getGrassColorForHex(hex);
     }
 
     if (hex.isAvailable === false) {
-        ctx.globalAlpha = 0.3;
+        ctx.globalAlpha = 0.5;
     }
     ctx.fillStyle = grassColor;
     ctx.fill();
     ctx.globalAlpha = 1.0;
+
 
     // Draw entity icon if present
     if (hex.entity && hex.entity.type) {
@@ -1167,6 +1195,7 @@ function drawHexagonBorders(x, y, size, hex, hexData) {
     if (isSelected) {
         // Selected hex border - draw full border
         ctx.beginPath();
+
         for (let i = 0; i < 6; i++) {
             const angle = 2 * Math.PI / 6 * i;
             const xi = x + size * Math.cos(angle);
@@ -1177,6 +1206,7 @@ function drawHexagonBorders(x, y, size, hex, hexData) {
                 ctx.lineTo(xi, yi);
             }
         }
+
         ctx.closePath();
         
         ctx.lineWidth = config.selectedHexBorderWidth;
@@ -1198,6 +1228,7 @@ function drawHexagonBorders(x, y, size, hex, hexData) {
                 ctx.lineTo(xi, yi);
             }
         }
+
         ctx.closePath();
         
         ctx.lineWidth = 3; // Thicker border for unavailable areas
@@ -1561,6 +1592,6 @@ function showNotification(message) {
             if (container.contains(notif)) container.removeChild(notif);
             notifications = notifications.filter(n => n !== notif);
         }, 500);
-    }, 3000);
+    }, 6000);
 }
 

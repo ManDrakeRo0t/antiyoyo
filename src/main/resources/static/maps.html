@@ -323,17 +323,13 @@
         <div class="input-wrapper-new">
             <img src="ui-elements/svg/enter_field.svg" class="session-id-bg" alt="session-bg">
             <input type="text" class="input-field-new" id="sessionId" readonly value="SESSION_ID">
-            <!-- Кнопка копирования -->
-            <button id="copySessionIdBtn" type="button" style="position:absolute; right:-54px; top:50%; transform:translateY(-50%); width:48px; height:48px; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                <img src="ui-elements/svg/circle_button_for_color.svg" alt="Copy" style="width:44px; height:44px;">
-            </button>
         </div>
         <div class="created-actions">
             <div class="svg-btn" onclick="window.location.href='index.html'">
                 <img src="ui-elements/svg/red_button.svg" alt="MAIN" style="width:100%;height:100%;">
                 <span class="svg-btn-text">MAIN</span>
             </div>
-            <div class="svg-btn" onclick="window.location.href='play.html'"> <!-- onclick="goPlayWithSessionId() - На мобилке не робит -->
+            <div class="svg-btn" onclick="goPlayWithSessionId()">
                 <img src="ui-elements/svg/yellow_button.svg" alt="PLAY" style="width:100%;height:100%;">
                 <span class="svg-btn-text">PLAY</span>
             </div>
@@ -832,22 +828,8 @@ function fallbackCopyTextToClipboard(text) {
     } catch (err) {}
     document.body.removeChild(textArea);
 }
-// Навешиваем обработчик на кнопку копирования после загрузки DOM
- document.addEventListener('DOMContentLoaded', function() {
-    const playBtn = document.querySelector('#createdModal .svg-btn'); //была yellow
-    if (playBtn) {
-        playBtn.onclick = goPlayWithSessionId;
-    }
-    const copyBtn = document.getElementById('copySessionIdBtn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', copySessionId);
-        // Для мобильных: tap
-        copyBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            copySessionId();
-        });
-    }
-});
+
+
 function connectSession() {
     const sessionId = document.getElementById('sessionId').value;
     window.location.href = `game.html?sessionId=${sessionId}`;

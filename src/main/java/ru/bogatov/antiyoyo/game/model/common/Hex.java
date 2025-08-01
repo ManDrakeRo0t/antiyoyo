@@ -25,6 +25,7 @@ public class Hex {
     @JsonDeserialize(using = IgnoreDeserializer.class)
     private Entity entity;
     private Integer defenseLevel;
+    private Boolean glue;
     private Boolean displayDefence;
 
 }

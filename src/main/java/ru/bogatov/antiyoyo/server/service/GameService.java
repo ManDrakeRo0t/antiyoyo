@@ -153,6 +153,7 @@ public class GameService {
             map.put(h.getVector(), Hex.builder()
                     .color(h.getColor())
                     .isAvailable(true)
+                    .glue(false)
                     .vector(h.getVector())
                     .displayDefence(false)
                     .defenseLevel(0)

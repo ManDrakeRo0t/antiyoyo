@@ -44,7 +44,8 @@ public class SnapshotUtils {
                 hex.getEntity() instanceof TownHall townHall ? townHall.getDronesLimit() : null,
                 hex.getDefenseLevel(),
                 hex.getEntity().getMovedOnThisTurn(),
-                hex.getEntity() instanceof Fire fire ? fire.getStage() : null
+                hex.getEntity() instanceof Fire fire ? fire.getStage() : null,
+                hex.getGlue()
         );
     }
 
@@ -55,6 +56,7 @@ public class SnapshotUtils {
                 snapshot.getColor(),
                 EntityUtils.fromType(snapshot.getEntityType()),
                 snapshot.getDefenseLevel(),
+                snapshot.getGlue(),
                 false
         );
         if (snapshot.getStorage() != null) {

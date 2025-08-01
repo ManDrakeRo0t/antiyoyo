@@ -391,6 +391,14 @@ public class MapUtils {
 
     }
 
+    public static void updateGlue(GameSession session) {
+        Player p = session.getPlayers().get(session.getCurrentPlayerMove());
+        if (p.getSelectedTownHall() != null) {
+            var th = HexCalculator.foundTownHallById(session.getMap(), p.getSelectedTownHall().getUuid());
+            findTownHallWithRegion(session.getMap(), p.getColor(), th).getSecond().forEach(h -> h.setGlue(true));
+        }
+    }
+
     public static void restoreAvailability(GameSession session) {
         session.getMap().values().forEach(hex -> {
             if (hex.getEntity().getMovedOnThisTurn() != null && Boolean.TRUE.equals(hex.getEntity().getMovedOnThisTurn())) {
@@ -399,6 +407,7 @@ public class MapUtils {
                 hex.setIsAvailable(true);
             }
             hex.setDisplayDefence(false);
+            hex.setGlue(false);
         });
     }
 
