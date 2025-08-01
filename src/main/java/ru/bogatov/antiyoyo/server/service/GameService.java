@@ -162,6 +162,7 @@ public class GameService {
         gameSession.setMap(map);
         Pair<Integer, Set<HexColor>> playerCount = gameEngine.validateSessionAndGetPlayersCount(gameSession);
         gameMap.setPlayersCount(playerCount.getFirst());
+        gameMap.setMapSize(map.size());
         final int[] counter = {0};
         playerCount.getSecond().forEach(color -> {
             gameSession.getPlayers().put(counter[0], new Player(null, color, null, false, null));

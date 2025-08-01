@@ -1,0 +1,246 @@
+/* Шрифты */
+@font-face {
+    font-family: 'Castlefire';
+    src: url('fonts/Castlefire.ttf') format('truetype'),
+            url('fonts/Castlefire.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: rusty_typewriter;
+            src: url('fonts/rusty_typewriter.ttf') format('truetype'),
+            url('fonts/rusty_typewriter.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* База */
+* {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+}
+html{
+    height: 100%;
+    margin: 0;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f0cba3;
+}
+.logo {
+    width: 180px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    pointer-events: none;
+}
+.title {
+    font-family: 'Castlefire';
+    font-size: 64px;
+    color: #222;
+    line-height: 1;
+    letter-spacing: 4px;
+}
+.greeting {
+    font-family: 'Castlefire';
+    font-size: 32px;
+    color: #222;
+    margin: 16px 0 32px 0;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+/* СВГ кнопки */
+.svg-btn {
+    width: 300px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+    background: none;
+    border: none;
+}
+.svg-btn:hover, .svg-btn:focus {
+    transform: scale(1.08);
+}
+.svg-btn:active {
+    transform: scale(0.94);
+}
+.svg-btn-text {
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-family: 'Castlefire';
+    font-size: 32px;
+    color: #222;
+    letter-spacing: 2px;
+    font-weight: normal;
+}
+
+/* Инпут */
+.input-bg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    pointer-events: none;
+}
+.input-wrapper-new {
+    position: relative;
+    width: 400px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.input-field-new {
+    position: relative;
+    background: transparent;
+    border: 3.6px solid transparent;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    padding: 0 20px;
+    border-radius: 18px;
+    font-family: 'rusty_typewriter';
+    font-size: 48px;
+    text-align: center;
+    transition: border-color 0.3s ease-in-out;
+}
+.input-field-new:focus {
+    border-color: #ff894e;
+}
+.input-field-new::placeholder {
+    color: #a1966d;
+}
+
+/* Login, Register, Play */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+/* Login, Register, Indexm, Play */
+.buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+/* Контейнер (Play, Maps, Account, Ratings) */
+.container {
+    width: 100%;
+    background: #fff8dceb;
+    border-radius: 24px;
+    padding: 24px;
+    line-height: 1.8;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+.container::-webkit-scrollbar {
+    display: none;
+}   
+/* Хедар контейнера (Play, Maps, Account, Ratings) */
+.container-headers {
+    display: flex;
+    border-bottom: 2px solid #e0d0a0;
+}
+/* Если это иконки (Play, Maps) */
+.container-header-icon {
+    height: 48px;
+}
+.container-header-row-icons {
+    display: flex;
+    flex: 1;
+}
+.container-headers-col-icon-left {
+    justify-content: flex-start;
+}
+.container-headers-col-icon-center {
+    justify-content: center;
+}
+.container-headers-col-icon-right {
+    justify-content: flex-end;
+}
+/* Если это текст (Account, Ratings) */
+.container-header-text {
+    font-family: 'Castlefire';
+    font-size: 20px;
+    color: #b23c1a;
+    font-weight: bold;
+    letter-spacing: 2px;
+    flex: 1;
+}
+.container-headers-col-text-left {
+    text-align: left;
+}
+.container-headers-col-text-center {
+    text-align: center;
+}
+.container-headers-col-text-right {
+    text-align: right;
+}
+/* Контейнер с данными внутри .container (Play, Maps, Account, Ratings) */
+.container-into-container {
+    overflow-y: auto;
+    line-height: 1.8;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+} 
+.container-into-container::-webkit-scrollbar {
+    display: none;
+}
+/* Строка в таблице без иконок (Maps, Account, Ratings) */
+.table-item {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0d0a0;
+}
+.table-item:last-child {
+    border-bottom: none;
+}
+/* Строка в таблице с иконоками (Play) */
+.table-item-with-icons {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0d0a0;
+}
+.table-item-with-icons:last-child {
+    border-bottom: none;
+}
+
+/* Выравнивание значений в таблице (Play, Maps, Account, Ratings) */
+.table-item-value-align-left {
+    justify-content: flex-start;
+    text-align: left;
+}
+.table-item-value-align-center {
+    justify-content: center;
+    text-align: center;
+}
+.table-item-value-align-right {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+/* Текстовое значение в таблице (Play, Maps, Account, Ratings) */
+.table-item-text-value {
+    font-family: 'rusty_typewriter';
+    font-size: 28px;
+    color: #222;
+    flex: 1;
+}

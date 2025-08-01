@@ -1,5 +1,6 @@
 package ru.bogatov.antiyoyo.server.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -17,5 +18,5 @@ public class GameMap {
     private String name;
     private List<HexDto> map;
     private Integer playersCount;
-
+    private Integer mapSize;
 }

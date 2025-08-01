@@ -23,7 +23,7 @@ public class UserRepository {
     public List<User> getTopRatingUsers() {
         Query query = new Query().addCriteria(Criteria.where("rating").ne(0))
                 .with(Sort.by(Sort.Direction.DESC, "rating"))
-                .limit(5);
+                .limit(10);
         return mongoTemplate.find(query, User.class);
     }
 

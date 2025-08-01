@@ -3,232 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Wars - Account</title>
+    <title>World Wars - Ratings</title>
     <link rel="icon" type="image/png" href="ui-elements/icon.png">
+    <link rel="stylesheet" href="main.css">
     <style>
-        @font-face {
-            font-family: 'Castlefire';
-            src: url('fonts/Castlefire.ttf') format('truetype'),
-                 url('fonts/Castlefire.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: rusty_typewriter;
-                 src: url('fonts/rusty_typewriter.ttf') format('truetype'),
-                 url('fonts/rusty_typewriter.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        html {
-            height: 100%;
-            margin: 0;
-        }
-        body {
-            min-height: 100%;
-            margin: 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background: #f0cba3;
-            font-family: 'Castlefire';
-            user-select: none;
-        }
-        .logo {
-            width: 180px;
-            height: auto;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            display: block;
-            pointer-events: none;
-            user-select: none;
-        }
-        .title {
-            font-family: 'Castlefire';
-            font-size: 64px;
-            color: #222;
-            text-align: center;
-            margin: 0;
-            line-height: 1;
-            letter-spacing: 4px;
-            user-select: none;
-        }
-        .games-container {
-            width: 100%;
-            max-width: 800px;
-            height: 600px;
-            background: #fff8dceb;
-            border-radius: 24px;
-            padding: 6px 24px;
-            font-size: 1.3rem;
-            line-height: 1.7;
-            position: relative;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-        }
-        .games-list {
-            flex: 1 1 auto;
-            overflow-y: auto;
-            min-height: 0;
-        }
-        .games-container::-webkit-scrollbar,
-        .games-list::-webkit-scrollbar {
-            display: none;
-        }
-        .games-title {
-            text-align: center;
-            font-family: 'Castlefire';
-            font-size: 36px;
-            pointer-events: none;
-            letter-spacing: 2px;
-            user-select: none;
-        }
-        .games-headers {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e0d0a0;
-            margin-bottom: 8px;
-        }
-        .header-place {
-            font-family: 'Castlefire';
-            font-size: 20px;
-            color: #b23c1a;
-            font-weight: bold;
-            letter-spacing: 2px;
-            flex: 1;
-        }
-        .header-name {
-            font-family: 'Castlefire';
-            font-size: 20px;
-            color: #b23c1a;
-            font-weight: bold;
-            letter-spacing: 2px;
-            flex: 1;
-            text-align: center;
-        }
-        .header-rating {
-            font-family: 'Castlefire';
-            font-size: 20px;
-            color: #b23c1a;
-            font-weight: bold;
-            letter-spacing: 2px;
-            flex: 1;
-            text-align: right;
-        }
-        .game-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #e0d0a0;
-        }
-        .game-item:last-child {
-            border-bottom: none;
-        }
-        .game-place {
-            font-family: 'rusty_typewriter';
-            font-size: 32px;
-            color: #222;
-            flex: 1;
-        }
-        .user-name {
-            font-family: 'rusty_typewriter';
-            font-size: 32px;
-            color: #222;
-            flex: 1;
-            text-align: center;
+        .table-item-value-align-center {
             transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
             will-change: transform;
             cursor: pointer;
         }
-        .user-name:hover, .user-name:focus {
+        .top-1 {
+            background: linear-gradient(
+                90deg,
+                #ef5dff,
+                #d500d5,
+                #FF1493,
+                #ff4400,
+                #fec5af,
+                #ff4400,
+                #FF1493,
+                #d500d5,
+                #ef5dff,
+
+                #d500d5,
+                #FF1493,
+                #ff4400,
+                #fec5af,
+                #ff4400,
+                #FF1493,
+                #d500d5,
+                #ef5dff 
+            );
+            background-size: 1600% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: animate 80s linear infinite;
+        }
+        .top-2 {
+            background: linear-gradient(
+                90deg,
+                #9370DB,
+                #a094e4,
+                #87CEFA,
+                #00BFFF,
+                #E6E6FA,
+                #00BFFF,
+                #87CEFA,
+                #a094e4,
+                #9370DB,
+
+                #a094e4,
+                #87CEFA,
+                #00BFFF,
+                #E6E6FA,
+                #00BFFF,
+                #87CEFA,
+                #a094e4,
+                #9370DB
+            );
+            background-size: 1600% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: animate 80s linear infinite;
+        }
+        .top-3 {
+            background: linear-gradient(
+                90deg,
+                #ad5d0c,
+                #D2691E,
+                #FF8C00,
+                #FFA500,
+                #FFE4B5,
+                #FFA500,
+                #FF8C00,
+                #D2691E,
+                #ad5d0c,
+                
+                #D2691E,
+                #FF8C00,
+                #FFA500,
+                #FFE4B5,
+                #FFA500,
+                #FF8C00,
+                #D2691E,
+                #ad5d0c
+            );
+            background-size: 1600% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: animate 80s linear infinite;
+        }
+        @keyframes animate {
+            from {
+                background-position: 0% 50%;
+            }
+            to {
+                background-position: -800% 50%;
+            }
+        }
+        .table-item-value-align-center:hover, .table-item-value-align-center:focus {
             transform: scale(1.16);
-            z-index: 2;
         }
-        .user-name:active {
-            transform: scale(0.92);
-            transition: transform 0.1s ease-out;
-        }
-        .game-result {
-            font-family: 'rusty_typewriter';
-            font-size: 32px;
-            flex: 1;
-            text-align: center;
-        }
-        .game-result.win {
-            color: #f73848;
-        }
-        .game-result.loss {
-            color: #118bfd;
-        }
-        .game-result.safe {
-            color: #5cf51a;
-        }
-        .game-result.gray {
-            color: #666565;
-        }
-        .game-score {
-            font-family: 'rusty_typewriter';
-            font-size: 32px;
-            color: #222;
-            flex: 1;
-            text-align: right;
-        }
-        .back-btn {
-            width: 320px;
-            height: 90px;
-            margin: 40px auto 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-            transform-origin: center center;
-            will-change: transform;
-        }
-        .back-btn:hover, .back-btn:focus {
-            transform: scale(1.08);
-            z-index: 2;
-        }
-        .back-btn:active {
-            transform: scale(0.92);
-            transition: transform 0.1s ease-out;
-        }
-        .back-btn img {
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            user-select: none;
-        }
-        .back-btn-text {
-            position: absolute;
-            left: 0; top: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Castlefire';
-            font-size: 50px;
-            color: #222;
-            pointer-events: none;
-            letter-spacing: 2px;
-            user-select: none;
+        .table-item-value-align-center:active {
+            transform: scale(0.94);
         }
         .icon {
             height: 1.5em;
             vertical-align: middle;
-            margin: 0 0.15em 0 0.1em;
-            display: inline-block;
-        }
-        .arrow-mobile {
-            display: inline;
-        }
-        .arrow-desktop {
-            display: inline;
         }
         .skeleton {
             background: linear-gradient(90deg, #ececec 25%, #f5e7c6 50%, #ececec 75%);
@@ -241,84 +125,78 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        .skeleton.game-item {
+        .skeleton.table-item {
             padding: 12px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #e0d0a0;
         }
-        .skeleton .game-place,
-        .skeleton .user-name,
-        .skeleton .game-score {
+        .skeleton .table-item-value-align-left,
+        .skeleton .table-item-value-align-center,
+        .skeleton .table-item-value-align-right {
             height: 32px;
             border-radius: 8px;
             background: none;
         }
-        .skeleton .game-place { width: 60px; background: #ececec; }
-        .skeleton .user-name { width: 180px; background: #ececec; }
-        .skeleton .game-score { width: 80px; background: #ececec; }
-        @media (min-width: 2560px) and (max-height: 6560px) {
-            .logo { width: 320px; }
+        .skeleton .table-item-value-align-left { width: 60px; background: #ececec; }
+        .skeleton .table-item-value-align-center { width: 180px; background: #ececec; }
+        .skeleton .table-item-value-align-right { width: 80px; background: #ececec; }
+         @media (min-width: 390px)  { 
+            .logo { width: 180px; margin-top: 10px; margin-bottom: 10px; }
+            .title { font-size: 50px; }
+
+            .container { max-width: 340px; height: 390px; margin-bottom: 12px; margin-top: 12px; padding: 12px 24px; }
+
+            .container-header-text { font-size: 24px; }
+            .table-item-text-value { font-size: 28px; }
+
+            .svg-btn { width: 240px; height: 60px;}
+            .svg-btn-text { font-size: 35px; }
+        }
+        @media (min-width: 600px) {
+            .logo { width: 190px; margin-top: 5px; margin-bottom: 5px; }
+            .title { font-size: 60px; }
+            
+            .container { max-width: 500px; height: 390px; margin-bottom: 20px; margin-top: 6px; padding: 12px 24px; }
+    
+            .container-header-text { font-size: 30px; }
+            .table-item-text-value { font-size: 34px; }      
+
+            .svg-btn { width: 280px; height: 67px; }
+            .svg-btn-text { font-size: 40px; }
+        }
+        @media (min-width: 2560px) {
+            .logo { width: 320px; margin-top: 50px; margin-bottom: 20px; }
             .title { font-size: 100px; }
-            .greeting { font-size: 50px; }
 
-            .games-container { max-width: 600px; height: 700px; margin-bottom: 30px; margin-top: 10px;}
-            .games-title { font-size: 50px; }
-            .header-name, .header-place, .header-rating { font-size: 32px; }
-            .user-name {font-size: 32px;}
+            .container { max-width: 600px; height: 700px; margin-bottom: 30px; margin-top: 10px; padding: 12px 24px; }
             
-            .back-btn { width: 320px; height: 90px; }
-            .back-btn-text { font-size: 50px; }
-        }
-        @media (min-width: 600px) and (max-height: 1300px) {
-            .logo { width: 300px; margin-top: 40px; margin-bottom: 20px; }
-            .title { font-size: 85px; }
-            .greeting { font-size: 45px; margin: 16px 0 24px 0;}
+            .container-header-text { font-size: 32px; }
+            .table-item-text-value { font-size: 36px; }
             
-            .games-container { max-width: 900px; height: 500px; }
-            .games-title { font-size: 45px; }
-            .header-name, .header-place, .header-rating { font-size: 22px; }        
-
-            .back-btn { width: 320px; height: 80px; }
-            .back-btn-text { font-size: 45px; }
-        }
-        @media (min-width: 390px) and (max-height: 932px) { 
-            .logo { width: 180px; margin-top: 20px; margin-bottom: 10px; display: none; }
-            .title { font-size: 50px; margin-bottom: 12px;}
-            .greeting { font-size: 35px; margin: 12px 0 0 0 ;}
-
-
-            .games-container { max-width: 365px; height: 530px; padding: 6px 12px; }
-
-            
-            .games-title { font-size: 32px; margin-bottom: 0px; }
-            .header-name, .header-place, .header-rating { font-size: 24px; }
-            .game-date, .game-result, .game-score { font-size: 24px;}
-            .arrow-desktop {display: none;}
-
-            .back-btn { margin-top: 24px; width: 240px; height: 60px;}
-            .back-btn-text { font-size: 35px; }
+            .svg-btn { width: 360px; height: 90px; }
+            .svg-btn-text { font-size: 50px; }
         }
     </style>
 </head>
 <body>
     <img src="ui-elements/logo.png" alt="logo" class="logo">
     <div class="title">Ratings</div>
-    <div class="games-container">
-        <div class="games-title">Board</div>
-        <div class="games-headers">
-            <div class="header-place">Place</div>
-            <div class="header-name">Name</div>
-            <div class="header-rating">Rating</div>
+    <div class="container">
+        
+        <div class="container-headers">
+            <div class="container-header-text container-headers-col-text-left">Rank</div>
+            <div class="container-header-text container-headers-col-text-center">Name</div>
+            <div class="container-header-text container-headers-col-text-right">Rating</div>
         </div>
-        <div class="games-list">
+        <div class="container-into-container">
             <!-- skeleton loader -->
         </div>
     </div>
-    <div class="back-btn" onclick="window.location.href='index.html'">
-        <img src="ui-elements/svg/red_button.svg" alt="BACK">
-        <span class="back-btn-text">BACK</span>
+    <div class="svg-btn" onclick="window.location.href='index.html'">
+        <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;">
+        <span class="svg-btn-text">BACK</span>
     </div>
     <script src="auth.js" ></script>
     <script src="common.js" ></script>
@@ -327,18 +205,18 @@
         gamesList.innerHTML = '';
         for (let i = 0; i < count; i++) {
             const itemDiv = document.createElement('div');
-            itemDiv.className = 'game-item skeleton';
+            itemDiv.className = 'table-item skeleton';
 
             const placeDiv = document.createElement('div');
-            placeDiv.className = 'game-place skeleton';
+            placeDiv.className = 'table-item-value-align-left skeleton';
             itemDiv.appendChild(placeDiv);
 
             const userNameDiv = document.createElement('div');
-            userNameDiv.className = 'user-name skeleton';
+            userNameDiv.className = 'table-item-value-align-center skeleton';
             itemDiv.appendChild(userNameDiv);
 
             const scoreDiv = document.createElement('div');
-            scoreDiv.className = 'game-score skeleton';
+            scoreDiv.className = 'table-item-value-align-right skeleton';
             itemDiv.appendChild(scoreDiv);
 
             gamesList.appendChild(itemDiv);
@@ -346,7 +224,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
-        const gamesList = document.querySelector('.games-list');
+        const gamesList = document.querySelector('.container-into-container');
         if (!gamesList || typeof getBackendUrl !== 'function') return;
         // Показываем скелетон-лоадер
         showSkeletonLoader(gamesList, 5);
@@ -358,7 +236,7 @@
             gamesList.innerHTML = '';
             users.forEach((user, idx) => {
                 const placeDiv = document.createElement('div');
-                placeDiv.className = 'game-place';
+                placeDiv.className = 'table-item-text-value table-item-value-align-left';
                 if (idx === 0) {
                     placeDiv.innerHTML = '<img src="ui-elements/top_1.png" class="icon">';
                 } else if (idx === 1) {
@@ -370,15 +248,23 @@
                 }
 
                 const userNameDiv = document.createElement('div');
-                userNameDiv.className = 'user-name';
+                userNameDiv.className = 'table-item-text-value table-item-value-align-center';
+                // gradient
+                if (idx === 0) {
+                userNameDiv.classList.add('top-1');
+                } else if (idx === 1) {
+                userNameDiv.classList.add('top-2');
+                } else if (idx === 2) {
+                userNameDiv.classList.add('top-3');
+                }
                 userNameDiv.innerHTML = `<div>${user.login}</div>`;
 
                 const scoreDiv = document.createElement('div');
-                scoreDiv.className = 'game-score';
+                scoreDiv.className = 'table-item-text-value table-item-value-align-right';
                 scoreDiv.textContent = user.rating;
 
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'game-item';
+                itemDiv.className = 'table-item';
                 itemDiv.appendChild(placeDiv);
                 itemDiv.appendChild(userNameDiv);
                 itemDiv.appendChild(scoreDiv);

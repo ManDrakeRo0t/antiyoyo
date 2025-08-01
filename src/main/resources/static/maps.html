@@ -5,142 +5,33 @@
     <title>World Wars - Maps</title>
     <link rel="icon" type="image/png" href="ui-elements/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="main.css">
     <style>
-        @font-face {
-            font-family: 'Castlefire';
-            src: url('fonts/Castlefire.ttf') format('truetype'),
-                 url('fonts/Castlefire.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
+        .maps-ellipsis {
+            font-family: rusty_typewriter;
+            font-size: 32px;
+            color: #b23c1a;
         }
-        html {
-            height: 100%;
-            margin: 0;
-        }
-        body {
-            min-height: 100%;
-            margin: 0;
-            background: #f0cba3;
-            font-family: 'Castlefire';
-            overflow: auto;
-        }
-        .maps-container {
-            width: 100%;
-            max-width: 960px;
-            height: 600px;
-            max-height: 600px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            background: #fff8dceb;
-            border-radius: 24px;
-            padding: 6px 24px;
-            font-size: 1.15rem;
-            line-height: 1.7;
-            position: relative;
-            scrollbar-width: none;        /* для Firefox */
-            -ms-overflow-style: none;     /* для IE и Edge */
-        }
-        .maps-container::-webkit-scrollbar {
-            display: none;                /* для Chrome, Safari и Opera */
-        }
-        .maps-title {
-            text-align: center;
-            font-family: 'Castlefire';
-            font-size: 50px;
-            margin-bottom: 12px;
-            pointer-events: none;
-            user-select: none;
-        }
-        .map-list {
+        .maps-row {
             display: flex;
-            flex-direction: column;
-            gap: 18px;
+            flex: 1;
         }
-        .map-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .map-name-field {
-            position: relative;
-            width: 340px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-        }
-        .map-name-bg {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            pointer-events: none;
-            user-select: none;
-        }
-        .map-name-text {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Castlefire';
-            font-size: 44px;
-            color: #222;
-            z-index: 2;
-            pointer-events: none;
-            user-select: none;
-            box-sizing: border-box;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red {
-            width: 120px;
-            height: 60px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
+        .table-item-value-align-center {
             transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-            transform-origin: center center;
             will-change: transform;
-            background: none;
-            border: none;
-        }
-        .svg-btn:hover, .svg-btn-blue:hover, .svg-btn-yellow:hover, .svg-btn-red:hover {
-            transform: scale(1.08);
-            z-index: 2;
-        }
-        .svg-btn:active, .svg-btn-blue:active, .svg-btn-yellow:active, .svg-btn-red:active {
-            transform: scale(0.92);
-            transition: transform 0.1s ease-out;
-        }
-        .svg-btn-text {
-            position: absolute;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            font-family: 'Castlefire';
-            font-size: 1.25rem;
-            letter-spacing: 2px;
-            color: #222;
-            pointer-events: none;
-            user-select: none;
-        }
-        .svg-btn-search {
-            width: 60px;
-            height: 60px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
-            user-select: none;
-            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
         }
-        .svg-btn-search:hover { transform: scale(1.12); }
-        .svg-btn-search:active { transform: scale(0.96); }
+        .table-item-value-align-center:hover, .table-item-value-align-center:focus {
+            transform: scale(1.16);
+        }
+        .table-item-value-align-center:active {
+            transform: scale(0.94);
+        }
+        .input-field-new[type=number]::-webkit-inner-spin-button,
+        .input-field-new[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         /* Модальные окна */
         .modal-bg {
             position: fixed;
@@ -155,19 +46,15 @@
         .modal-container {
             background: #fff8dceb;
             border-radius: 24px;
-            padding: 32px 32px 24px 32px;
-            min-width: 400px;
-            max-width: 96vw;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
         }
         .modal-title {
-            font-family: 'Castlefire';
+            font-family: 'rusty_typewriter';
             font-size: 2rem;
             text-align: center;
-            margin-bottom: 24px;
             color: #222;
         }
         /* GAME SETTINGS */
@@ -175,54 +62,11 @@
             width: 100%;
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 18px;
-        }
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-            height: 60px;
-        }
-        .input-bg {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            left: 0; top: 0;
-            z-index: 1;
-            pointer-events: none;
-            user-select: none;
-        }
-        .input-field {
-            position: absolute;
-            left: 0; top: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            outline: none;
-            background: transparent;
-            font-family: 'Castlefire';
-            font-size: 44px;
-            color: #222;
-            padding: 0 40px;
-            z-index: 2;
-            box-sizing: border-box;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .input-field::placeholder { color: #a1966d; opacity: 1; }
-        /* Убираем стрелки у input[type=number] */
-        .input-field[type=number]::-webkit-inner-spin-button,
-        .input-field[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
         }
         .onoff-group {
             display: flex;
-            flex-direction: row;
-            gap: 18px;
-            margin: 12px 0 18px 0;
-            align-items: center;
-            justify-content: center;
         }
         .onoff-btn {
             width: 140px;
@@ -255,20 +99,12 @@
             flex-direction: row;
             justify-content: center;
         }
-        /* GAME CREATED */
-        .session-id-wrapper {
-            position: relative;
-            width: 320px;
-            height: 60px;
-            margin: 18px 0 24px 0;
-        }
         .session-id-bg {
             width: 100%;
             height: 100%;
             position: absolute;
             left: 0; top: 0;
             pointer-events: none;
-            user-select: none;
         }
         .created-actions {
             display: flex;
@@ -290,31 +126,99 @@
         .create-button-preview {
             margin-top: 24px;
         }
-        .back-button {
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
+        @media (min-width: 390px) {
+            .logo { width: 180px; margin-top: 10px; margin-bottom: 10px; }
+            .title { font-size: 50px; }
+
+            .container { max-width: 340px; height: 390px; margin-bottom: 12px; margin-top: 12px; padding: 12px 24px; }
+            .table-item-value-align-left{ padding-left: 14px; }
+            .table-item-value-align-center { padding-left: 6px; }
+            .table-item-value-align-right { padding-right: 20px; } 
+
+            .container-headers { padding-bottom: 8px; }
+            .container-header-icon { height: 48px; }
+
+            .maps-ellipsis { font-size: 24px; }
+            .table-item-text-value { font-size: 24px; }
+
+            .svg-btn { width: 240px; height: 60px;}
+            .svg-btn-text { font-size: 35px; }
+
+            .input-wrapper-new { width: 300px; height: 70px; }
+            .input-field-new { font-size: 28px; width: 256px; height: 62px; border-radius: 16px;}
+
+            .modal-title { font-size: 32px; margin-bottom: 12px; }
+            .modal-container { width: 340px; padding: 16px; } /*Поп-апы*/
+
+            .canvas-preview { width: 300px;  height: 300px; } /*Канвас превью*/
+            .create-button-preview { margin-top: 12px; } /*Создать на превью*/
+
+            .settings-fields { width: 100%; gap: 8px; } /*Отступы между поляви ввода на поп-апе*/
+            .onoff-group { gap: 8px; margin-bottom: 12px; } /*Отступы между чекбоксами*/
+            .onoff-btn { width: 80px; height: 80px; } /*Кнопки чекбоксов*/
+            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
+            .onoff-icon { width: 45px; } /*Размер пнг внутри кнопок*/
+
+            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
         }
-        @media (min-width: 2560px)   {
-            .maps-container { max-width: 1200px; height: 1128px; max-height: 1128px; margin: auto; } /*Все в нем*/
-            .maps-title { font-size: 50px; margin-bottom: 12px; } /*Заголовок и отступ вниз*/
+        @media (min-width: 600px) {
+            .logo { width: 190px; margin-top: 5px; margin-bottom: 5px; }
+            .title { font-size: 60px; }
 
+            .container { max-width: 400px; height: 390px; margin-bottom: 20px; margin-top: 6px; padding: 12px 24px; }
+            .table-item-value-align-left { padding-left: 16px; }
+            .table-item-value-align-center { padding-left: 4px; }
+            .table-item-value-align-right { padding-right: 20px; } 
 
-            .map-list { gap: 18px; } /*Отступы между картами в контейнере*/
-            .map-name-field, .input-wrapper { width: 100%; height: 100px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
-            .map-name-text { font-size: 50px; } /*Размер текста названия карты*/
-            .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
-            .svg-btn-search { width: 90px; height: 90px; } /*Кнопка превью у карты*/
+            .container-headers { padding-bottom: 12px; }
+            .container-header-icon { height: 48px; }
 
-            .modal-title { font-size: 50px; margin-bottom: 24px; } /*Заголовки поп-апов*/
+            .maps-ellipsis { font-size: 24px; }
+            .table-item-text-value { font-size: 24px; }
 
-            .input-field { font-size: 50px;  padding: 0 40px;  } /*Поля для ввода*/
+            .svg-btn { width: 280px; height: 67px; }
+            .svg-btn-text { font-size: 40px; }
 
-            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 320px; height: 90px; } /*СВГ кнопки*/
-            .svg-btn-text { font-size: 50px; } /*Размер текста СВГ кнопок*/
- 
-            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
-            .modal-container { border-radius: 24px;  padding: 32px;  min-width: 400px;  max-width: 96%; } /*Поп-апы*/
+            .input-wrapper-new { width: 440px; height: 80px; }
+            .input-field-new { font-size: 36px; width: 316px; height: 75px; border-radius: 18px; }
+
+            .modal-title { font-size: 32px; margin-bottom: 16px; }
+            .modal-container { width: 500px; padding: 16px; } /*Поп-апы*/
+
+            .canvas-preview { width: 400px;  height: 300px; } /*Канвас превью*/
+            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
+
+            .settings-fields { width: 100%; gap: 12px; } /*Отступы между поляви ввода на поп-апе*/
+            .onoff-group { gap: 12px; margin-bottom: 12px; } /*Отступы между чекбоксами*/
+            .onoff-btn { width: 100px; height: 100px; } /*Кнопки чекбоксов*/
+            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
+            .onoff-icon { width: 47px; } /*Размер пнг внутри кнопок*/
+
+            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
+        }
+        @media (min-width: 2560px) {
+            .logo { width: 320px; margin-top: 50px; margin-bottom: 20px; }
+            .title { font-size: 100px; }
+
+            .container { max-width: 600px; height: 700px; margin-bottom: 30px; margin-top: 10px; padding: 12px 24px; }
+            .table-item-value-align-left { padding-left: 20px; }
+            .table-item-value-align-center { padding-left: 0; padding-right: 4px;  }
+            .table-item-value-align-right { padding-right: 24px; } 
+
+            .container-headers { padding-bottom: 16px; }
+            .container-header-icon { height: 64px; }
+
+            .maps-ellipsis { font-size: 32px; }
+            .table-item-text-value { font-size: 36px; }
+
+            .svg-btn { width: 360px; height: 90px; }
+            .svg-btn-text { font-size: 50px; }
+
+            .input-wrapper-new { width: 500px; height: 100px; }
+            .input-field-new { font-size: 45px; height: 89px; width: 405px; height: 94px; border: 4px solid transparent; border-radius: 24px; }
+
+            .modal-title { font-size: 50px; margin-bottom: 24px; }
+            .modal-container { width: 900px; padding: 16px; } /*Поп-апы*/
 
             .canvas-preview { width: 800px;  height: 600px; } /*Канвас превью*/
             .create-button-preview { margin-top: 24px; } /*Создать на превью*/
@@ -325,103 +229,42 @@
             .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
             .onoff-icon { width: 70px; } /*Размер пнг внутри кнопок*/
 
-            .session-id-wrapper { width: 480px; height: 100px; margin: 0px 0 24px 0; } /*Поле с сессией на GAME CREATED*/
             .created-actions { gap: 6px; margin-top: 12px; } /*Отступы кнопок на GAME CREATED*/
-
-            .back-button { margin-top: 50px; } /*Назад на экране*/
-        }
-        @media (min-width: 600px) and (max-width: 2000px) {
-            .maps-container { max-width: 1100px; height: 650px; max-height: 650px; margin: auto; } /*Все в нем*/
-            .maps-title { font-size: 45px; margin-bottom: 12px; } /*Заголовок и отступ вниз*/
-
-
-            .map-list { gap: 12px; } /*Отступы между картами в контейнере*/
-            .map-name-field, .input-wrapper { width: 100%; height: 95px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
-            .map-name-text { font-size: 45px; } /*Размер текста названия карты*/
-            .map-row { gap: 0px; } /*Отступ между названием и кнопкой превью*/
-            .svg-btn-search { width: 80px; height: 80px; } /*Кнопка превью у карты*/
-
-            .modal-title { font-size: 45px; margin-bottom: 0px; } /*Заголовки поп-апов*/
-
-            .input-field { font-size: 45px;  padding: 0 32px;  } /*Поля для ввода*/
-
-            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 320px; height: 80px; } /*СВГ кнопки*/
-            .svg-btn-text { font-size: 45px; } /*Размер текста СВГ кнопок*/
- 
-            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
-            .modal-container { border-radius: 24px;  padding: 24px;  min-width: 400px;  max-width: 96%; } /*Поп-апы*/
-
-            .canvas-preview { width: 650px;  height: 500px; } /*Канвас превью*/
-            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
-
-            .settings-fields { width: 100%; gap: 18px; } /*Отступы между поляви ввода на поп-апе*/
-            .onoff-group { gap: 18px; margin: 6px 0 16px 0; } /*Отступы между чекбоксами*/
-            .onoff-btn { width: 130px; height: 130px; } /*Кнопки чекбоксов*/
-            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
-            .onoff-icon { width: 62px; } /*Размер пнг внутри кнопок*/
-
-            .session-id-wrapper { width: 460px; height: 95px; margin: 0px 0 12px 0; } /*Поле с сессией на GAME CREATED*/
-            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
-
-            .back-button { margin-top: 45px; } /*Назад на экране*/
-        }
-        @media (min-width: 390px) and (max-width: 599px)  {
-            .maps-container { max-width: 365px; max-height: 600px; margin: auto; padding: 6px 12px; } /*Все в нем*/
-            .maps-title { font-size: 32px; margin-bottom: 0px; } /*Заголовок и отступ вниз*/
-
-            .map-list { gap: 2px; } /*Отступы между картами в контейнере*/
-            
-            .map-name-field, .input-wrapper { width: 100%; height: 70px; } /*Названия карт в контейнере, поля для ввода на поп-апах*/
-            .map-name-text { font-size: 35px; } /*Размер текста названия карты*/
-            .map-row { gap: 6px; } /*Отступ между названием и кнопкой превью*/
-            .svg-btn-search { width: 60px; height: 60px; } /*Кнопка превью у карты*/
-
-            .modal-title { font-size: 32px; margin-bottom: 0px; } /*Заголовки поп-апов*/
-
-            .input-field { font-size: 35px;  padding: 0 10px;  } /*Поля для ввода*/
-
-            .svg-btn, .svg-btn-blue, .svg-btn-yellow, .svg-btn-red { width: 240px; height: 60px; font-weight: normal; } /*СВГ кнопки*/
-            .svg-btn-text { font-size: 35px; } /*Размер текста СВГ кнопок*/
- 
-            .modal-bg { top: 0; left: 0; width: 100vw; height: 100vh; } /*Затемнение, когда открыт поп-ап*/
-            .modal-container { border-radius: 24px;  padding: 14px;  min-width: 370px;  max-width: 46%; } /*Поп-апы*/
-
-            .canvas-preview { width: 300px;  height: 300px; } /*Канвас превью*/
-            .create-button-preview { margin-top: 24px; } /*Создать на превью*/
-
-            .settings-fields { width: 100%; gap: 6px; } /*Отступы между поляви ввода на поп-апе*/
-            .onoff-group { gap: 14px; margin: 4px 0 12px 0; } /*Отступы между чекбоксами*/
-            .onoff-btn { width: 80px; height: 80px; } /*Кнопки чекбоксов*/
-            .onoff-btn img[alt="onoff"] { width: 100%; } /*Пнгешки*/
-            .onoff-icon { width: 45px; } /*Размер пнг внутри кнопок*/
-
-            .session-id-wrapper { width: 280px; height: 70px; margin: 0px; } /*Поле с сессией на GAME CREATED*/
-            .created-actions { gap: 16px; margin-top: 12px; flex-direction: column; } /*Отступы кнопок на GAME CREATED*/
-
-            .back-button { margin-top: 16px; } /*Назад на экране*/
-        }
-          
-
+        }   
     </style>
 </head>
 <body>
-<div class="maps-container">
-    <div class="maps-title">LOBBIES</div>
-    <div id="mapsList" class="map-list">
-        LOAD MAPS...
+<img src="ui-elements/logo.png" alt="logo" class="logo">
+<div class="title">Maps</div>
+<div class="container">
+    <div class="container-headers">
+        <div class="container-header-row-icons container-headers-col-icon-left">
+            <img src="ui-elements/map_size.png" alt="Move" class="container-header-icon">
+        </div>
+        <div class="container-header-row-icons container-headers-col-icon-center">
+            <img src="ui-elements/map_name.png" alt="Settings" class="container-header-icon">
+        </div>
+        <div class="container-header-row-icons container-headers-col-icon-right">
+            <img src="ui-elements/players_v9.png" alt="Players" class="container-header-icon">
+        </div>
     </div>
+    <div id="mapsList" class="container-into-container">
+        Loading maps...
+    </div>
+</div>
+    
 </div>
 <!-- Модальное окно превью карты -->
 <div id="mapModal" class="modal-bg">
     <div class="modal-container">
         <div class="modal-title" id="mapModalTitle">PREVIEW</div>
-        <div class="modal-title" id="mapPlayersCount"></div>
+        <!-- <div class="modal-title" id="mapPlayersCount"></div> -->
         <div class="canvas-preview">
             <canvas id="mapPreviewCanvas"></canvas>
         </div>
         <div class="create-button-preview">
-            <div class="svg-btn-blue" id="previewCreateBtn">
-                <img src="ui-elements/svg/blue_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+            <div class="svg-btn" id="previewCreateBtn">
+                <img src="ui-elements/svg/blue_button.svg" alt="CREATE" style="width:100%;height:100%;">
                 <span class="svg-btn-text">CREATE</span>
             </div>
         </div>
@@ -433,13 +276,13 @@
         <div class="modal-title">GAME SETTINGS</div>
         <form id="settingsForm" autocomplete="off">
             <div class="settings-fields">
-                <div class="input-wrapper">
+                <div class="input-wrapper-new">
                     <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="seconds-bg">
-                    <input type="number" id="secondToMove" class="input-field" placeholder="TIME FOR MOVE" min="1" value="" required>
+                    <input type="number" id="secondToMove" class="input-field-new" placeholder="Time for move" min="1" value="" required>
                 </div>
-                <div class="input-wrapper">
+                <div class="input-wrapper-new">
                     <img src="ui-elements/svg/enter_field.svg" class="input-bg" alt="density-bg">
-                    <input type="number" id="farmsDensity" class="input-field" placeholder="FARM DENSITY" min="0" max="100" value="" required>
+                    <input type="number" id="farmsDensity" class="input-field-new" placeholder="Farms density" min="0" max="100" value="" required>
                 </div>
                 <div class="onoff-group">
                     <button type="button" class="onoff-btn" id="graveBtn" onclick="toggleOnOff(this)">
@@ -461,8 +304,8 @@
                 </div>
             </div>
             <div class="settings-actions">
-                <button type="submit" class="svg-btn-yellow">
-                    <img src="ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <button type="submit" class="svg-btn">
+                    <img src="ui-elements/svg/yellow_button.svg" alt="CREATE" style="width:100%;height:100%;">
                     <span class="svg-btn-text">CREATE</span>
                 </button>
             </div>
@@ -473,29 +316,29 @@
 <div id="createdModal" class="modal-bg">
     <div class="modal-container">
         <div class="modal-title">GAME CREATED!</div>
-        <div class="session-id-wrapper">
+        <div class="input-wrapper-new">
             <img src="ui-elements/svg/enter_field.svg" class="session-id-bg" alt="session-bg">
-            <input type="text" class="input-field" id="sessionId" readonly value="SESSION_ID">
+            <input type="text" class="input-field-new" id="sessionId" readonly value="SESSION_ID">
             <!-- Кнопка копирования -->
             <button id="copySessionIdBtn" type="button" style="position:absolute; right:-54px; top:50%; transform:translateY(-50%); width:48px; height:48px; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                <img src="ui-elements/svg/circle_button_for_color.svg" alt="Copy" style="width:44px; height:44px; pointer-events:none; user-select:none;">
+                <img src="ui-elements/svg/circle_button_for_color.svg" alt="Copy" style="width:44px; height:44px;">
             </button>
         </div>
         <div class="created-actions">
-            <div class="svg-btn-red" onclick="window.location.href='index.html'">
-                <img src="ui-elements/svg/red_button.svg" alt="MAIN" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+            <div class="svg-btn" onclick="window.location.href='index.html'">
+                <img src="ui-elements/svg/red_button.svg" alt="MAIN" style="width:100%;height:100%;">
                 <span class="svg-btn-text">MAIN</span>
             </div>
-            <div class="svg-btn-yellow" onclick="window.location.href='play.html'"> <!-- onclick="goPlayWithSessionId() - На мобилке не робит -->
-                <img src="ui-elements/svg/yellow_button.svg" alt="PLAY" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+            <div class="svg-btn" onclick="window.location.href='play.html'"> <!-- onclick="goPlayWithSessionId() - На мобилке не робит -->
+                <img src="ui-elements/svg/yellow_button.svg" alt="PLAY" style="width:100%;height:100%;">
                 <span class="svg-btn-text">PLAY</span>
             </div>
         </div>
     </div>
 </div>
-<div class="back-button">
-    <div class="svg-btn-red" onclick="window.location.href='index.html'">
-        <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+<div>
+    <div class="svg-btn" onclick="window.location.href='index.html'">
+        <img src="ui-elements/svg/red_button.svg" alt="BACK" style="width:100%;height:100%;">
         <span class="svg-btn-text">BACK</span>
     </div>
 </div>
@@ -532,44 +375,45 @@ async function loadMaps() {
 
 function displayMaps() {
     const mapsList = document.getElementById('mapsList');
-    if (!maps || maps.length === 0) {
-        mapsList.innerHTML = '<p>Карты не найдены</p>';
-        return;
-    }
-    mapsList.innerHTML = '';
-    maps.forEach(map => {
-        const row = document.createElement('div');
-        row.className = 'map-row';
-        // 1. Название карты в enter_field.svg
-        const nameField = document.createElement('div');
-        nameField.className = 'map-name-field';
-        const nameBg = document.createElement('img');
-        nameBg.src = 'ui-elements/svg/enter_field.svg';
-        nameBg.className = 'map-name-bg';
-        nameBg.alt = 'map-bg';
-        const nameText = document.createElement('span');
-        nameText.className = 'map-name-text';
-        nameText.textContent = map.name;
-        nameField.appendChild(nameBg);
-        nameField.appendChild(nameText);
-        // 2. Кнопка превью (search_button)
-        const previewBtn = document.createElement('div');
-        previewBtn.className = 'svg-btn-search';
-        previewBtn.title = 'Превью';
-        const searchImg = document.createElement('img');
-        searchImg.src = 'ui-elements/svg/search_button.svg';
-        searchImg.alt = 'preview';
-        searchImg.style.width = '100%';
-        searchImg.style.height = '100%';
-        searchImg.style.pointerEvents = 'none';
-        previewBtn.appendChild(searchImg);
-        previewBtn.onclick = () => previewMap(map.id, map.name);
-        // Добавляем в строку
-        row.appendChild(nameField);
-        row.appendChild(previewBtn);
-        mapsList.appendChild(row);
-    });
+        if (!maps || maps.length === 0) {
+            mapsList.innerHTML = '<div class="map-ellipsis" style="text-align:center;font-size:32px;margin-top:12px;">Maps not found</div>';
+            return;
+        }
+        mapsList.innerHTML = '';
+        maps.forEach(map => {
+            const el = document.createElement('div');
+            el.className = 'table-item';
+
+            const row = document.createElement('div');
+            row.className = 'maps-row';
+
+            //Размер карты
+            const mapSizeDiv = document.createElement('div');
+            mapSizeDiv.className = 'maps-row table-item-value-align-left';
+            mapSizeDiv.innerHTML = `<span class="table-item-text-value">${map.mapSize}</span>`;
+
+            //Название карты
+            const mapNameDiv = document.createElement('div');
+            mapNameDiv.className = 'maps-row table-item-value-align-center';
+            mapNameDiv.innerHTML = `<span class="table-item-text-value">${map.name}</span>`;
+            mapNameDiv.onclick = () => previewMap(map.id, map.name);
+            
+            //Количество игроков
+            const mapPlayersDiv = document.createElement('div');
+            mapPlayersDiv.className = 'maps-row table-item-value-align-right';
+            mapPlayersDiv.innerHTML = `<span class="table-item-text-value">${map.playersCount}</span>`;
+
+            // Собираем блок
+            row.appendChild(mapSizeDiv);
+            row.appendChild(mapNameDiv);
+            row.appendChild(mapPlayersDiv);
+            el.appendChild(row);
+            mapsList.appendChild(el);
+        });
 }
+
+
+        
 
 // --- Модальное окно превью карты ---
 function previewMap(mapId, mapName) {
@@ -579,13 +423,13 @@ function previewMap(mapId, mapName) {
         .then(res => res.json())
         .then(data => {
             currentMapData = data;
-            document.getElementById('mapModalTitle').textContent = `${mapName}`;
-            // Показываем количество игроков
-            if (mapObj && mapObj.playersCount !== undefined) {
-                document.getElementById('mapPlayersCount').textContent = `PLAYERS: ${mapObj.playersCount}`;
-            } else {
-                document.getElementById('mapPlayersCount').textContent = '';
-            }
+            document.getElementById('mapModalTitle').textContent = `PREVIEW: ${mapName}`;
+            // // Показываем количество игроков
+            // if (mapObj && mapObj.playersCount !== undefined) {
+            //     document.getElementById('mapPlayersCount').textContent = `PLAYERS: ${mapObj.playersCount}`;
+            // } else {
+            //     document.getElementById('mapPlayersCount').textContent = '';
+            // }
             document.getElementById('mapModal').classList.add('active');
             setTimeout(() => {
                 initMapPreview();
@@ -893,6 +737,10 @@ function setOnOff(btnId, isOn) {
         img.src = 'ui-elements/svg/button_off.svg';
     }
 }
+
+// id="secondToMove 
+// id="farmsDensity"
+
 function toggleOnOff(button) {
     const img = button.querySelector('img[alt="onoff"]');
     const isActive = button.classList.contains('active');
@@ -982,7 +830,7 @@ function fallbackCopyTextToClipboard(text) {
 }
 // Навешиваем обработчик на кнопку копирования после загрузки DOM
  document.addEventListener('DOMContentLoaded', function() {
-    const playBtn = document.querySelector('#createdModal .svg-btn-yellow');
+    const playBtn = document.querySelector('#createdModal .svg-btn'); //была yellow
     if (playBtn) {
         playBtn.onclick = goPlayWithSessionId;
     }
