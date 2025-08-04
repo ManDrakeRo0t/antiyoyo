@@ -21,6 +21,8 @@ function getWebSocketUrl() {
     return `ws://${backendHost}:8080/ws`;
 }
 
+let colorForHex = null
+
 const selectableUnits = new Set();
             selectableUnits.add("UNIT_1");
             selectableUnits.add("UNIT_2");
@@ -90,11 +92,6 @@ function getColorFromName(colorName) {
     return colorMap[colorName] || config.existingHexColor;
 }
 
-// Function to get random grass color for pattern
-function getRandomGrassColor() {
-    const randomIndex = Math.floor(Math.random() * config.grassColors.length);
-    return config.grassColors[randomIndex];
-}
 
 // Function to get deterministic grass color based on hex coordinates
 function getGrassColorForHex(hex) {
@@ -111,10 +108,11 @@ function getGrassColorForHex(hex) {
 // Function to draw territory borders only on specific sides
 function drawTerritoryBorders(x, y, size, hex, hexData) {
     if (!hex.color || hex.color === 'EMPTY') return;
-
+     borderWidth = 3;
      if (hex.glue) {
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = "gold";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "white";
+             borderWidth = 5;
       }
     // Порядок соседей для вашей системы!
     const neighbors = [
@@ -127,7 +125,7 @@ function drawTerritoryBorders(x, y, size, hex, hexData) {
     ];
 
     const borderColor = getColorFromName(hex.color);
-    const borderWidth = 3;
+
     ctx.lineWidth = borderWidth;
     ctx.strokeStyle = borderColor;
     ctx.lineCap = 'round';
@@ -400,6 +398,9 @@ function updateHexData(data) {
 
 
     if (data.map) {
+        if (colorForHex == null) {
+            colorForHex = generateBiomeColorMap(Object.values(data.map || {}), data.id)
+        }
         hexData = data;
         state.gameStarted = data.started
         state.settings = data.setting;
@@ -1106,7 +1107,7 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
     if ((state.selectedHex || state.selectedUnit) && isInteractionAllowed()) {
         grassColor = getColorFromName(hex.color)
     } else {
-        grassColor = getGrassColorForHex(hex);
+        grassColor = getBiomeColorForHex(hex);
     }
 
     if (hex.isAvailable === false) {
