@@ -14,4 +14,5 @@ public abstract class Entity {
         return Currency.EMPTY.clone();
     }
 
+
 }

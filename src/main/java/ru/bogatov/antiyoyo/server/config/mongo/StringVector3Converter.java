@@ -1,4 +1,4 @@
-package ru.bogatov.antiyoyo.server.mongo;
+package ru.bogatov.antiyoyo.server.config.mongo;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

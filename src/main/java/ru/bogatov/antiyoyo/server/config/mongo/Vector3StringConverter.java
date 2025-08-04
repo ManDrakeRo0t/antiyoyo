@@ -1,4 +1,4 @@
-package ru.bogatov.antiyoyo.server.mongo;
+package ru.bogatov.antiyoyo.server.config.mongo;
 
 
 

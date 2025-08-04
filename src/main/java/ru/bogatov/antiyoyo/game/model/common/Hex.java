@@ -25,9 +25,7 @@ public class Hex {
     @JsonDeserialize(using = IgnoreDeserializer.class)
     private Entity entity;
     private Integer defenseLevel;
-    private Boolean glue;
-    private Boolean displayDefence;
-
+    private DisplayParams displayParams;
 }
 
 class IgnoreDeserializer extends JsonDeserializer<Object> {

@@ -29,7 +29,9 @@ public class GameEngine {
             validateMove(session, move);
         }
 
-        saveState(session);
+        if (Boolean.TRUE.equals(session.getSetting().getUndoMove())) {
+            saveState(session);
+        }
 
         applyMove(session, move);
         MapUtils.restoreAvailability(session);
