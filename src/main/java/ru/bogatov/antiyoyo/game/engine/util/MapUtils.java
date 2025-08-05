@@ -1,6 +1,7 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
+import ru.bogatov.antiyoyo.game.engine.GameEngine;
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
@@ -137,17 +138,14 @@ public class MapUtils {
         Set<Hex> visited = new HashSet<>();
         Queue<Hex> queue = new ArrayDeque<>();
         queue.add(start);
-        TownHall townHall = null;
+        Map<Hex, TownHall> townHalls = new HashMap<>();
 
         while (!queue.isEmpty()) {
 
             Hex root = queue.poll();
             visited.add(root);
-            if (root.getEntity() instanceof TownHall casted) {
-                if (townHall != null) {
-                    throw new IllegalArgumentException("Two town hall is one region");
-                }
-                townHall = casted;
+            if (root.getEntity() instanceof TownHall townhall) {
+               townHalls.put(root, townhall);
             }
             Set<Hex> toCheck = getNearestNeighborsWithSameColor(map, selfColor, root);
             toCheck.removeAll(visited);
@@ -155,8 +153,25 @@ public class MapUtils {
 
             queue.addAll(toCheck);
         }
+        TownHall mainTownHall = townHalls.values().stream().findFirst().get();
 
-        return Pair.of(townHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
+        if (townHalls.size() > 1) {
+            for (var entry : townHalls.entrySet()) {
+                if (mainTownHall.getStorage().compareTo(entry.getValue().getStorage()) < 0) {
+                    mainTownHall = entry.getValue();
+                }
+            }
+        }
+        TownHall finalMainTownHall = mainTownHall;
+        townHalls.forEach((hex, townHall) -> {
+            if (!finalMainTownHall.getUuid().equals(townHall.getUuid())) {
+                finalMainTownHall.getStorage().add(townHall.getStorage());
+                hex.setEntity(new Field());
+                updateDefenseLevel(map, hex, 0, selfColor);
+            }
+        });
+
+        return Pair.of(finalMainTownHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
     }
 
     private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
@@ -431,7 +446,8 @@ public class MapUtils {
                 }
             }
         });
-        if (currentActiveColors.getFirst() == 1) {
+        long aliveUsers = session.getPlayers().values().stream().filter(p -> !p.isIlluminated()).count();
+        if (currentActiveColors.getFirst() == 1 || aliveUsers == 1) {
             Player winner = session.getPlayers().values().stream()
                     .filter(player -> !player.isIlluminated() && leftColors.contains(player.getColor()))
                     .findFirst().orElse(null);

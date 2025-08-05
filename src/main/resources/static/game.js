@@ -3,7 +3,7 @@ let mouseDown = false;
 let mouseMoved = false;
 // Backend host management
 const colorMap = {
-        'EMPTY': '#3CB371',  // серый
+        'EMPTY': '#4bd187',  // серый
         'RED': '#ff0000',    // красный
         'BLUE': '#0000ff',   // синий
         'GREEN': '#00ff00',  // зеленый
@@ -189,6 +189,8 @@ const entityImages = {
     'FOREST_FARM' : 'images/forest-farm.png',
     'DRONE': 'images/drone.png',
     'FIRE': 'images/fire.png',
+    'WARNING': 'ui-elements/warningmove.png',
+    'BACKGROUND': 'ui-elements/water.jpg'
 };
 
 // Preload all images
@@ -200,7 +202,7 @@ function preloadImages() {
         preloadedImages[type] = img;
     });
 }
-
+preloadImages();
 // Entity image mapping function
 function getEntityImage(entityType) {
     return preloadedImages[entityType];
@@ -691,7 +693,6 @@ function init() {
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-    preloadImages();
     updateControlPanelVisibility();
 
     // Mouse event handlers
@@ -719,6 +720,7 @@ function cubeToPixel(cube) {
 function renderGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = config.backgroundColor;
+    //ctx.drawImage(getEntityImage('BACKGROUND'),0, 0, canvas.width, canvas.height);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!hexData || typeof hexData.map !== 'object' || !hexData.map) return;
@@ -1111,7 +1113,7 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
     }
 
     if (hex.isAvailable === false) {
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.3;
     }
     ctx.fillStyle = grassColor;
     ctx.fill();
@@ -1143,12 +1145,21 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
+            if (hex.entity.movedOnThisTurn === false) {
+                                ctx.drawImage(getEntityImage('WARNING'),
+                                        x - iconSize / 2.5,
+                                        y - (iconSize / 1.2) + yOffset,
+                                        iconSize / 1.3,
+                                        iconSize / 1.3
+                                    );
+                        }
             ctx.drawImage(img, 
                 x - iconSize/2, 
                 y - iconSize/2 + yOffset, 
                 iconSize, 
                 iconSize
             );
+
         }
     }
 
