@@ -338,11 +338,11 @@ function updateUnitPrices() {
         if (priceElement && button) {
             // Форматируем цену в столбик
             priceElement.innerHTML = `
-                <div style='display: flex; flex-direction: column; align-items: flex-start; gap: 2px;'>
-                    <span style='color:#d4af37;'>🪙${price.gold||0}</span>
-                    <span style='color:#888;'>🪨${price.stone||0}</span>
-                    <span style='color:#228B22;'>🌲${price.tree||0}</span>
-                </div>`;
+                <div style='display: flex; flex-direction: column; align-items: center; gap: 2px;'>
+                    <span style='color:#d5a815; font-family: rusty_typewriter;'>${price.gold||0}</span>
+                    <span style='color:#888; font-family: rusty_typewriter;'>${price.stone||0}</span>
+                    <span style='color:#228B22; font-family: rusty_typewriter;'>${price.tree||0}</span> 
+                </div>`; //🌲
             // Проверяем хватает ли всех ресурсов
             const canAfford = (storage.gold || 0) >= (price.gold || 0) && (storage.tree || 0) >= (price.tree || 0) && (storage.stone || 0) >= (price.stone || 0);
             button.disabled = !canAfford;
@@ -372,19 +372,19 @@ function updateBalanceDisplay() {
     if (goldChange !== 0) {
         const changeClass = goldChange > 0 ? 'positive' : 'negative';
         const changeSign = goldChange > 0 ? '+' : '';
-        changeGoldText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${goldChange})</span>`;
+        changeGoldText = `<span class="balance-change ${changeClass}">(${changeSign}${goldChange})</span>`;
     }
     let changeTreeText = '';
     if (treeChange !== 0) {
         const changeClass = treeChange > 0 ? 'positive' : 'negative';
         const changeSign = treeChange > 0 ? '+' : '';
-        changeTreeText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${treeChange})</span>`;
+        changeTreeText = `<span class="balance-change ${changeClass}">(${changeSign}${treeChange})</span>`;
     }
     let changeStoneText = '';
     if (stoneChange !== 0) {
         const changeClass = stoneChange > 0 ? 'positive' : 'negative';
         const changeSign = stoneChange > 0 ? '+' : '';
-        changeStoneText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${stoneChange})</span>`;
+        changeStoneText = `<span class="balance-change ${changeClass}">(${changeSign}${stoneChange})</span>`;
     }
     // Порядок: золото, камень, дерево
     balanceAmountSpan.innerHTML = `${goldAmount}${changeGoldText}`;
@@ -1547,15 +1547,18 @@ canvas.addEventListener('mouseleave', function(e) {
 
 // --- Notifications ---
 let notifications = [];
-function showNotification(message) {
+
+function showNotification(message, delayBeforeAppear = 500) {
     const container = document.getElementById('notificationContainer');
     if (!container) return;
+
     // Создать элемент
     const notif = document.createElement('div');
     notif.className = 'notification-message';
     notif.textContent = message;
     container.appendChild(notif);
     notifications.push(notif);
+
     // Стили для контейнера (позиция: снизу слева, прозрачный фон)
     container.style.position = 'fixed';
     container.style.left = '0';
@@ -1569,29 +1572,36 @@ function showNotification(message) {
     container.style.pointerEvents = 'none';
     container.style.background = 'transparent';
     container.style.padding = '0 0 24px 24px'; // отступ от краёв
-    // Стили для сообщения (белый фон, чёрный текст с opacity, border-radius, margin)
+
+    // Стили для сообщения (изначально невидимое)
     notif.style.position = 'relative';
     notif.style.margin = '8px 0';
     notif.style.padding = '0';
     notif.style.background = 'transparent';
     notif.style.color = 'rgba(0,0,0,0.7)';
-    notif.style.fontSize = '0.95rem';
+    notif.style.fontSize = '1.1rem';
     notif.style.fontFamily = 'Castlefire, Arial, sans-serif';
     notif.style.borderRadius = '';
     notif.style.boxShadow = '';
     notif.style.textAlign = 'left';
     notif.style.minWidth = '120px';
-    notif.style.opacity = '1';
+    notif.style.opacity = '0'; // Начальная прозрачность = 0 (невидимо)
     notif.style.transition = 'opacity 0.5s';
     notif.style.userSelect = 'none';
     notif.style.pointerEvents = 'none';
-    // Удалить через 3 секунды
+
+    // Через delayBeforeAppear мс плавно появится
+    setTimeout(() => {
+        notif.style.opacity = '1'; // Плавное появление
+    }, delayBeforeAppear);
+
+    // Удалить через 6 секунд (сначала плавное исчезновение)
     setTimeout(() => {
         notif.style.opacity = '0';
         setTimeout(() => {
             if (container.contains(notif)) container.removeChild(notif);
             notifications = notifications.filter(n => n !== notif);
-        }, 500);
+        }, 2000); // Время на исчезновение
     }, 6000);
 }
 

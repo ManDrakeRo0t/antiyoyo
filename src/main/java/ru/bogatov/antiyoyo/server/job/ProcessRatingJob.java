@@ -64,7 +64,7 @@ public class ProcessRatingJob {
         Integer minRating = users.stream().map(this::getUserRating).min(Integer::compare).orElse(0);
         Integer maxRating = users.stream().map(this::getUserRating).max(Integer::compare).orElse(0);
         Integer sumRating = users.stream().map(this::getUserRating).reduce(Integer::sum).orElse(0);
-        Integer avgRating = sumRating / players.size();
+        Integer avgRating = sumRating / players.size(); // AvgR
 
         IntStream.range(0, players.size()).forEach(index -> {
             int place = index + 1;
@@ -75,35 +75,35 @@ public class ProcessRatingJob {
             int playerBaseDelta;
 
             double proportionFromMax = (double) userIdToRating.get(player.getUserId()) / maxRating;
-            double proportionFromSum = (double) userIdToRating.get(player.getUserId()) / sumRating;
+            double proportionFromSum = (double) userIdToRating.get(player.getUserId()) / sumRating; // %SumRating
 
             if (proportionFromMax < RatingConfig.MIDDLE_DELTA) {
-                playerBaseDelta = ratingDeltaTable.get(place).getLow();
+                playerBaseDelta = ratingDeltaTable.get(place).getLow(); // Аутсайдер BaseR
             } else if (proportionFromMax > RatingConfig.FAVORITE_DELTA) {
-                playerBaseDelta = ratingDeltaTable.get(place).getFavorite();
+                playerBaseDelta = ratingDeltaTable.get(place).getFavorite(); // Средний BaseR
             } else {
-                playerBaseDelta = ratingDeltaTable.get(place).getMiddle();
+                playerBaseDelta = ratingDeltaTable.get(place).getMiddle(); // Фаворит BaseR
             }
 
-            double deltaK = RatingConfig.GLOBAL_DELTA * Math.abs(proportionFromMax - 1) + 1;
-            double deltaS = deltaK * (avgRating - userIdToRating.get(player.getUserId()) + 1) / (maxRating - minRating + 1);
+            double deltaK = RatingConfig.GLOBAL_DELTA * Math.abs(proportionFromMax - 1) + 1; // ΔK
+            double deltaS = deltaK * (avgRating - userIdToRating.get(player.getUserId()) + 1) / (maxRating - minRating + 1); // ΔS
 
-            double deltaForUp = Math.abs(1 - proportionFromSum);
-            double deltaForDown = 1 + proportionFromSum;
+            double deltaForUp = Math.abs(1 - proportionFromSum); // ΔForUp
+            double deltaForDown = 1 + proportionFromSum; // ΔForDown
 
-            int deltaRating = (int) (playerBaseDelta + deltaS);
+            int deltaRating = (int) (playerBaseDelta + deltaS); // ΔR 1 step
             int finalDeltaRating;
             User user = usersMap.get(player.getUserId());
             if (deltaRating > 0) {
                 finalDeltaRating = deltaRating; // * deltaForUp
             } else {
-                finalDeltaRating = (int) (deltaRating * deltaForDown * RatingConfig.getDeltaMultiplier(getUserRating(user)));
+                finalDeltaRating = (int) (deltaRating * deltaForDown * RatingConfig.getDeltaMultiplier(getUserRating(user))); // ΔR 1 step * ΔForDown * Новая GlobalDelta (для лоу рейта получается потеря рейтинга еще меньше)
             }
             if (place == 1) {
                 int oldWin = user.getWinGames() == null ? 0 : user.getWinGames();
                 user.setWinGames(oldWin + 1);
             }
-            int newRating = Math.max(user.getRating() + finalDeltaRating, 0);
+            int newRating = Math.max(user.getRating() + finalDeltaRating, 0); //
             userRepository.updateUserStats(player.getUserId(), newRating, user.getWinGames(), user.getTotalGames() + 1);
             playerEntry.setRankDelta(finalDeltaRating);
             playerEntry.setPlace(place);

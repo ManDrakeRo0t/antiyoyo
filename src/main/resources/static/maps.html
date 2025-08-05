@@ -136,10 +136,10 @@
             .title { font-size: 50px; }
 
             .container { max-width: 340px; height: 390px; margin-bottom: 12px; margin-top: 12px; padding: 12px 24px; }
-            .table-item-text-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-            .table-item-value-align-left{ padding-left: 0; }
+            .table-item-text-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+            /* .table-item-value-align-left{ padding-left: 0; }
             .table-item-value-align-center { padding-left: 20px; }
-            .table-item-value-align-right { padding-right: 20px; } 
+            .table-item-value-align-right { padding-right: 20px; }  */
 
             .container-headers { padding-bottom: 8px; }
             .container-header-icon { height: 48px; }
@@ -173,9 +173,9 @@
 
             .container { max-width: 400px; height: 390px; margin-bottom: 20px; margin-top: 6px; padding: 12px 24px; }
             .table-item-text-value { max-width: 165px; }
-            .table-item-value-align-left { padding-left: 0; }
+            /* .table-item-value-align-left { padding-left: 0; }
             .table-item-value-align-center { padding-left: 20px; }
-            .table-item-value-align-right { padding-right: 20px; } 
+            .table-item-value-align-right { padding-right: 20px; }  */
 
             .container-headers { padding-bottom: 12px; }
             .container-header-icon { height: 48px; }
@@ -208,11 +208,11 @@
             .title { font-size: 100px; }
 
             .container { max-width: 600px; height: 700px; margin-bottom: 30px; margin-top: 10px; padding: 12px 24px; }
-            .table-item-text-value { max-width: 250px; }
+            .table-item-text-value { max-width: 300px; }
 
-            .table-item-value-align-left { padding-left: 0; }
+            /* .table-item-value-align-left { padding-left: 0; }
             .table-item-value-align-center { padding-left: 24px; padding-right: 0;  }
-            .table-item-value-align-right { padding-right: 24px; } 
+            .table-item-value-align-right { padding-right: 24px; }  */
 
             .container-headers { padding-bottom: 16px; }
             .container-header-icon { height: 64px; }
@@ -395,7 +395,7 @@ function displayMaps() {
             //Размер карты
             const mapSizeDiv = document.createElement('div');
             mapSizeDiv.className = 'maps-row table-item-value-align-left';
-            mapSizeDiv.innerHTML = `<span class="table-item-text-value">${map.mapSize}⬡</span>`;
+            mapSizeDiv.innerHTML = `<span class="table-item-text-value">${map.mapSize}</span>`; //⬡
 
             //Название карты
             const mapNameDiv = document.createElement('div');
