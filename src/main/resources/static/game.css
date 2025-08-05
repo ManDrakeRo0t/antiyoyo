@@ -18,7 +18,7 @@
             padding: 0;
             overflow: hidden;
             background: radial-gradient(circle at 50% 30%, #F0CCA5 0%, #FDEBD4 100%);
-            font-family: 'Castlefire', sans-serif; /* Apply Castlefire font */
+            font-family: rusty_typewriter; /* Apply Castlefire font */
         }
         #container {
             position: relative;
@@ -146,7 +146,7 @@
         }
         .action-button:hover {
             transform: scale(1.1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            /* box-shadow: 0 2px 5px rgba(0,0,0,0.2); */
         }
         .action-button:disabled {
             opacity: 0.5;
@@ -265,9 +265,9 @@
             left: 20px;
             z-index: 1000;
             padding: 10px 15px; /* Adjusted padding */
-            background-color: #f0cca5fa; /* Match controlPanel background */
+            /* background-color: #f0cca5fa; */
             border-radius: 10px; /* Match controlPanel border-radius */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            /* box-shadow: 0 2px 5px rgba(0,0,0,0.2); */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -301,7 +301,7 @@
             background-position: center;
         }
         .balance-amount {
-            /* Text for balance amount, inherits styles from #balanceDisplay */
+            font-family: rusty_typewriter;
         }
         .balance-change {
             font-size: 0.8em;
@@ -505,6 +505,7 @@
                 height: 28px;
             }
             .balance-amount, .tree-amount, .stone-amount {
+                font-family: rusty_typewriter;
                 font-size: 1em;
             }
             .current-turn-indicator {
