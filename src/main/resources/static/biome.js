@@ -1,7 +1,7 @@
 const BIOME_COLORS = {
-  FIELD: generateColorGradient('#4bd187', '#2E8B57', 8),
-  FOREST: generateColorGradient('#1a3d1a', '#3a9a63', 10),
-  MINE: generateColorGradient('#5a5a5a', '#a0a0a0', 7),
+  FIELD: generateColorGradient('#4bd187', '#38E084', 10),
+  FOREST: generateColorGradient('#1F541F', '#155E15', 10),
+  MINE: generateColorGradient('#5a5a5a', '#777777', 10),
   TRANSITION_FOREST: generateColorGradient('#3a7a4a', '#5d9d6d', 6),
   TRANSITION_MINE: generateColorGradient('#7d8b91', '#b0b8bc', 5)
 };

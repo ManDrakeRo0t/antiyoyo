@@ -395,7 +395,9 @@ public class MapUtils {
         Player p = session.getPlayers().get(session.getCurrentPlayerMove());
         if (p.getSelectedTownHall() != null) {
             var th = HexCalculator.foundTownHallById(session.getMap(), p.getSelectedTownHall().getUuid());
-            findTownHallWithRegion(session.getMap(), p.getColor(), th).getSecond().forEach(h -> h.setGlue(true));
+            if (th != null) {
+                findTownHallWithRegion(session.getMap(), p.getColor(), th).getSecond().forEach(h -> h.setGlue(true));
+            }
         }
     }
 

@@ -160,6 +160,7 @@ public class GameEngine {
 
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
+        HexColor oldColor = to.getColor();
         Entity oldEntity = to.getEntity();
         HexColor selfColor = session.getPlayers().get(move.getPlayer()).getColor();
         boolean skipMove = false;
@@ -195,6 +196,9 @@ public class GameEngine {
         } else {
             to.setColor(session.getPlayers().get(move.getPlayer()).getColor());
             from.getEntity().setMovedOnThisTurn(true);
+            if (oldColor != from.getColor()) {
+                validateTownHallsAndRegions(session, oldEntity, from.getColor());
+            }
         }
 
         if (townHall != null && !move.getRedactorMode()) {
@@ -319,6 +323,7 @@ public class GameEngine {
                         setEntity(session, hex, new Field(), hex.getColor());
                         Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(session.getMap(), hex.getColor(), hex);
                         region.getFirst().getStorage().add(balance);
+                        session.getPlayers().get(session.getCurrentPlayerMove()).setSelectedTownHall(region.getFirst());
                         System.out.println("Merged");
                     }
                 }
