@@ -153,7 +153,7 @@ public class MapUtils {
 
             queue.addAll(toCheck);
         }
-        TownHall mainTownHall = townHalls.values().stream().findFirst().get();
+        TownHall mainTownHall = townHalls.values().stream().findFirst().orElse(null);
 
         if (townHalls.size() > 1) {
             for (var entry : townHalls.entrySet()) {
@@ -161,17 +161,17 @@ public class MapUtils {
                     mainTownHall = entry.getValue();
                 }
             }
+            TownHall finalMainTownHall = mainTownHall;
+            townHalls.forEach((hex, townHall) -> {
+                if (!finalMainTownHall.getUuid().equals(townHall.getUuid())) {
+                    finalMainTownHall.getStorage().add(townHall.getStorage());
+                    hex.setEntity(new Field());
+                    updateDefenseLevel(map, hex, 0, selfColor);
+                }
+            });
         }
-        TownHall finalMainTownHall = mainTownHall;
-        townHalls.forEach((hex, townHall) -> {
-            if (!finalMainTownHall.getUuid().equals(townHall.getUuid())) {
-                finalMainTownHall.getStorage().add(townHall.getStorage());
-                hex.setEntity(new Field());
-                updateDefenseLevel(map, hex, 0, selfColor);
-            }
-        });
 
-        return Pair.of(finalMainTownHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
+        return Pair.of(mainTownHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
     }
 
     private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {

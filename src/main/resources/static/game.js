@@ -948,8 +948,10 @@ function onHexClick(cubicCoords) {
             state.selectedHex = null;
         } else if (
             (
-                (clickedHex.color == state.currentColor && (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) || clickedHex.entity.ownerColor == state.currentColor) 
-                && state.selectedHex == null
+                (clickedHex.color == state.currentColor &&
+                (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) ||
+                clickedHex.entity.ownerColor == state.currentColor) &&
+                state.selectedHex == null
             ) {
 
             if (selectableUnits.has(clickedHex.entity.type)) {
@@ -1146,13 +1148,15 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
                 ctx.globalAlpha = 1.0;
             }
             if (hex.entity.movedOnThisTurn === false) {
-                                ctx.drawImage(getEntityImage('WARNING'),
-                                        x - iconSize / 2.5,
-                                        y - (iconSize / 1.2) + yOffset,
-                                        iconSize / 1.3,
-                                        iconSize / 1.3
-                                    );
-                        }
+                if (hex.color == state.currentColor || hex.entity.ownerColor == state.currentColor) {
+                    ctx.drawImage(getEntityImage('WARNING'),
+                                                        x - iconSize / 2.5,
+                                                        y - (iconSize / 1.2) + yOffset,
+                                                        iconSize / 1.3,
+                                                        iconSize / 1.3
+                                                    );
+                }
+            }
             ctx.drawImage(img, 
                 x - iconSize/2, 
                 y - iconSize/2 + yOffset, 
