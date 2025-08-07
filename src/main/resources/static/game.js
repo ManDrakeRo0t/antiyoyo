@@ -1025,7 +1025,7 @@ function updateUnitButtons() {
         button.classList.toggle('selected', state.selectedUnit === entityType);
         // Disable unit buttons if it's not the player's turn (or if unaffordable)
         if (!isInteractionAllowed()) {
-            button.disabled = true;
+            button.disabled = true; // тут где-то бага я поменял баттон на див чтоб картинка норм была
         } else {
             // Проверяем хватает ли всех ресурсов
             const priceElement = document.querySelector(`.unit-price[data-unit="${entityType}"]`);
@@ -1412,83 +1412,237 @@ function startTimerUpdater() {
 }
 
 // Модифицируем drawPowerPieChart
+// function drawPowerPieChart(powerObj) {
+//     const colors = Object.keys(powerObj);
+//     const values = Object.values(powerObj);
+//     const total = values.reduce((a, b) => a + b, 0);
+//     if (total === 0) return;
+//     const centerY = 40; // отступ сверху
+//     const radius = 40;
+//     // --- Центрирование двух элементов ---
+//     const gap = 20; // px между диаграммой и часами
+//     const totalWidth = radius * 2 + gap + radius * 2;
+//     const centerX = canvas.width / 2 - totalWidth / 2 + radius;
+//     const clockX = centerX + radius + gap + radius; // центр clock.svg
+
+//     // Размеры для таймера
+//     const clockRadius = radius * 0.7; // Уменьшаем размер часов
+//     const timerFontSize = 24; // Размер шрифта для секунд
+//     const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
+
+//     let startAngle = -Math.PI / 2; // сверху
+//     // Цвета для секторов
+//     colors.forEach((color, i) => {
+//         const value = powerObj[color];
+//         if (value <= 0) return;
+//         const percent = value / total;
+//         const endAngle = startAngle + percent * 2 * Math.PI;
+//         ctx.beginPath();
+//         ctx.moveTo(centerX, centerY);
+//         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+//         ctx.closePath();
+//         ctx.fillStyle = colorMap[color] || '#ccc';
+//         ctx.globalAlpha = 0.85;
+//         ctx.fill();
+//         ctx.globalAlpha = 1.0;
+//         // --- подпись процента ---
+//         const midAngle = (startAngle + endAngle) / 2;
+//         const labelRadius = radius * 0.65;
+//         const labelX = centerX + labelRadius * Math.cos(midAngle);
+//         const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
+//         const percentText = Math.round(percent * 100) + '%';
+//         let textColor = '#fff';
+//         if (colorMap[color]) {
+//             const hex = colorMap[color].replace('#','');
+//             const r = parseInt(hex.substring(0,2),16);
+//             const g = parseInt(hex.substring(2,4),16);
+//             const b = parseInt(hex.substring(4,6),16);
+//             const brightness = (r*299 + g*587 + b*114) / 1000;
+//             if (brightness > 170) textColor = '#222';
+//         }
+//         ctx.font = 'bold 15px Arial';
+//         ctx.textAlign = 'center';
+//         ctx.textBaseline = 'middle';
+//         ctx.fillStyle = textColor;
+//         ctx.fillText(percentText, labelX, labelY);
+//         startAngle = endAngle;
+//     });
+//     // Белая обводка
+//     ctx.beginPath();
+//     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+//     ctx.lineWidth = 3;
+//     ctx.strokeStyle = '#fff';
+//     ctx.stroke();
+
+//     // --- CLOCK & TIMER ---
+//     // endMoveTime должен быть в hexData.endMoveTime
+//     if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
+//         // Запускаем обновление таймера
+//         if (lastEndMoveTime !== hexData.endMoveTime) {
+//             lastEndMoveTime = hexData.endMoveTime;
+//             startTimerUpdater();
+//         }
+//         const secondsLeft = getSecondsLeft(hexData.endMoveTime);
+//         // Рисуем иконку часов
+//         if (clockImg.complete) {
+//             ctx.save();
+//             ctx.drawImage(clockImg, 
+//                 clockX - clockRadius, 
+//                 clockY - clockRadius, 
+//                 clockRadius * 2, 
+//                 clockRadius * 2
+//             );
+//             ctx.restore();
+//         } else {
+//             clockImg.onload = () => renderGrid();
+//         }
+//         // Рисуем секунды под иконкой
+//         ctx.save();
+//         ctx.font = `bold ${timerFontSize}px "Castlefire", Arial, sans-serif`;
+//         ctx.textAlign = 'center';
+//         ctx.textBaseline = 'top';
+//         ctx.fillStyle = '#222';
+//         ctx.strokeStyle = '#fff';
+//         ctx.lineWidth = 4;
+//         const timerText = secondsLeft + 's';
+//         const textY = clockY + clockRadius - timerFontSize/2;
+//         // Белая обводка для читаемости
+//         ctx.strokeText(timerText, clockX, textY);
+//         ctx.fillText(timerText, clockX, textY);
+//         ctx.restore();
+//     }
+// }
+
 function drawPowerPieChart(powerObj) {
-    const colors = Object.keys(powerObj);
-    const values = Object.values(powerObj);
-    const total = values.reduce((a, b) => a + b, 0);
+    // Фильтруем нулевые значения и сортируем по убыванию
+    const entries = Object.entries(powerObj)
+        .filter(([_, value]) => value > 0)
+        .sort((a, b) => b[1] - a[1]);
+    
+    const total = entries.reduce((sum, [_, value]) => sum + value, 0);
     if (total === 0) return;
-    const centerY = 40; // отступ сверху
-    const radius = 40;
-    // --- Центрирование двух элементов ---
-    const gap = 20; // px между диаграммой и часами
-    const totalWidth = radius * 2 + gap + radius * 2;
-    const centerX = canvas.width / 2 - totalWidth / 2 + radius;
-    const clockX = centerX + radius + gap + radius; // центр clock.svg
 
-    // Размеры для таймера
-    const clockRadius = radius * 0.7; // Уменьшаем размер часов
-    const timerFontSize = 24; // Размер шрифта для секунд
-    const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
+    // --- Настройки диаграммы ---
+    const barWidth = 1200;
+    const barHeight = 30;
+    const borderRadius = 12;
+    const barY = 40;
+    const maxColors = 8;
 
-    let startAngle = -Math.PI / 2; // сверху
-    // Цвета для секторов
-    colors.forEach((color, i) => {
-        const value = powerObj[color];
-        if (value <= 0) return;
-        const percent = value / total;
-        const endAngle = startAngle + percent * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = colorMap[color] || '#ccc';
-        ctx.globalAlpha = 0.85;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        // --- подпись процента ---
-        const midAngle = (startAngle + endAngle) / 2;
-        const labelRadius = radius * 0.65;
-        const labelX = centerX + labelRadius * Math.cos(midAngle);
-        const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
-        const percentText = Math.round(percent * 100) + '%';
-        let textColor = '#fff';
-        if (colorMap[color]) {
-            const hex = colorMap[color].replace('#','');
-            const r = parseInt(hex.substring(0,2),16);
-            const g = parseInt(hex.substring(2,4),16);
-            const b = parseInt(hex.substring(4,6),16);
-            const brightness = (r*299 + g*587 + b*114) / 1000;
-            if (brightness > 170) textColor = '#222';
-        }
-        ctx.font = 'bold 15px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = textColor;
-        ctx.fillText(percentText, labelX, labelY);
-        startAngle = endAngle;
-    });
-    // Белая обводка
+    // --- Центрирование ---
+    const centerX = canvas.width / 2 - barWidth / 2;
+
+    // --- Рисуем фон (бордер) ---
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#fff';
+    ctx.roundRect(centerX, barY - barHeight / 2, barWidth, barHeight, borderRadius);
+
+    ctx.fill();
+    ctx.globalAlpha = 1.0;
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 8;
     ctx.stroke();
 
-    // --- CLOCK & TIMER ---
-    // endMoveTime должен быть в hexData.endMoveTime
+    // --- Рисуем цветные сегменты ---
+    let currentX = centerX;
+    const visibleEntries = entries.slice(0, maxColors);
+    const minWidth = ctx.measureText("1%").width + 20;
+    
+    // Вычисляем фактические ширины сегментов
+    const segments = visibleEntries.map(([color, value]) => {
+        const percent = value / total;
+        return {
+            color,
+            width: barWidth * percent,
+            percent
+        };
+    });
+
+    // Гарантируем минимальную ширину для видимых сегментов
+    segments.forEach(seg => {
+        seg.width = Math.max(seg.width, minWidth);
+    });
+
+    // Корректируем ширины, чтобы точно вписаться в barWidth
+    const totalWidth = segments.reduce((sum, seg) => sum + seg.width, 0);
+    if (totalWidth > barWidth) {
+        // Уменьшаем все сегменты пропорционально, кроме последнего
+        const scale = (barWidth - minWidth) / (totalWidth - segments[segments.length-1].width);
+        segments.slice(0, -1).forEach(seg => {
+            seg.width *= scale;
+        });
+        // Последний сегмент делаем минимальной ширины
+        segments[segments.length-1].width = minWidth;
+    }
+
+    // Отрисовка сегментов
+    segments.forEach((segment, i) => {
+        const { color, width, percent } = segment;
+        
+        // Определяем скругления
+        let radii;
+        if (i === 0) {
+            radii = [borderRadius, 0, 0, borderRadius]; // Скругление слева у первого
+        } else if (i === segments.length - 1) {
+            radii = [0, borderRadius, borderRadius, 0]; // Скругление справа у последнего
+        } else {
+            radii = [0, 0, 0, 0]; // Без скруглений
+        }
+
+        // Рисуем сегмент
+        ctx.beginPath();
+        ctx.roundRect(
+            currentX, 
+            barY - barHeight / 2, 
+            width, 
+            barHeight, 
+            radii
+        );
+        ctx.fillStyle = colorMap[color] || '#ccc';
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+
+        // Подпись процента
+        const textX = currentX + width / 2;
+        const textY = barY;
+        const percentText = Math.round(percent * 100) + '%';
+        
+        // Измененный стиль текста на rusty_typewriter
+        ctx.font = 'bold 20px rusty_typewriter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 5;
+        ctx.strokeText(percentText, textX, textY);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(percentText, textX, textY);
+
+        currentX += width;
+    });
+
+    // --- Таймер ---
     if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
-        // Запускаем обновление таймера
+        const timerFontSize = 24;
+        const timerY = barY + barHeight + 60; // Увеличили отступ для размещения под таймером
+        const timerX = canvas.width / 2;
+
         if (lastEndMoveTime !== hexData.endMoveTime) {
             lastEndMoveTime = hexData.endMoveTime;
             startTimerUpdater();
         }
         const secondsLeft = getSecondsLeft(hexData.endMoveTime);
-        // Рисуем иконку часов
+
+        const clockRadius = 20;
+        const timerText = secondsLeft + 's';
+        const textWidth = ctx.measureText(timerText).width;
+        const totalBlockWidth = clockRadius * 2 + 10 + textWidth;
+        const blockStartX = timerX - totalBlockWidth / 2;
+
         if (clockImg.complete) {
             ctx.save();
-            ctx.drawImage(clockImg, 
-                clockX - clockRadius, 
-                clockY - clockRadius, 
+            ctx.drawImage(
+                clockImg, 
+                blockStartX, 
+                timerY - clockRadius - 30, // Поднимаем часы выше
                 clockRadius * 2, 
                 clockRadius * 2
             );
@@ -1496,22 +1650,20 @@ function drawPowerPieChart(powerObj) {
         } else {
             clockImg.onload = () => renderGrid();
         }
-        // Рисуем секунды под иконкой
+
+        // Рисуем текст таймера под часами
         ctx.save();
-        ctx.font = `bold ${timerFontSize}px "Castlefire", Arial, sans-serif`;
-        ctx.textAlign = 'center';
+        ctx.font = `bold ${timerFontSize}px rusty_typewriter`;
+        ctx.textAlign = 'center'; // Выравнивание по центру
         ctx.textBaseline = 'top';
         ctx.fillStyle = '#222';
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        const timerText = secondsLeft + 's';
-        const textY = clockY + clockRadius - timerFontSize/2;
-        // Белая обводка для читаемости
-        ctx.strokeText(timerText, clockX, textY);
-        ctx.fillText(timerText, clockX, textY);
+        
+        // Текст под часами
+        ctx.fillText(timerText, timerX, timerY);
         ctx.restore();
     }
 }
+
 
 // --- ПК: обработка клика только через click ---
 canvas.addEventListener('click', function(e) {

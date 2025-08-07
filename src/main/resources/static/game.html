@@ -8,168 +8,209 @@
     <link rel="icon" type="image/png" href="ui-elements/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
+    
 </head>
 <body>
-    <div id="sessionInput">
-        <input type="text" id="sessionId" placeholder="Enter session UUID">
-        <div class="button-container">
-            <button onclick="goBack()">
-                <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Back" />
-                <span class="button-text">BACK</span>
-            </button>
-            <button onclick="connectToSession()">
-                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Connect" />
-                <span class="button-text">CONNECT</span>
-            </button>
+<!-- Старые блоки "Подключиться к игре" - но без них не работает! -->
+<div id="sessionInput">
+    <input type="text" id="sessionId" placeholder="Enter session UUID">
+    <div class="button-container">
+        <button onclick="goBack()">
+            <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Back" />
+            <span class="button-text">BACK</span>
+        </button>
+        <button onclick="connectToSession()">
+            <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Connect" />
+            <span class="button-text">CONNECT</span>
+        </button>
+    </div>
+</div>
+
+<!-- Блок при подключении количество игроков -->
+<div id="colorWaitingPanel" class="color-waiting-panel" style="display: none;">
+    <div class="cw-title">Connection success!</div>
+    <div class="cw-icons-row">
+        <div class="cw-icon-block">
+            <img src="ui-elements/players_v1.png" class="cw-icon" alt="Users" />
+            <div class="cw-users-label">
+                <span id="cwConnectedPlayers">0</span> / <span id="cwTotalPlayers">0</span>
+            </div>
         </div>
+        <div class="cw-icon-block">
+            <img src="ui-elements/planet.png" class="cw-icon" alt="Ranking" />
+            <div class="cw-ranking-label">Ranking</div>
+        </div>
+    </div>
+</div>
+<!-- Блок для выбора после подключения -->
+<div id="colorSelectModal" class="color-select-modal" style="display: none;">
+    <div class="cw-title">Select your color:</div>
+    <div class="cw-color-circles"></div>
+    <div class="color-select-actions">
+        <button id="leaveColorSelectBtn" class="cw-select-btn" onclick="window.location.href='index.html'" style="background: none;">
+            <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
+            <span class="button-text">LEAVE</span>
+        </button>
+        <button id="cwSelectBtn" class="cw-select-btn" disabled>
+            <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Select" />
+            <span class="button-text">SELECT</span>
+        </button>
+    </div>
+</div>
+
+<!-- Ресурсы государства -->
+<div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 5px;">
+        <div class="balance-icon"></div>
+        <span class="balance-amount"></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 5px;">
+        <div class="stone-icon"></div>
+        <span class="stone-amount"></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 5px;">
+        <div class="tree-icon"></div>
+        <span class="tree-amount"></span>
+    </div>
+</div>
+
+<!-- Флаг чей ход -->
+<div id="currentTurnIndicator" class="current-turn-indicator">
+    <div class="current-turn-icon"></div>
+</div>
+
+<!-- Сообщения -->
+<div id="container">
+    <canvas id="hexCanvas"></canvas>
+    <div id="notificationContainer" class="notification-container"></div>
+</div>
+<!-- Создание юнитов, зданий -->
+<div id="controlPanel"> 
+    <div class="unit-buttons-container">
+        
+        <div class="unit-button-container">
+            <div id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Бункер">
+                <img src="images/big_tower.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="BIG_TOWER"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Аванпост">
+                <img src="images/tower.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="TOWER"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Завод">
+                <img src="images/factory.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="FACTORY"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="FOREST_FARM_Btn" class="unit-button" onclick="sendUnitMove('FOREST_FARM')" title="Лесопилка">
+                <img src="images/forest-farm.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="FOREST_FARM"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="MINE_FARM_Btn" class="unit-button" onclick="sendUnitMove('MINE_FARM')" title="Шахта">
+                <img src="images/mine-farm.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="MINE_FARM"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="DESTROY_Btn" class="unit-button" onclick="sendUnitMove('FIELD')" title="Разрушить здание">
+                <img src="images/demolition_btn.png" style="width:100%;height:100%;">
+            </div>
+        </div>
+        <div class="unit-button-container">
+            <div id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Рядовой">
+                <img src="images/unit1.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="UNIT_1"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Солдат">
+                <img src="images/unit2.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="UNIT_2"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Танк">
+                <img src="images/unit3.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="UNIT_3"></span>
+        </div>
+        <div class="unit-button-container">
+            <div id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Истребитель">
+                <img src="images/tank.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="TANK"></span>
+        </div>
+        <div class="drone-button-container" style="display: none;">
+            <div id="DRONE_Btn" class="unit-button" onclick="sendUnitMove('DRONE')" title="Дрон">
+                <img src="images/drone.png" style="width:100%;height:100%;">
+            </div>
+            <span class="unit-price" data-unit="DRONE"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Отменить действие, закончить ход -->
+<div id="actionButtonsPanel">
+    <div class="action-button" title="Отменить действие"  onclick="sendUndoMove()">
+        <img src="ui-elements/undo-move.svg" style="width:100%;height:100%;">
+    </div>
+    <div class="action-button" title="Закончить ход"  onclick="endTurn()">
+        <img src="ui-elements/end-turn.svg" style="width:100%;height:100%;">
+    </div>
+</div>
+
+
+
+
+
+
+
+
+<!-- Game status overlay -->
+<div id="gameStatusOverlay" class="game-status-overlay" style="display: none;">
+    <div class="game-status-content">
+        <h2 id="gameStatusTitle" class="game-status-title"></h2>
     </div>
 
-     
-        <div class="modal-container" id="victoryModal" style="display: none;">
-            <div class="modal-title">Victory</div>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <img src="ui-elements/icon_victory.png" class="icon-pop-up"/>
-                <div class="pop-up-description">Congradulations!</div>
-                <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
-                    <button class="svg-btn-yellow" id="victoryMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
-                        <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
-                        <span class="svg-btn-text">Main</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="modal-container" id="watchModal" style="display: none;">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <img src="ui-elements/icon_defeat_v2.png" class="icon-pop-up"/>
-                <div class="pop-up-description">You were defeated, but you can watch</div>
-                <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
-                    <button class="svg-btn-yellow" id="watchMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
-                        <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
-                        <span class="svg-btn-text">Main</span>
-                    </button>
-                </div>
-                <button class="svg-btn-blue" id="watchWatchBtn" onclick="state.spectatorMode = true; document.getElementById('watchModal').style.display = 'none'" style="display: flex; align-items: center; justify-content: center; margin-top: 18px; width: 100%;">
-                    <img src="ui-elements/svg/blue_button.svg" style="width:100%;height:100%;pointer-events:none;user-select:none;">
-                    <span class="svg-btn-text">Watch</span>
-                </button>
-            </div>
-        </div>
-    
-    
-
-    <div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <div class="balance-icon"></div>
-            <span class="balance-amount"></span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <div class="stone-icon"></div>
-            <span class="stone-amount"></span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <div class="tree-icon"></div>
-            <span class="tree-amount"></span>
-        </div>
-    </div>
-    <div id="container">
-        <canvas id="hexCanvas"></canvas>
-        <div id="notificationContainer" class="notification-container"></div>
-    </div>
-    <div id="controlPanel">
-        <div class="unit-buttons-container">
-            <div class="unit-button-container">
-                <button id="DESTROY_Btn" class="unit-button" onclick="sendUnitMove('FIELD')" title="Destroy"></button>
-            </div>
-            <div class="unit-button-container">
-                <button id="BIG_TOWER_Btn" class="unit-button" onclick="sendUnitMove('BIG_TOWER')" title="Big Tower"></button>
-                <div class="unit-price" data-unit="BIG_TOWER"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="TOWER_Btn" class="unit-button" onclick="sendUnitMove('TOWER')" title="Tower"></button>
-                <div class="unit-price" data-unit="TOWER"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="FACTORY_Btn" class="unit-button" onclick="sendUnitMove('FACTORY')" title="Factory"></button>
-                <div class="unit-price" data-unit="FACTORY"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="FOREST_FARM_Btn" class="unit-button" onclick="sendUnitMove('FOREST_FARM')" title="Forest Farm"></button>
-                <div class="unit-price" data-unit="FOREST_FARM"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="MINE_FARM_Btn" class="unit-button" onclick="sendUnitMove('MINE_FARM')" title="Mine Farm"></button>
-                <div class="unit-price" data-unit="MINE_FARM"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="UNIT_1_Btn" class="unit-button" onclick="sendUnitMove('UNIT_1')" title="Unit Level 1"></button>
-                <div class="unit-price" data-unit="UNIT_1"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="UNIT_2_Btn" class="unit-button" onclick="sendUnitMove('UNIT_2')" title="Unit Level 2"></button>
-                <div class="unit-price" data-unit="UNIT_2"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="UNIT_3_Btn" class="unit-button" onclick="sendUnitMove('UNIT_3')" title="Unit Level 3"></button>
-                <div class="unit-price" data-unit="UNIT_3"></div>
-            </div>
-            <div class="unit-button-container">
-                <button id="TANK_Btn" class="unit-button" onclick="sendUnitMove('TANK')" title="Tank"></button>
-                <div class="unit-price" data-unit="TANK"></div>
-            </div>
-            <div class="unit-button-container drone-button-container" style="display: none;">
-                <button id="DRONE_Btn" class="unit-button" onclick="sendUnitMove('DRONE')" title="Drone"></button>
-                <div class="unit-price" data-unit="DRONE"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- New action buttons panel -->
-    <div id="actionButtonsPanel">
-        <button class="action-button" id="undoBtn" onclick="sendUndoMove()" title="Undo Move"></button>
-        <button class="action-button" id="endTurnBtn" onclick="endTurn()" title="End Turn"></button>
-    </div>
-
-    <!-- Color & waiting panel (NEW) -->
-    <div id="colorWaitingPanel" class="color-waiting-panel" style="display: none;">
-        <div class="cw-title">Connection success!</div>
-        <div class="cw-icons-row">
-            <div class="cw-icon-block">
-                <img src="ui-elements/players_v1.png" class="cw-icon" alt="Users" />
-                <div class="cw-users-label">
-                    <span id="cwConnectedPlayers">0</span> / <span id="cwTotalPlayers">0</span>
-                </div>
-            </div>
-            <div class="cw-icon-block">
-                <img src="ui-elements/planet.png" class="cw-icon" alt="Ranking" />
-                <div class="cw-ranking-label">Ranking</div>
-            </div>
-        </div>
-    </div>
-    <!-- Новый поп-ап выбора цвета -->
-    <div id="colorSelectModal" class="color-select-modal" style="display: none;">
-        <div class="cw-title">Select your color:</div>
-        <div class="cw-color-circles"></div>
-        <div class="color-select-actions">
-            <button id="leaveColorSelectBtn" class="cw-select-btn" onclick="window.location.href='index.html'" style="background: none;">
-                <img class="button-bg" src="ui-elements/svg/red_button.svg" alt="Leave" />
-                <span class="button-text">LEAVE</span>
-            </button>
-            <button id="cwSelectBtn" class="cw-select-btn" disabled>
-                <img class="button-bg" src="ui-elements/svg/blue_button.svg" alt="Select" />
-                <span class="button-text">SELECT</span>
+<!-- Поп-ап победы -->
+<div class="modal-container" id="victoryModal" style="display: none;">
+    <div class="modal-title">Victory</div>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <img src="ui-elements/icon_victory.png" class="icon-pop-up"/>
+        <div class="pop-up-description">Congradulations!</div>
+        <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
+            <button class="svg-btn-yellow" id="victoryMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
+                <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <span class="svg-btn-text">Main</span>
             </button>
         </div>
     </div>
-    <!-- Current turn indicator -->
-    <div id="currentTurnIndicator" class="current-turn-indicator">
-        <div class="current-turn-icon"></div>
-    </div>
-    <!-- Game status overlay -->
-    <div id="gameStatusOverlay" class="game-status-overlay" style="display: none;">
-        <div class="game-status-content">
-            <h2 id="gameStatusTitle" class="game-status-title"></h2>
+</div>
+<!-- Поп-ап поражения -->
+<div class="modal-container" id="watchModal" style="display: none;">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <img src="ui-elements/icon_defeat_v2.png" class="icon-pop-up"/>
+        <div class="pop-up-description">You were defeated, but you can watch</div>
+        <div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
+            <button class="svg-btn-yellow" id="watchMainBtn" onclick="window.location.href = 'index.html'" style="display: flex; align-items: center; justify-content: center;">
+                <img src="ui-elements/svg/yellow_button.svg"style="width:100%;height:100%;pointer-events:none;user-select:none;">
+                <span class="svg-btn-text">Main</span>
+            </button>
         </div>
+        <button class="svg-btn-blue" id="watchWatchBtn" onclick="state.spectatorMode = true; document.getElementById('watchModal').style.display = 'none'" style="display: flex; align-items: center; justify-content: center; margin-top: 18px; width: 100%;">
+            <img src="ui-elements/svg/blue_button.svg" style="width:100%;height:100%;pointer-events:none;user-select:none;">
+            <span class="svg-btn-text">Watch</span>
+        </button>
     </div>
+</div>
+</div>
     <script src="common.js"></script>
     <script src="auth.js"></script>
     <script src="biome.js"></script>

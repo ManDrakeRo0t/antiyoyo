@@ -52,6 +52,10 @@
             line-height: 1;
             margin-bottom: 24px;
         }
+        .app-version {
+            font-family: rusty_typewriter;
+            text-align: center;
+        }
         @media (min-width: 390px) { 
             .logo { width: 180px; margin-top: 10px; margin-bottom: 10px; }
             .title { font-size: 50px; }
@@ -60,6 +64,7 @@
             .buttons { gap: 12px; }
             .svg-btn { width: 240px; height: 60px; }
             .svg-btn-text { font-size: 35px; }
+            .app-version { font-size: 24px; margin-top: 12px; display: none; }
 
             .bottom-buttons { gap: 25px; margin-top: 20px;}
             .circle-btn { width: 60px; height: 60px; }
@@ -76,6 +81,7 @@
             .buttons { gap: 12px; }
             .svg-btn { width: 280px; height: 67px; }
             .svg-btn-text { font-size: 40px; }
+            .app-version { font-size: 24px; margin-top: 12px; display: flex; }
             
             .bottom-buttons { gap: 27px; margin-top: 16px;}
             .circle-btn { width: 67px; height: 67px; }
@@ -95,6 +101,7 @@
 
             .bottom-buttons { gap: 60px; margin-top: 50px; }
             .circle-btn { width: 90px; height: 90px; }
+            .app-version { font-size: 40px; margin-top: 50px;}
 
             #watchModal.modal-container { width: 500px; top: 56%; padding: 24px; }
             .icon-pop-up { width: 145px;  margin-bottom: 24px; }
@@ -133,6 +140,7 @@
         <img src="ui-elements/svg/ratings_button.svg" alt="dollar" class="circle-btn"  onclick="window.location.href='ratings.html'" >
         <img src="ui-elements/svg/settings_button.svg" alt="settings" class="circle-btn" onclick="window.location.href='settings.html'">
     </div>
+    <div class="app-version">v1.12.0</div>
     <div class="modal-container" id="watchModal" style="display: none;">
         <div style="display: flex; flex-direction: column; align-items: center;">
             <img src="ui-elements/warning_v1.png" class="icon-pop-up"/>
