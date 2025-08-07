@@ -22,6 +22,7 @@ function getWebSocketUrl() {
 }
 
 let colorForHex = null
+let powerByColor = null; // Добавляем объявление глобальной переменной
 
 const selectableUnits = new Set();
             selectableUnits.add("UNIT_1");
@@ -415,8 +416,15 @@ function updateHexData(data) {
         updateControlPanelVisibility();
         checkPlayerStatus();
         checkGameStatus(); // Check for winner or destroyed player
-        updateCurrentTurnIndicator(); // Update current turn display
+
         updateUnitButtons();
+        
+        // Обновляем power chart и timer
+        if (data.powerByColor) {
+            updatePowerChart(data.powerByColor);
+        }
+        updateTimerDisplay();
+        
         renderGrid(); // Trigger render to start animation if needed
     } else if (data.message) {
         showNotification(data.message);
@@ -535,31 +543,7 @@ function hideGameStatusOverlay() {
     gameStatusOverlay.style.display = 'none';
 }
 
-// Update current turn indicator
-function updateCurrentTurnIndicator() {
-    const currentTurnIndicator = document.getElementById('currentTurnIndicator');
-    const currentTurnIconDiv = currentTurnIndicator.querySelector('.current-turn-icon'); /* Get the icon div */
-    
-    if (!hexData.players || hexData.currentPlayerMove === null || hexData.currentPlayerMove === undefined) {
-        currentTurnIndicator.style.display = 'none';
-        return;
-    }
-    
-    const currentPlayer = hexData.players[hexData.currentPlayerMove];
-    if (!currentPlayer) {
-        currentTurnIndicator.style.display = 'none';
-        return;
-    }
-    
-    if (!state.gameStarted) {
-            currentTurnIndicator.style.display = 'none';
-            return;
-    }
-    const colorHex = colorMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
 
-    currentTurnIconDiv.style.backgroundColor = colorHex; /* Set background color for the flag icon via mask */
-    currentTurnIndicator.style.display = 'flex'; /* Changed to flex */
-}
 
 // Show appropriate waiting UI
 function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
@@ -693,7 +677,25 @@ function init() {
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    
+    // Debounce для обновления power chart при изменении размера окна
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (powerByColor) {
+                updatePowerChart(powerByColor);
+            }
+        }, 250);
+    });
+    
     updateControlPanelVisibility();
+    
+    // Инициализируем таймер и power chart
+    updateTimerDisplay();
+    if (powerByColor) {
+        updatePowerChart(powerByColor);
+    }
 
     // Mouse event handlers
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -742,11 +744,6 @@ function renderGrid() {
         const pixelPos = cubeToPixel(hex.vector);
         drawHexagonBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
     });
-
-    // Рисуем круговую диаграмму powerByColor
-    if (powerByColor) {
-        drawPowerPieChart(powerByColor);
-    }
 }
 
 // Function to check if it's the current player's turn
@@ -1407,261 +1404,224 @@ function getSecondsLeft(endMoveTime) {
 function startTimerUpdater() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (typeof renderGrid === 'function') renderGrid();
+        updateTimerDisplay();
     }, 1000);
 }
 
-// Модифицируем drawPowerPieChart
-// function drawPowerPieChart(powerObj) {
-//     const colors = Object.keys(powerObj);
-//     const values = Object.values(powerObj);
-//     const total = values.reduce((a, b) => a + b, 0);
-//     if (total === 0) return;
-//     const centerY = 40; // отступ сверху
-//     const radius = 40;
-//     // --- Центрирование двух элементов ---
-//     const gap = 20; // px между диаграммой и часами
-//     const totalWidth = radius * 2 + gap + radius * 2;
-//     const centerX = canvas.width / 2 - totalWidth / 2 + radius;
-//     const clockX = centerX + radius + gap + radius; // центр clock.svg
+// Новая функция для обновления отображения таймера
+function updateTimerDisplay() {
+    const timerOverlay = document.getElementById('timerOverlay');
+    const timerProgressFill = document.querySelector('.timer-progress-fill');
+    const timerText = document.querySelector('.timer-text');
+    
+    if (!timerOverlay) {
+        console.warn('Timer overlay element not found');
+        return;
+    }
+    
+    if (!hexData || !hexData.endMoveTime) {
+        timerOverlay.style.display = 'none';
+        return;
+    }
+    
+    const secondsLeft = getSecondsLeft(hexData.endMoveTime);
+    if (secondsLeft === null || secondsLeft <= 0) {
+        timerOverlay.style.display = 'none';
+        return;
+    }
+    
+    // Показываем таймер
+    timerOverlay.style.display = 'block';
+    
+    // Получаем цвет текущего игрока
+    let currentPlayerColor = '#ff6b6b'; // цвет по умолчанию
+    let currentPlayerColorName = null;
+    if (hexData.players && hexData.currentPlayerMove !== null && hexData.currentPlayerMove !== undefined) {
+        const currentPlayer = hexData.players[hexData.currentPlayerMove];
+        if (currentPlayer && currentPlayer.color) {
+            currentPlayerColor = colorMap[currentPlayer.color] || '#ff6b6b';
+            currentPlayerColorName = currentPlayer.color;
+        }
+    }
+    
+    // Проверяем, является ли текущий игрок активным (currentColor == currentPlayer.color)
+    const isCurrentPlayerActive = state.currentColor && state.currentColor === currentPlayerColorName;
+    
+    // Обновляем цвет прогресс-бара
+    if (timerProgressFill) {
+        // Создаем градиент с цветом текущего игрока
+        const gradientColor = currentPlayerColor;
+        const lighterColor = adjustBrightness(gradientColor, 1.3); // Делаем цвет светлее для градиента
+        timerProgressFill.style.background = `linear-gradient(90deg, ${gradientColor}, ${lighterColor})`;
+        
+        // Используем настройки из state.settings.secondsToMove
+        const maxTime = state.settings && state.settings.secondsToMove ? state.settings.secondsToMove : 60;
+        const progressPercent = Math.max(0, (secondsLeft / maxTime) * 100);
+        timerProgressFill.style.width = progressPercent + '%';
+        
+        // Изменяем высоту полоски в зависимости от того, активен ли текущий игрок
+        if (isCurrentPlayerActive) {
+            timerProgressFill.style.height = '20px'; // Полная высота
+        } else {
+            timerProgressFill.style.height = '8px'; // Уменьшенная высота
+        }
+    }
+    
+    // Изменяем высоту контейнера timer-progress-bar
+    const timerProgressBar = document.querySelector('.timer-progress-bar');
+    if (timerProgressBar) {
+        if (isCurrentPlayerActive) {
+            timerProgressBar.style.height = '20px'; // Полная высота
+        } else {
+            timerProgressBar.style.height = '8px'; // Уменьшенная высота
+        }
+    }
+    
+    // Обновляем текст - показываем только если текущий игрок активен
+    if (timerText) {
+        if (isCurrentPlayerActive) {
+            timerText.textContent = secondsLeft + 's';
+            timerText.style.display = 'block';
+        } else {
+            timerText.style.display = 'none';
+        }
+    }
+    
+    // Добавляем анимации для привлечения внимания
+    timerOverlay.classList.remove('urgent', 'start-turn');
+    
+    if (isCurrentPlayerActive) {
+        // Эффект тряски когда остается меньше 10 секунд
+        if (secondsLeft <= 10) {
+            timerOverlay.classList.add('urgent');
+        }
+        
+        // Эффект bounce в первые 3 секунды хода
+        const maxTime = state.settings && state.settings.secondsToMove ? state.settings.secondsToMove : 60;
+        const timeElapsed = maxTime - secondsLeft;
+        if (timeElapsed <= 3 && timeElapsed >= 0) {
+            timerOverlay.classList.add('start-turn');
+        }
+    }
+}
 
-//     // Размеры для таймера
-//     const clockRadius = radius * 0.7; // Уменьшаем размер часов
-//     const timerFontSize = 24; // Размер шрифта для секунд
-//     const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
+// Вспомогательная функция для осветления цвета
+function adjustBrightness(color, factor) {
+    // Проверяем, что цвет валидный
+    if (!color || typeof color !== 'string') {
+        return '#ff6b6b';
+    }
+    
+    // Убираем # если есть
+    const hex = color.replace('#', '');
+    
+    // Проверяем, что hex код валидный
+    if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        return '#ff6b6b';
+    }
+    
+    // Конвертируем в RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Осветляем
+    const newR = Math.min(255, Math.round(r * factor));
+    const newG = Math.min(255, Math.round(g * factor));
+    const newB = Math.min(255, Math.round(b * factor));
+    
+    // Конвертируем обратно в hex
+    return '#' + 
+        (newR < 16 ? '0' : '') + newR.toString(16) +
+        (newG < 16 ? '0' : '') + newG.toString(16) +
+        (newB < 16 ? '0' : '') + newB.toString(16);
+}
 
-//     let startAngle = -Math.PI / 2; // сверху
-//     // Цвета для секторов
-//     colors.forEach((color, i) => {
-//         const value = powerObj[color];
-//         if (value <= 0) return;
-//         const percent = value / total;
-//         const endAngle = startAngle + percent * 2 * Math.PI;
-//         ctx.beginPath();
-//         ctx.moveTo(centerX, centerY);
-//         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-//         ctx.closePath();
-//         ctx.fillStyle = colorMap[color] || '#ccc';
-//         ctx.globalAlpha = 0.85;
-//         ctx.fill();
-//         ctx.globalAlpha = 1.0;
-//         // --- подпись процента ---
-//         const midAngle = (startAngle + endAngle) / 2;
-//         const labelRadius = radius * 0.65;
-//         const labelX = centerX + labelRadius * Math.cos(midAngle);
-//         const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
-//         const percentText = Math.round(percent * 100) + '%';
-//         let textColor = '#fff';
-//         if (colorMap[color]) {
-//             const hex = colorMap[color].replace('#','');
-//             const r = parseInt(hex.substring(0,2),16);
-//             const g = parseInt(hex.substring(2,4),16);
-//             const b = parseInt(hex.substring(4,6),16);
-//             const brightness = (r*299 + g*587 + b*114) / 1000;
-//             if (brightness > 170) textColor = '#222';
-//         }
-//         ctx.font = 'bold 15px Arial';
-//         ctx.textAlign = 'center';
-//         ctx.textBaseline = 'middle';
-//         ctx.fillStyle = textColor;
-//         ctx.fillText(percentText, labelX, labelY);
-//         startAngle = endAngle;
-//     });
-//     // Белая обводка
-//     ctx.beginPath();
-//     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-//     ctx.lineWidth = 3;
-//     ctx.strokeStyle = '#fff';
-//     ctx.stroke();
-
-//     // --- CLOCK & TIMER ---
-//     // endMoveTime должен быть в hexData.endMoveTime
-//     if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
-//         // Запускаем обновление таймера
-//         if (lastEndMoveTime !== hexData.endMoveTime) {
-//             lastEndMoveTime = hexData.endMoveTime;
-//             startTimerUpdater();
-//         }
-//         const secondsLeft = getSecondsLeft(hexData.endMoveTime);
-//         // Рисуем иконку часов
-//         if (clockImg.complete) {
-//             ctx.save();
-//             ctx.drawImage(clockImg, 
-//                 clockX - clockRadius, 
-//                 clockY - clockRadius, 
-//                 clockRadius * 2, 
-//                 clockRadius * 2
-//             );
-//             ctx.restore();
-//         } else {
-//             clockImg.onload = () => renderGrid();
-//         }
-//         // Рисуем секунды под иконкой
-//         ctx.save();
-//         ctx.font = `bold ${timerFontSize}px "Castlefire", Arial, sans-serif`;
-//         ctx.textAlign = 'center';
-//         ctx.textBaseline = 'top';
-//         ctx.fillStyle = '#222';
-//         ctx.strokeStyle = '#fff';
-//         ctx.lineWidth = 4;
-//         const timerText = secondsLeft + 's';
-//         const textY = clockY + clockRadius - timerFontSize/2;
-//         // Белая обводка для читаемости
-//         ctx.strokeText(timerText, clockX, textY);
-//         ctx.fillText(timerText, clockX, textY);
-//         ctx.restore();
-//     }
-// }
-
-function drawPowerPieChart(powerObj) {
+// Новая функция для обновления power chart
+function updatePowerChart(powerObj) {
+    const colorPowers = document.getElementById('colorPowers');
+    const colorPowersBar = document.querySelector('.color-powers-bar');
+    
+    if (!colorPowers || !colorPowersBar) {
+        console.warn('Color powers elements not found');
+        return;
+    }
+    
+    if (!powerObj || Object.keys(powerObj).length === 0) {
+        colorPowers.style.display = 'none';
+        return;
+    }
+    
     // Фильтруем нулевые значения и сортируем по убыванию
     const entries = Object.entries(powerObj)
         .filter(([_, value]) => value > 0)
         .sort((a, b) => b[1] - a[1]);
     
     const total = entries.reduce((sum, [_, value]) => sum + value, 0);
-    if (total === 0) return;
-
-    // --- Настройки диаграммы ---
-    const barWidth = 1200;
-    const barHeight = 30;
-    const borderRadius = 12;
-    const barY = 40;
-    const maxColors = 8;
-
-    // --- Центрирование ---
-    const centerX = canvas.width / 2 - barWidth / 2;
-
-    // --- Рисуем фон (бордер) ---
-    ctx.beginPath();
-    ctx.roundRect(centerX, barY - barHeight / 2, barWidth, barHeight, borderRadius);
-
-    ctx.fill();
-    ctx.globalAlpha = 1.0;
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 8;
-    ctx.stroke();
-
-    // --- Рисуем цветные сегменты ---
-    let currentX = centerX;
-    const visibleEntries = entries.slice(0, maxColors);
-    const minWidth = ctx.measureText("1%").width + 20;
+    if (total === 0) {
+        colorPowers.style.display = 'none';
+        return;
+    }
     
-    // Вычисляем фактические ширины сегментов
-    const segments = visibleEntries.map(([color, value]) => {
-        const percent = value / total;
-        return {
-            color,
-            width: barWidth * percent,
-            percent
-        };
-    });
-
-    // Гарантируем минимальную ширину для видимых сегментов
-    segments.forEach(seg => {
-        seg.width = Math.max(seg.width, minWidth);
-    });
-
-    // Корректируем ширины, чтобы точно вписаться в barWidth
-    const totalWidth = segments.reduce((sum, seg) => sum + seg.width, 0);
-    if (totalWidth > barWidth) {
-        // Уменьшаем все сегменты пропорционально, кроме последнего
-        const scale = (barWidth - minWidth) / (totalWidth - segments[segments.length-1].width);
-        segments.slice(0, -1).forEach(seg => {
-            seg.width *= scale;
+    // Показываем power chart
+    colorPowers.style.display = 'block';
+    
+    // Очищаем предыдущие сегменты
+    colorPowersBar.innerHTML = '';
+    
+    // Настройки
+    const maxColors = 8;
+    const visibleEntries = entries.slice(0, maxColors);
+    const minWidth = 60; // Минимальная ширина в пикселях
+    
+    // Получаем текущую ширину контейнера с небольшой задержкой для корректного расчета
+    setTimeout(() => {
+        const containerWidth = colorPowersBar.offsetWidth || 1200;
+        
+        // Вычисляем фактические ширины сегментов
+        const segments = visibleEntries.map(([color, value]) => {
+            const percent = value / total;
+            return {
+                color,
+                width: containerWidth * percent, // Используем текущую ширину контейнера
+                percent
+            };
         });
-        // Последний сегмент делаем минимальной ширины
-        segments[segments.length-1].width = minWidth;
-    }
-
-    // Отрисовка сегментов
-    segments.forEach((segment, i) => {
-        const { color, width, percent } = segment;
         
-        // Определяем скругления
-        let radii;
-        if (i === 0) {
-            radii = [borderRadius, 0, 0, borderRadius]; // Скругление слева у первого
-        } else if (i === segments.length - 1) {
-            radii = [0, borderRadius, borderRadius, 0]; // Скругление справа у последнего
-        } else {
-            radii = [0, 0, 0, 0]; // Без скруглений
-        }
-
-        // Рисуем сегмент
-        ctx.beginPath();
-        ctx.roundRect(
-            currentX, 
-            barY - barHeight / 2, 
-            width, 
-            barHeight, 
-            radii
-        );
-        ctx.fillStyle = colorMap[color] || '#ccc';
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-
-        // Подпись процента
-        const textX = currentX + width / 2;
-        const textY = barY;
-        const percentText = Math.round(percent * 100) + '%';
+        // Гарантируем минимальную ширину для видимых сегментов
+        segments.forEach(seg => {
+            seg.width = Math.max(seg.width, minWidth);
+        });
         
-        // Измененный стиль текста на rusty_typewriter
-        ctx.font = 'bold 20px rusty_typewriter';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 5;
-        ctx.strokeText(percentText, textX, textY);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(percentText, textX, textY);
-
-        currentX += width;
-    });
-
-    // --- Таймер ---
-    if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
-        const timerFontSize = 24;
-        const timerY = barY + barHeight + 60; // Увеличили отступ для размещения под таймером
-        const timerX = canvas.width / 2;
-
-        if (lastEndMoveTime !== hexData.endMoveTime) {
-            lastEndMoveTime = hexData.endMoveTime;
-            startTimerUpdater();
+        // Корректируем ширины, чтобы точно вписаться в containerWidth
+        const totalWidth = segments.reduce((sum, seg) => sum + seg.width, 0);
+        if (totalWidth > containerWidth) {
+            // Уменьшаем все сегменты пропорционально, кроме последнего
+            const scale = (containerWidth - minWidth) / (totalWidth - segments[segments.length-1].width);
+            segments.slice(0, -1).forEach(seg => {
+                seg.width *= scale;
+            });
+            // Последний сегмент делаем минимальной ширины
+            segments[segments.length-1].width = minWidth;
         }
-        const secondsLeft = getSecondsLeft(hexData.endMoveTime);
-
-        const clockRadius = 20;
-        const timerText = secondsLeft + 's';
-        const textWidth = ctx.measureText(timerText).width;
-        const totalBlockWidth = clockRadius * 2 + 10 + textWidth;
-        const blockStartX = timerX - totalBlockWidth / 2;
-
-        if (clockImg.complete) {
-            ctx.save();
-            ctx.drawImage(
-                clockImg, 
-                blockStartX, 
-                timerY - clockRadius - 30, // Поднимаем часы выше
-                clockRadius * 2, 
-                clockRadius * 2
-            );
-            ctx.restore();
-        } else {
-            clockImg.onload = () => renderGrid();
-        }
-
-        // Рисуем текст таймера под часами
-        ctx.save();
-        ctx.font = `bold ${timerFontSize}px rusty_typewriter`;
-        ctx.textAlign = 'center'; // Выравнивание по центру
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = '#222';
         
-        // Текст под часами
-        ctx.fillText(timerText, timerX, timerY);
-        ctx.restore();
-    }
+        // Создаем сегменты
+        segments.forEach((segment, i) => {
+            const { color, width, percent } = segment;
+            
+            const segmentDiv = document.createElement('div');
+            segmentDiv.className = 'color-segment';
+            segmentDiv.style.backgroundColor = colorMap[color] || '#ccc';
+            segmentDiv.style.width = width + 'px';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'color-segment-text';
+            textDiv.textContent = Math.round(percent * 100) + '%';
+            
+            segmentDiv.appendChild(textDiv);
+            colorPowersBar.appendChild(segmentDiv);
+        });
+    }, 0);
 }
 
 

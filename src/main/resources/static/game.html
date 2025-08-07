@@ -59,7 +59,7 @@
 </div>
 
 <!-- Ресурсы государства -->
-<div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+<div id="balanceDisplay" style="flex-direction: column; align-items: flex-start; gap: 2px; z-index: 4000; background-color: #f0cca5fa; ">
     <div style="display: flex; align-items: center; gap: 5px;">
         <div class="balance-icon"></div>
         <span class="balance-amount"></span>
@@ -74,9 +74,23 @@
     </div>
 </div>
 
-<!-- Флаг чей ход -->
-<div id="currentTurnIndicator" class="current-turn-indicator">
-    <div class="current-turn-icon"></div>
+
+
+<!-- Game Status Panel -->
+<div id="gameStatusPanel" class="game-status-panel">
+    <!-- Power Chart -->
+    <div id="colorPowers" class="color-powers">
+        <div class="color-powers-bar"></div>
+    </div>
+    <!-- Timer -->
+    <div id="timerOverlay" class="timer-overlay">
+        <div class="timer-progress-bar">
+            <div class="timer-progress-fill">
+                <div class="timer-text"></div>
+            </div>
+        </div>
+        
+    </div>
 </div>
 
 <!-- Сообщения -->
@@ -85,7 +99,8 @@
     <div id="notificationContainer" class="notification-container"></div>
 </div>
 <!-- Создание юнитов, зданий -->
-<div id="controlPanel"> 
+<div id="controlPanel">
+
     <div class="unit-buttons-container">
         
         <div class="unit-button-container">
