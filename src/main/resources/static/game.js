@@ -346,9 +346,11 @@ function updateUnitPrices() {
                 </div>`; //🌲
             // Проверяем хватает ли всех ресурсов
             const canAfford = (storage.gold || 0) >= (price.gold || 0) && (storage.tree || 0) >= (price.tree || 0) && (storage.stone || 0) >= (price.stone || 0);
-            button.disabled = !canAfford;
+
+            button.classList.remove('divDisabled','divEnabled' )
             priceElement.classList.remove('affordable', 'unaffordable');
             priceElement.classList.add(canAfford ? 'affordable' : 'unaffordable');
+            button.classList.add(canAfford ? 'divEnabled' : 'divDisabled');
         }
     });
 }
@@ -500,6 +502,7 @@ function checkGameStatus() {
         const currentPlayer = players[state.currentPlayer];
         if (currentPlayer.illuminated === true) {
             showDestroyedMessage();
+            showGameStatusOverlay();
             return;
         }
     }
@@ -509,6 +512,7 @@ function checkGameStatus() {
         const winnerPlayer = Object.values(players).find(player => player.userId === hexData.winnerId);
         if (winnerPlayer && getUserId() === winnerPlayer.userId) {
             showWinnerMessage(winnerPlayer.color);
+            showGameStatusOverlay();
             return;
         }
     }
@@ -524,6 +528,7 @@ function showDestroyedMessage() {
     const watchModal = document.getElementById('watchModal');
     if (state.spectatorMode) {
         watchModal.style.display = 'none';
+        hideGameStatusOverlay();
     } else {
         watchModal.style.display = 'block';
     }
@@ -541,6 +546,15 @@ function hideGameStatusOverlay() {
     const gameStatusOverlay = document.getElementById('gameStatusOverlay');
     if (!gameStatusOverlay) return;
     gameStatusOverlay.style.display = 'none';
+}
+
+function showGameStatusOverlay() {
+    if (state.spectatorMode === true) {
+        return;
+    }
+    const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+    if (!gameStatusOverlay) return;
+    gameStatusOverlay.style.display = 'flex';
 }
 
 
@@ -1539,6 +1553,9 @@ function adjustBrightness(color, factor) {
 
 // Новая функция для обновления power chart
 function updatePowerChart(powerObj) {
+    if (!state.gameStarted) {
+        return
+    }
     const colorPowers = document.getElementById('colorPowers');
     const colorPowersBar = document.querySelector('.color-powers-bar');
     

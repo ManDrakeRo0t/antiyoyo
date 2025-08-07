@@ -190,12 +190,20 @@ canvas {
     background-color: #f44336;
     color: white;
 } */
-/* .unit-price.affordable {
+ .unit-price.affordable {
     color: #4CAF50; 
 }
 .unit-price.unaffordable {
     color: #f44336;  
-} */
+}
+.divDisabled {
+    pointer-events:none;
+    opacity: 0.5;
+}
+
+.divEnabled {
+    cursor:pointer;
+}
 
 
 /* Панель для создания юнитов и зданий */
@@ -439,7 +447,7 @@ canvas {
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 3000;
+        z-index: 6000;
     }
     .game-status-content {
         background-color: white;
