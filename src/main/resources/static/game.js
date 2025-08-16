@@ -3,7 +3,7 @@ let mouseDown = false;
 let mouseMoved = false;
 // Backend host management
 const colorMap = {
-        'EMPTY': '#3CB371',  // серый
+        'EMPTY': '#4bd187',  // серый
         'RED': '#ff0000',    // красный
         'BLUE': '#0000ff',   // синий
         'GREEN': '#00ff00',  // зеленый
@@ -20,6 +20,9 @@ function getWebSocketUrl() {
     }
     return `ws://${backendHost}:8080/ws`;
 }
+
+let colorForHex = null
+let powerByColor = null; // Добавляем объявление глобальной переменной
 
 const selectableUnits = new Set();
             selectableUnits.add("UNIT_1");
@@ -90,11 +93,6 @@ function getColorFromName(colorName) {
     return colorMap[colorName] || config.existingHexColor;
 }
 
-// Function to get random grass color for pattern
-function getRandomGrassColor() {
-    const randomIndex = Math.floor(Math.random() * config.grassColors.length);
-    return config.grassColors[randomIndex];
-}
 
 // Function to get deterministic grass color based on hex coordinates
 function getGrassColorForHex(hex) {
@@ -111,10 +109,11 @@ function getGrassColorForHex(hex) {
 // Function to draw territory borders only on specific sides
 function drawTerritoryBorders(x, y, size, hex, hexData) {
     if (!hex.color || hex.color === 'EMPTY') return;
-
+     borderWidth = 3;
      if (hex.glue) {
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = "gold";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "white";
+             borderWidth = 5;
       }
     // Порядок соседей для вашей системы!
     const neighbors = [
@@ -127,7 +126,7 @@ function drawTerritoryBorders(x, y, size, hex, hexData) {
     ];
 
     const borderColor = getColorFromName(hex.color);
-    const borderWidth = 3;
+
     ctx.lineWidth = borderWidth;
     ctx.strokeStyle = borderColor;
     ctx.lineCap = 'round';
@@ -191,6 +190,8 @@ const entityImages = {
     'FOREST_FARM' : 'images/forest-farm.png',
     'DRONE': 'images/drone.png',
     'FIRE': 'images/fire.png',
+    'WARNING': 'ui-elements/warningmove.png',
+    'BACKGROUND': 'ui-elements/water.jpg'
 };
 
 // Preload all images
@@ -202,7 +203,7 @@ function preloadImages() {
         preloadedImages[type] = img;
     });
 }
-
+preloadImages();
 // Entity image mapping function
 function getEntityImage(entityType) {
     return preloadedImages[entityType];
@@ -338,16 +339,18 @@ function updateUnitPrices() {
         if (priceElement && button) {
             // Форматируем цену в столбик
             priceElement.innerHTML = `
-                <div style='display: flex; flex-direction: column; align-items: flex-start; gap: 2px;'>
-                    <span style='color:#d4af37;'>🪙${price.gold||0}</span>
-                    <span style='color:#888;'>🪨${price.stone||0}</span>
-                    <span style='color:#228B22;'>🌲${price.tree||0}</span>
-                </div>`;
+                <div style='display: flex; flex-direction: column; align-items: center; gap: 2px;'>
+                    <span style='color:#d5a815; font-family: rusty_typewriter;'>${price.gold||0}</span>
+                    <span style='color:#888; font-family: rusty_typewriter;'>${price.stone||0}</span>
+                    <span style='color:#228B22; font-family: rusty_typewriter;'>${price.tree||0}</span> 
+                </div>`; //🌲
             // Проверяем хватает ли всех ресурсов
             const canAfford = (storage.gold || 0) >= (price.gold || 0) && (storage.tree || 0) >= (price.tree || 0) && (storage.stone || 0) >= (price.stone || 0);
-            button.disabled = !canAfford;
+
+            button.classList.remove('divDisabled','divEnabled' )
             priceElement.classList.remove('affordable', 'unaffordable');
             priceElement.classList.add(canAfford ? 'affordable' : 'unaffordable');
+            button.classList.add(canAfford ? 'divEnabled' : 'divDisabled');
         }
     });
 }
@@ -372,19 +375,19 @@ function updateBalanceDisplay() {
     if (goldChange !== 0) {
         const changeClass = goldChange > 0 ? 'positive' : 'negative';
         const changeSign = goldChange > 0 ? '+' : '';
-        changeGoldText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${goldChange})</span>`;
+        changeGoldText = `<span class="balance-change ${changeClass}">(${changeSign}${goldChange})</span>`;
     }
     let changeTreeText = '';
     if (treeChange !== 0) {
         const changeClass = treeChange > 0 ? 'positive' : 'negative';
         const changeSign = treeChange > 0 ? '+' : '';
-        changeTreeText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${treeChange})</span>`;
+        changeTreeText = `<span class="balance-change ${changeClass}">(${changeSign}${treeChange})</span>`;
     }
     let changeStoneText = '';
     if (stoneChange !== 0) {
         const changeClass = stoneChange > 0 ? 'positive' : 'negative';
         const changeSign = stoneChange > 0 ? '+' : '';
-        changeStoneText = `<span class=\"balance-change ${changeClass}\">(${changeSign}${stoneChange})</span>`;
+        changeStoneText = `<span class="balance-change ${changeClass}">(${changeSign}${stoneChange})</span>`;
     }
     // Порядок: золото, камень, дерево
     balanceAmountSpan.innerHTML = `${goldAmount}${changeGoldText}`;
@@ -400,6 +403,9 @@ function updateHexData(data) {
 
 
     if (data.map) {
+        if (colorForHex == null) {
+            colorForHex = generateBiomeColorMap(Object.values(data.map || {}), data.id)
+        }
         hexData = data;
         state.gameStarted = data.started
         state.settings = data.setting;
@@ -412,8 +418,15 @@ function updateHexData(data) {
         updateControlPanelVisibility();
         checkPlayerStatus();
         checkGameStatus(); // Check for winner or destroyed player
-        updateCurrentTurnIndicator(); // Update current turn display
+
         updateUnitButtons();
+        
+        // Обновляем power chart и timer
+        if (data.powerByColor) {
+            updatePowerChart(data.powerByColor);
+        }
+        updateTimerDisplay();
+        
         renderGrid(); // Trigger render to start animation if needed
     } else if (data.message) {
         showNotification(data.message);
@@ -489,6 +502,7 @@ function checkGameStatus() {
         const currentPlayer = players[state.currentPlayer];
         if (currentPlayer.illuminated === true) {
             showDestroyedMessage();
+            showGameStatusOverlay();
             return;
         }
     }
@@ -498,6 +512,7 @@ function checkGameStatus() {
         const winnerPlayer = Object.values(players).find(player => player.userId === hexData.winnerId);
         if (winnerPlayer && getUserId() === winnerPlayer.userId) {
             showWinnerMessage(winnerPlayer.color);
+            showGameStatusOverlay();
             return;
         }
     }
@@ -513,6 +528,7 @@ function showDestroyedMessage() {
     const watchModal = document.getElementById('watchModal');
     if (state.spectatorMode) {
         watchModal.style.display = 'none';
+        hideGameStatusOverlay();
     } else {
         watchModal.style.display = 'block';
     }
@@ -532,31 +548,16 @@ function hideGameStatusOverlay() {
     gameStatusOverlay.style.display = 'none';
 }
 
-// Update current turn indicator
-function updateCurrentTurnIndicator() {
-    const currentTurnIndicator = document.getElementById('currentTurnIndicator');
-    const currentTurnIconDiv = currentTurnIndicator.querySelector('.current-turn-icon'); /* Get the icon div */
-    
-    if (!hexData.players || hexData.currentPlayerMove === null || hexData.currentPlayerMove === undefined) {
-        currentTurnIndicator.style.display = 'none';
+function showGameStatusOverlay() {
+    if (state.spectatorMode === true) {
         return;
     }
-    
-    const currentPlayer = hexData.players[hexData.currentPlayerMove];
-    if (!currentPlayer) {
-        currentTurnIndicator.style.display = 'none';
-        return;
-    }
-    
-    if (!state.gameStarted) {
-            currentTurnIndicator.style.display = 'none';
-            return;
-    }
-    const colorHex = colorMap[currentPlayer.color] || '#333'; /* Default to dark grey if not found */
-
-    currentTurnIconDiv.style.backgroundColor = colorHex; /* Set background color for the flag icon via mask */
-    currentTurnIndicator.style.display = 'flex'; /* Changed to flex */
+    const gameStatusOverlay = document.getElementById('gameStatusOverlay');
+    if (!gameStatusOverlay) return;
+    gameStatusOverlay.style.display = 'flex';
 }
+
+
 
 // Show appropriate waiting UI
 function showWaitingUI(currentUserInGame, hasUnconnectedPlayers) {
@@ -690,8 +691,25 @@ function init() {
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-    preloadImages();
+    
+    // Debounce для обновления power chart при изменении размера окна
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (powerByColor) {
+                updatePowerChart(powerByColor);
+            }
+        }, 250);
+    });
+    
     updateControlPanelVisibility();
+    
+    // Инициализируем таймер и power chart
+    updateTimerDisplay();
+    if (powerByColor) {
+        updatePowerChart(powerByColor);
+    }
 
     // Mouse event handlers
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -718,6 +736,7 @@ function cubeToPixel(cube) {
 function renderGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = config.backgroundColor;
+    //ctx.drawImage(getEntityImage('BACKGROUND'),0, 0, canvas.width, canvas.height);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!hexData || typeof hexData.map !== 'object' || !hexData.map) return;
@@ -739,11 +758,6 @@ function renderGrid() {
         const pixelPos = cubeToPixel(hex.vector);
         drawHexagonBorders(pixelPos.x, pixelPos.y, size, hex, hexData);
     });
-
-    // Рисуем круговую диаграмму powerByColor
-    if (powerByColor) {
-        drawPowerPieChart(powerByColor);
-    }
 }
 
 // Function to check if it's the current player's turn
@@ -945,8 +959,10 @@ function onHexClick(cubicCoords) {
             state.selectedHex = null;
         } else if (
             (
-                (clickedHex.color == state.currentColor && (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) || clickedHex.entity.ownerColor == state.currentColor) 
-                && state.selectedHex == null
+                (clickedHex.color == state.currentColor &&
+                (!clickedHex.entity.ownerColor || clickedHex.entity.ownerColor == state.currentColor)) ||
+                clickedHex.entity.ownerColor == state.currentColor) &&
+                state.selectedHex == null
             ) {
 
             if (selectableUnits.has(clickedHex.entity.type)) {
@@ -1020,7 +1036,7 @@ function updateUnitButtons() {
         button.classList.toggle('selected', state.selectedUnit === entityType);
         // Disable unit buttons if it's not the player's turn (or if unaffordable)
         if (!isInteractionAllowed()) {
-            button.disabled = true;
+            button.disabled = true; // тут где-то бага я поменял баттон на див чтоб картинка норм была
         } else {
             // Проверяем хватает ли всех ресурсов
             const priceElement = document.querySelector(`.unit-price[data-unit="${entityType}"]`);
@@ -1106,11 +1122,11 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
     if ((state.selectedHex || state.selectedUnit) && isInteractionAllowed()) {
         grassColor = getColorFromName(hex.color)
     } else {
-        grassColor = getGrassColorForHex(hex);
+        grassColor = getBiomeColorForHex(hex);
     }
 
     if (hex.isAvailable === false) {
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.3;
     }
     ctx.fillStyle = grassColor;
     ctx.fill();
@@ -1142,12 +1158,23 @@ function drawHexagonWithoutBorders(x, y, size, hex, hexData) {
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
+            if (hex.entity.movedOnThisTurn === false) {
+                if (hex.color == state.currentColor || hex.entity.ownerColor == state.currentColor) {
+                    ctx.drawImage(getEntityImage('WARNING'),
+                                                        x - iconSize / 2.5,
+                                                        y - (iconSize / 1.2) + yOffset,
+                                                        iconSize / 1.3,
+                                                        iconSize / 1.3
+                                                    );
+                }
+            }
             ctx.drawImage(img, 
                 x - iconSize/2, 
                 y - iconSize/2 + yOffset, 
                 iconSize, 
                 iconSize
             );
+
         }
     }
 
@@ -1391,111 +1418,229 @@ function getSecondsLeft(endMoveTime) {
 function startTimerUpdater() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (typeof renderGrid === 'function') renderGrid();
+        updateTimerDisplay();
     }, 1000);
 }
 
-// Модифицируем drawPowerPieChart
-function drawPowerPieChart(powerObj) {
-    const colors = Object.keys(powerObj);
-    const values = Object.values(powerObj);
-    const total = values.reduce((a, b) => a + b, 0);
-    if (total === 0) return;
-    const centerY = 40; // отступ сверху
-    const radius = 40;
-    // --- Центрирование двух элементов ---
-    const gap = 20; // px между диаграммой и часами
-    const totalWidth = radius * 2 + gap + radius * 2;
-    const centerX = canvas.width / 2 - totalWidth / 2 + radius;
-    const clockX = centerX + radius + gap + radius; // центр clock.svg
-
-    // Размеры для таймера
-    const clockRadius = radius * 0.7; // Уменьшаем размер часов
-    const timerFontSize = 24; // Размер шрифта для секунд
-    const clockY = centerY - timerFontSize/3; // Сдвигаем часы чуть выше
-
-    let startAngle = -Math.PI / 2; // сверху
-    // Цвета для секторов
-    colors.forEach((color, i) => {
-        const value = powerObj[color];
-        if (value <= 0) return;
-        const percent = value / total;
-        const endAngle = startAngle + percent * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = colorMap[color] || '#ccc';
-        ctx.globalAlpha = 0.85;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        // --- подпись процента ---
-        const midAngle = (startAngle + endAngle) / 2;
-        const labelRadius = radius * 0.65;
-        const labelX = centerX + labelRadius * Math.cos(midAngle);
-        const labelY = centerY + labelRadius * Math.sin(midAngle) + 4;
-        const percentText = Math.round(percent * 100) + '%';
-        let textColor = '#fff';
-        if (colorMap[color]) {
-            const hex = colorMap[color].replace('#','');
-            const r = parseInt(hex.substring(0,2),16);
-            const g = parseInt(hex.substring(2,4),16);
-            const b = parseInt(hex.substring(4,6),16);
-            const brightness = (r*299 + g*587 + b*114) / 1000;
-            if (brightness > 170) textColor = '#222';
+// Новая функция для обновления отображения таймера
+function updateTimerDisplay() {
+    const timerOverlay = document.getElementById('timerOverlay');
+    const timerProgressFill = document.querySelector('.timer-progress-fill');
+    const timerText = document.querySelector('.timer-text');
+    
+    if (!timerOverlay) {
+        console.warn('Timer overlay element not found');
+        return;
+    }
+    
+    if (!hexData || !hexData.endMoveTime) {
+        timerOverlay.style.display = 'none';
+        return;
+    }
+    
+    const secondsLeft = getSecondsLeft(hexData.endMoveTime);
+    if (secondsLeft === null || secondsLeft <= 0) {
+        timerOverlay.style.display = 'none';
+        return;
+    }
+    
+    // Показываем таймер
+    timerOverlay.style.display = 'block';
+    
+    // Получаем цвет текущего игрока
+    let currentPlayerColor = '#ff6b6b'; // цвет по умолчанию
+    let currentPlayerColorName = null;
+    if (hexData.players && hexData.currentPlayerMove !== null && hexData.currentPlayerMove !== undefined) {
+        const currentPlayer = hexData.players[hexData.currentPlayerMove];
+        if (currentPlayer && currentPlayer.color) {
+            currentPlayerColor = colorMap[currentPlayer.color] || '#ff6b6b';
+            currentPlayerColorName = currentPlayer.color;
         }
-        ctx.font = 'bold 15px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = textColor;
-        ctx.fillText(percentText, labelX, labelY);
-        startAngle = endAngle;
-    });
-    // Белая обводка
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#fff';
-    ctx.stroke();
-
-    // --- CLOCK & TIMER ---
-    // endMoveTime должен быть в hexData.endMoveTime
-    if (typeof hexData !== 'undefined' && hexData.endMoveTime) {
-        // Запускаем обновление таймера
-        if (lastEndMoveTime !== hexData.endMoveTime) {
-            lastEndMoveTime = hexData.endMoveTime;
-            startTimerUpdater();
-        }
-        const secondsLeft = getSecondsLeft(hexData.endMoveTime);
-        // Рисуем иконку часов
-        if (clockImg.complete) {
-            ctx.save();
-            ctx.drawImage(clockImg, 
-                clockX - clockRadius, 
-                clockY - clockRadius, 
-                clockRadius * 2, 
-                clockRadius * 2
-            );
-            ctx.restore();
+    }
+    
+    // Проверяем, является ли текущий игрок активным (currentColor == currentPlayer.color)
+    const isCurrentPlayerActive = state.currentColor && state.currentColor === currentPlayerColorName;
+    
+    // Обновляем цвет прогресс-бара
+    if (timerProgressFill) {
+        // Создаем градиент с цветом текущего игрока
+        const gradientColor = currentPlayerColor;
+        const lighterColor = adjustBrightness(gradientColor, 1.3); // Делаем цвет светлее для градиента
+        timerProgressFill.style.background = `linear-gradient(90deg, ${gradientColor}, ${lighterColor})`;
+        
+        // Используем настройки из state.settings.secondsToMove
+        const maxTime = state.settings && state.settings.secondsToMove ? state.settings.secondsToMove : 60;
+        const progressPercent = Math.max(0, (secondsLeft / maxTime) * 100);
+        timerProgressFill.style.width = progressPercent + '%';
+        
+        // Изменяем высоту полоски в зависимости от того, активен ли текущий игрок
+        if (isCurrentPlayerActive) {
+            timerProgressFill.style.height = '20px'; // Полная высота
         } else {
-            clockImg.onload = () => renderGrid();
+            timerProgressFill.style.height = '8px'; // Уменьшенная высота
         }
-        // Рисуем секунды под иконкой
-        ctx.save();
-        ctx.font = `bold ${timerFontSize}px "Castlefire", Arial, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = '#222';
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        const timerText = secondsLeft + 's';
-        const textY = clockY + clockRadius - timerFontSize/2;
-        // Белая обводка для читаемости
-        ctx.strokeText(timerText, clockX, textY);
-        ctx.fillText(timerText, clockX, textY);
-        ctx.restore();
+    }
+    
+    // Изменяем высоту контейнера timer-progress-bar
+    const timerProgressBar = document.querySelector('.timer-progress-bar');
+    if (timerProgressBar) {
+        if (isCurrentPlayerActive) {
+            timerProgressBar.style.height = '20px'; // Полная высота
+        } else {
+            timerProgressBar.style.height = '8px'; // Уменьшенная высота
+        }
+    }
+    
+    // Обновляем текст - показываем только если текущий игрок активен
+    if (timerText) {
+        if (isCurrentPlayerActive) {
+            timerText.textContent = secondsLeft + 's';
+            timerText.style.display = 'block';
+        } else {
+            timerText.style.display = 'none';
+        }
+    }
+    
+    // Добавляем анимации для привлечения внимания
+    timerOverlay.classList.remove('urgent', 'start-turn');
+    
+    if (isCurrentPlayerActive) {
+        // Эффект тряски когда остается меньше 10 секунд
+        if (secondsLeft <= 10) {
+            timerOverlay.classList.add('urgent');
+        }
+        
+        // Эффект bounce в первые 3 секунды хода
+        const maxTime = state.settings && state.settings.secondsToMove ? state.settings.secondsToMove : 60;
+        const timeElapsed = maxTime - secondsLeft;
+        if (timeElapsed <= 3 && timeElapsed >= 0) {
+            timerOverlay.classList.add('start-turn');
+        }
     }
 }
+
+// Вспомогательная функция для осветления цвета
+function adjustBrightness(color, factor) {
+    // Проверяем, что цвет валидный
+    if (!color || typeof color !== 'string') {
+        return '#ff6b6b';
+    }
+    
+    // Убираем # если есть
+    const hex = color.replace('#', '');
+    
+    // Проверяем, что hex код валидный
+    if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        return '#ff6b6b';
+    }
+    
+    // Конвертируем в RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Осветляем
+    const newR = Math.min(255, Math.round(r * factor));
+    const newG = Math.min(255, Math.round(g * factor));
+    const newB = Math.min(255, Math.round(b * factor));
+    
+    // Конвертируем обратно в hex
+    return '#' + 
+        (newR < 16 ? '0' : '') + newR.toString(16) +
+        (newG < 16 ? '0' : '') + newG.toString(16) +
+        (newB < 16 ? '0' : '') + newB.toString(16);
+}
+
+// Новая функция для обновления power chart
+function updatePowerChart(powerObj) {
+    if (!state.gameStarted) {
+        return
+    }
+    const colorPowers = document.getElementById('colorPowers');
+    const colorPowersBar = document.querySelector('.color-powers-bar');
+    
+    if (!colorPowers || !colorPowersBar) {
+        console.warn('Color powers elements not found');
+        return;
+    }
+    
+    if (!powerObj || Object.keys(powerObj).length === 0) {
+        colorPowers.style.display = 'none';
+        return;
+    }
+    
+    // Фильтруем нулевые значения и сортируем по убыванию
+    const entries = Object.entries(powerObj)
+        .filter(([_, value]) => value > 0)
+        .sort((a, b) => b[1] - a[1]);
+    
+    const total = entries.reduce((sum, [_, value]) => sum + value, 0);
+    if (total === 0) {
+        colorPowers.style.display = 'none';
+        return;
+    }
+    
+    // Показываем power chart
+    colorPowers.style.display = 'block';
+    
+    // Очищаем предыдущие сегменты
+    colorPowersBar.innerHTML = '';
+    
+    // Настройки
+    const maxColors = 8;
+    const visibleEntries = entries.slice(0, maxColors);
+    const minWidth = 60; // Минимальная ширина в пикселях
+    
+    // Получаем текущую ширину контейнера с небольшой задержкой для корректного расчета
+    setTimeout(() => {
+        const containerWidth = colorPowersBar.offsetWidth || 1200;
+        
+        // Вычисляем фактические ширины сегментов
+        const segments = visibleEntries.map(([color, value]) => {
+            const percent = value / total;
+            return {
+                color,
+                width: containerWidth * percent, // Используем текущую ширину контейнера
+                percent
+            };
+        });
+        
+        // Гарантируем минимальную ширину для видимых сегментов
+        segments.forEach(seg => {
+            seg.width = Math.max(seg.width, minWidth);
+        });
+        
+        // Корректируем ширины, чтобы точно вписаться в containerWidth
+        const totalWidth = segments.reduce((sum, seg) => sum + seg.width, 0);
+        if (totalWidth > containerWidth) {
+            // Уменьшаем все сегменты пропорционально, кроме последнего
+            const scale = (containerWidth - minWidth) / (totalWidth - segments[segments.length-1].width);
+            segments.slice(0, -1).forEach(seg => {
+                seg.width *= scale;
+            });
+            // Последний сегмент делаем минимальной ширины
+            segments[segments.length-1].width = minWidth;
+        }
+        
+        // Создаем сегменты
+        segments.forEach((segment, i) => {
+            const { color, width, percent } = segment;
+            
+            const segmentDiv = document.createElement('div');
+            segmentDiv.className = 'color-segment';
+            segmentDiv.style.backgroundColor = colorMap[color] || '#ccc';
+            segmentDiv.style.width = width + 'px';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'color-segment-text';
+            textDiv.textContent = Math.round(percent * 100) + '%';
+            
+            segmentDiv.appendChild(textDiv);
+            colorPowersBar.appendChild(segmentDiv);
+        });
+    }, 0);
+}
+
 
 // --- ПК: обработка клика только через click ---
 canvas.addEventListener('click', function(e) {
@@ -1547,15 +1692,18 @@ canvas.addEventListener('mouseleave', function(e) {
 
 // --- Notifications ---
 let notifications = [];
-function showNotification(message) {
+
+function showNotification(message, delayBeforeAppear = 500) {
     const container = document.getElementById('notificationContainer');
     if (!container) return;
+
     // Создать элемент
     const notif = document.createElement('div');
     notif.className = 'notification-message';
     notif.textContent = message;
     container.appendChild(notif);
     notifications.push(notif);
+
     // Стили для контейнера (позиция: снизу слева, прозрачный фон)
     container.style.position = 'fixed';
     container.style.left = '0';
@@ -1569,29 +1717,36 @@ function showNotification(message) {
     container.style.pointerEvents = 'none';
     container.style.background = 'transparent';
     container.style.padding = '0 0 24px 24px'; // отступ от краёв
-    // Стили для сообщения (белый фон, чёрный текст с opacity, border-radius, margin)
+
+    // Стили для сообщения (изначально невидимое)
     notif.style.position = 'relative';
     notif.style.margin = '8px 0';
     notif.style.padding = '0';
     notif.style.background = 'transparent';
     notif.style.color = 'rgba(0,0,0,0.7)';
-    notif.style.fontSize = '0.95rem';
+    notif.style.fontSize = '1.1rem';
     notif.style.fontFamily = 'Castlefire, Arial, sans-serif';
     notif.style.borderRadius = '';
     notif.style.boxShadow = '';
     notif.style.textAlign = 'left';
     notif.style.minWidth = '120px';
-    notif.style.opacity = '1';
+    notif.style.opacity = '0'; // Начальная прозрачность = 0 (невидимо)
     notif.style.transition = 'opacity 0.5s';
     notif.style.userSelect = 'none';
     notif.style.pointerEvents = 'none';
-    // Удалить через 3 секунды
+
+    // Через delayBeforeAppear мс плавно появится
+    setTimeout(() => {
+        notif.style.opacity = '1'; // Плавное появление
+    }, delayBeforeAppear);
+
+    // Удалить через 6 секунд (сначала плавное исчезновение)
     setTimeout(() => {
         notif.style.opacity = '0';
         setTimeout(() => {
             if (container.contains(notif)) container.removeChild(notif);
             notifications = notifications.filter(n => n !== notif);
-        }, 500);
+        }, 2000); // Время на исчезновение
     }, 6000);
 }
 

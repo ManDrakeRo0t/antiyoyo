@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Currency implements Cloneable {
+public class Currency implements Cloneable, Comparable<Currency> {
     private int gold;
     private int tree;
     private int stone;
@@ -58,5 +58,14 @@ public class Currency implements Cloneable {
                 this.getTree(),
                 this.getStone()
         );
+    }
+
+    @Override
+    public int compareTo(Currency o) {
+        return Integer.compare(getPower(this), getPower(o));
+    }
+
+    private static int getPower(Currency c) {
+         return c.getGold() + (c.getTree() * 2) + (c.getStone() * 3);
     }
 }
