@@ -4,17 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import ru.bogatov.antiyoyo.game.engine.util.Pair;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.game.model.Player;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.server.dto.UiMessage;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 
-import java.util.Set;
 import java.util.UUID;
-
-import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.getPlayersCount;
 
 @Data
 @Slf4j

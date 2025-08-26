@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.game.model.Player;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.server.dto.UiMessage;
 import ru.bogatov.antiyoyo.server.events.GameStartedEvent;
 import ru.bogatov.antiyoyo.server.events.UserConnectedEvent;
@@ -73,7 +73,7 @@ public class SessionAggregator {
         }
     }
 
-    private void scheduleIlluminateTask(UUID userId, UUID gameSessionId, HexColor color) {
+    private void scheduleIlluminateTask(UUID userId, UUID gameSessionId, Color color) {
         messagingTemplate.convertAndSend("/topic/sessions.{session_id}.event.fetch".replace("{session_id}", gameSessionId.toString()), UiMessage.left(color));
         UUID taskId = UUID.randomUUID();
         taskSchedulingService.scheduleTask(taskId.toString(),
@@ -83,7 +83,7 @@ public class SessionAggregator {
         log.info("Created illuminate task for {} and session {}", userId, gameSessionId);
     }
 
-    private void cancelIlluminateTask(UUID userId, UUID gameSessionId, HexColor color) {
+    private void cancelIlluminateTask(UUID userId, UUID gameSessionId, Color color) {
         var key = new SimpSessionStorage.UserAndSession(userId.toString(), gameSessionId.toString());
         UUID taskId = userSessionToIlluminateTask.get(key);
         if (taskId != null) {

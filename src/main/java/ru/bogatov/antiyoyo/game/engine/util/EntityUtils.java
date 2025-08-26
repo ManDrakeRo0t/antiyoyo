@@ -1,7 +1,7 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
@@ -26,7 +26,7 @@ public class EntityUtils {
             case MINE -> new Mine();
             case FOREST_FARM -> new ForestFarm();
             case MINE_FARM -> new MineFarm();
-            case DRONE -> new Drone(HexColor.EMPTY);
+            case DRONE -> new Drone(Color.EMPTY);
             case FIRE -> new Fire();
         };
     }

@@ -3,10 +3,9 @@ package ru.bogatov.antiyoyo.game.model.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.bogatov.antiyoyo.game.engine.util.HexCalculator;
-import ru.bogatov.antiyoyo.game.engine.util.MapUtils;
 import ru.bogatov.antiyoyo.game.engine.util.Pair;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
@@ -18,9 +17,9 @@ import java.util.stream.Collectors;
 @Data
 public class Drone extends Entity implements Sellable, Interactable {
 
-    private HexColor ownerColor;
+    private Color ownerColor;
 
-    public Drone(HexColor ownerColor) {
+    public Drone(Color ownerColor) {
         this.ownerColor = ownerColor;
     }
 
@@ -73,7 +72,7 @@ public class Drone extends Entity implements Sellable, Interactable {
     }
 
     @Override
-    public Set<Hex> customizeAvailableHexesForNew(Map<Vector3, Hex> map, Pair<TownHall, Set<Hex>> region, HexColor selfColor, Set<Hex> calculated) {
+    public Set<Hex> customizeAvailableHexesForNew(Map<Vector3, Hex> map, Pair<TownHall, Set<Hex>> region, Color selfColor, Set<Hex> calculated) {
         return region.getSecond().stream().filter(hex -> hex.getEntity() instanceof Field).collect(Collectors.toSet());
     }
 }

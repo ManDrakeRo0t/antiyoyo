@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.game.model.GameSetting;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
@@ -33,7 +33,7 @@ public class HexCalculator {
                 .orElse(null);
     }
 
-    public static Set<Hex> getAvailableHexesForField(UUID townHallId, GameSession gameSession, HexColor selfColor) {
+    public static Set<Hex> getAvailableHexesForField(UUID townHallId, GameSession gameSession, Color selfColor) {
         Hex townHall = foundTownHallById(gameSession.getMap(), townHallId);
         if (townHall == null) {
             throw new IllegalArgumentException("No townHall");
@@ -45,7 +45,7 @@ public class HexCalculator {
 
     public static Set<Hex> getAvailableHexesForNewEntity(UUID townHallId,
                                                              GameSession gameSession,
-                                                             HexColor selfColor,
+                                                             Color selfColor,
                                                              Interactable entity) {
         Hex townHall = foundTownHallById(gameSession.getMap(), townHallId);
         if (townHall == null) {
@@ -120,10 +120,10 @@ public class HexCalculator {
 
     public static Set<Hex> getAvailableHexesForExistingEntity(Map<Vector3, Hex> map,
                                                                   Hex initialPosition,
-                                                                    HexColor playerColor) {
+                                                                    Color playerColor) {
         Interactable entity = (Interactable) initialPosition.getEntity();
-        HexColor selfColor = initialPosition.getColor();
-        HexColor entityColor = entity instanceof Drone drone ? drone.getOwnerColor() : initialPosition.getColor();
+        Color selfColor = initialPosition.getColor();
+        Color entityColor = entity instanceof Drone drone ? drone.getOwnerColor() : initialPosition.getColor();
 
         if (entityColor != playerColor) {
             return Set.of();
@@ -207,7 +207,7 @@ public class HexCalculator {
 
 
 
-    private static boolean isSameColor(Hex hex, HexColor color) {
+    private static boolean isSameColor(Hex hex, Color color) {
         return hex.getColor() == color;
     }
 
@@ -222,7 +222,7 @@ public class HexCalculator {
         return false;
     }
 
-    private static boolean canMoveToSelfHex(Hex to, HexColor selfColor, Interactable entity) {
+    private static boolean canMoveToSelfHex(Hex to, Color selfColor, Interactable entity) {
         return isSameColor(to, selfColor) &&
                 (canUpgradeUnit(to.getEntity(), entity) || canPlaceEntity(entity, to) || canReplaceEntity(entity, to));
     }
@@ -231,7 +231,7 @@ public class HexCalculator {
         return to.getEntity() instanceof Tower && entity instanceof BigTower;
     }
 
-    public boolean canInteractWithHex(Hex hex, HexColor selfColor) {
+    public boolean canInteractWithHex(Hex hex, Color selfColor) {
         return isSameColor(hex, selfColor) || (hex.getEntity() instanceof Drone drone && drone.getOwnerColor() == selfColor);
     }
 
@@ -246,7 +246,7 @@ public class HexCalculator {
         return to.getEntity() instanceof Field;
     }
 
-    private static boolean canMoveToEnemyHex(Hex to, HexColor selfColor, Interactable entity) {
+    private static boolean canMoveToEnemyHex(Hex to, Color selfColor, Interactable entity) {
         return !isSameColor(to, selfColor) && (to.getDefenseLevel() < entity.getLevel() || entity.getLevel() == 4);
     }
 

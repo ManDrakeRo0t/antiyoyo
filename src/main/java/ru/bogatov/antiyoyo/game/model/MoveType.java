@@ -2,5 +2,7 @@ package ru.bogatov.antiyoyo.game.model;
 
 public enum MoveType {
     MOVE,
-    PURCHASE
+    PURCHASE,
+    SELECT_NEW,
+    SELECT_EXISTING
 }

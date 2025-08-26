@@ -13,6 +13,7 @@ public class DisplayParams {
 
     private Boolean glue;
     private Boolean displayDefence;
-    private Set<HexColor> visibleFor;
+    private Set<Color> visibleFor;
+    private Boolean isAvailable;
 
 }

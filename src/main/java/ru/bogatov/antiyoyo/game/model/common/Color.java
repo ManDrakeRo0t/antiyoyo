@@ -1,6 +1,6 @@
 package ru.bogatov.antiyoyo.game.model.common;
 
-public enum HexColor {
+public enum Color {
     RED,
     BLUE,
     EMPTY,

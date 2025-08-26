@@ -1,11 +1,10 @@
 package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
-import ru.bogatov.antiyoyo.game.engine.GameEngine;
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
@@ -30,7 +29,7 @@ public class MapUtils {
             EntityType.FACTORY, new Factory(),
             EntityType.FOREST_FARM, new ForestFarm(),
             EntityType.MINE_FARM, new MineFarm(),
-            EntityType.DRONE, new Drone(HexColor.EMPTY)
+            EntityType.DRONE, new Drone(Color.EMPTY)
     );
 
     // aka upgradeable dieable
@@ -55,7 +54,7 @@ public class MapUtils {
             MineFarm.class
     );
 
-    public static void showDefenceForColor(Map<Vector3, Hex> map, HexColor selfColor) {
+    public static void showDefenceForColor(Map<Vector3, Hex> map, Color selfColor) {
         map.values().forEach(hex -> {
             if (selfColor == hex.getColor() && hex.getEntity() instanceof Interactable interactable) {
                 if (interactable.getClass() == Tower.class || interactable.getClass() == BigTower.class || interactable.getClass() == TownHall.class) {
@@ -79,22 +78,6 @@ public class MapUtils {
                 hex.setEntity(new Tree());
                 updateDefenseLevel(session.getMap(), hex, 0, hex.getColor());
             }
-//            if (hex.getEntity() instanceof Field) { Слишком много деревьев
-//                if (random.nextInt(100) <= 5) {
-//                    hex.setEntity(new Tree());
-//                    updateDefenseLevel(map, hex, 0, hex.getColor());
-//                }
-//            }
-//            if (hex.getEntity() instanceof Tree) {
-//                getNearestNeighborsWithSameColor(map, hex.getColor(), hex)
-//                        .stream()
-//                        .filter(n -> n.getEntity() instanceof Field)
-//                        .forEach(n -> {
-//                            if (random.nextInt(100) <= 15) {
-//                                n.setEntity(new Tree());
-//                            }
-//                        });
-//            }
             if (hex.getEntity() instanceof Interactable && moveableUnits.contains(hex.getEntity().getClass())) {
                 hex.getEntity().setMovedOnThisTurn(false);
             }
@@ -117,7 +100,7 @@ public class MapUtils {
         updateTownHallEconomy(region);
     }
 
-    public static Set<Pair<TownHall, Set<Hex>>> findRegions(Map<Vector3, Hex> map, HexColor selfColor) {
+    public static Set<Pair<TownHall, Set<Hex>>> findRegions(Map<Vector3, Hex> map, Color selfColor) {
 
         Set<Hex> visited = new HashSet<>();
         Set<Pair<TownHall, Set<Hex>>> regions = new HashSet<>();
@@ -134,7 +117,7 @@ public class MapUtils {
         return regions;
     }
 
-    public static Pair<TownHall, Set<Hex>> findTownHallWithRegion(Map<Vector3, Hex> map, HexColor selfColor, Hex start) {
+    public static Pair<TownHall, Set<Hex>> findTownHallWithRegion(Map<Vector3, Hex> map, Color selfColor, Hex start) {
         Set<Hex> visited = new HashSet<>();
         Queue<Hex> queue = new ArrayDeque<>();
         queue.add(start);
@@ -174,14 +157,14 @@ public class MapUtils {
         return Pair.of(mainTownHall, visited.stream().filter(hex -> hex.getEntity() != null).collect(Collectors.toSet()));
     }
 
-    private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
+    private static Set<Hex> getNearestNeighborsWithSameColor(Map<Vector3, Hex> map, Color selfColor, Hex root) {
         return getNeighborsInRadius(map, 1, root, false)
                 .stream()
                 .filter(hex -> hex.getColor() == selfColor)
                 .collect(Collectors.toSet());
     }
 
-    private static Set<Entity> getNearestNeighborsWithSameColor(Set<Hex> region, HexColor selfColor, Hex root) {
+    private static Set<Entity> getNearestNeighborsWithSameColor(Set<Hex> region, Color selfColor, Hex root) {
         return getNeighborsInRadius(region.stream().collect(Collectors.toMap(Hex::getVector, Function.identity())), 1, root, false)
                 .stream()
                 .filter(hex -> hex.getColor() == selfColor)
@@ -189,7 +172,7 @@ public class MapUtils {
                 .collect(Collectors.toSet());
     }
 
-    private static Set<Hex> getNearestNeighborsWithSameColorWithCenter(Map<Vector3, Hex> map, HexColor selfColor, Hex root) {
+    private static Set<Hex> getNearestNeighborsWithSameColorWithCenter(Map<Vector3, Hex> map, Color selfColor, Hex root) {
         return getNeighborsInRadius(map, 1, root, true)
                 .stream()
                 .filter(hex -> hex.getColor() == selfColor)
@@ -210,7 +193,7 @@ public class MapUtils {
                 .anyMatch(toCheck -> clazz.isAssignableFrom(toCheck.getEntity().getClass()));
     }
 
-    public static boolean hasInNeighbors(Map<Vector3, Hex> map, Hex hex, HexColor color, Set<Class<? extends Entity>> classSet) {
+    public static boolean hasInNeighbors(Map<Vector3, Hex> map, Hex hex, Color color, Set<Class<? extends Entity>> classSet) {
         if (classSet.isEmpty()) {
             return !getNearestNeighborsWithSameColor(map, color, hex).isEmpty();
         }
@@ -286,7 +269,7 @@ public class MapUtils {
         }
     }
 
-    public void updateDronesFlag(GameSession session, HexColor color) {
+    public void updateDronesFlag(GameSession session, Color color) {
         var r = findRegions(session.getMap(), color).stream().findFirst().orElse(null);
         if (r.getFirst() == null) {
             return;
@@ -298,7 +281,7 @@ public class MapUtils {
         }
     }
 
-    public static void updateDefenseLevel(Map<Vector3, Hex> map, Hex hex, Integer defenceLevel, HexColor selfColor) {
+    public static void updateDefenseLevel(Map<Vector3, Hex> map, Hex hex, Integer defenceLevel, Color selfColor) {
         Integer calculated = MapUtils.calculateDefenseLevel(map, hex);
         hex.setDefenseLevel(defenceLevel > calculated ? defenceLevel : calculated);
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
@@ -313,7 +296,7 @@ public class MapUtils {
 
 
 
-    public static void updateDefenseLevelForColor(Map<Vector3, Hex> map, Hex hex, HexColor color) {
+    public static void updateDefenseLevelForColor(Map<Vector3, Hex> map, Hex hex, Color color) {
         Set<Hex> toUpdate = HexCalculator.getNeighborsInRadius(map, 1, hex, false);
         toUpdate.forEach(hexToUpdate -> {
                     if (hexToUpdate.getColor() == color) {
@@ -346,13 +329,13 @@ public class MapUtils {
                 ((TownHall) hex.getEntity()).setDronesAvailable(false);
             }
         });
-        Map<HexColor, Integer> dronesLimitPerColor = new HashMap<>();
-        Map<HexColor, Set<Pair<TownHall, Integer>>> power = calculateTotalPower(session);
-        Map<HexColor, Integer> totalPowerPerColor = new HashMap<>();
+        Map<Color, Integer> dronesLimitPerColor = new HashMap<>();
+        Map<Color, Set<Pair<TownHall, Integer>>> power = calculateTotalPower(session);
+        Map<Color, Integer> totalPowerPerColor = new HashMap<>();
         power.forEach((key, value) -> totalPowerPerColor.put(key, value.stream().mapToInt(Pair::getSecond).sum()));
         session.setPowerByColor(totalPowerPerColor);
         int maxPower = totalPowerPerColor.values().stream().max(Integer::compare).get();
-        Set<HexColor> weakColors = new HashSet<>();
+        Set<Color> weakColors = new HashSet<>();
         totalPowerPerColor.forEach((key, value) -> {
             float diff = PowerCalculator.getPersent(maxPower, value);
             int limit = getDronesLimitFromDiff(diff);
@@ -361,7 +344,7 @@ public class MapUtils {
                 dronesLimitPerColor.put(key, limit);
             }
         });
-        for (HexColor weakColor : weakColors) {
+        for (Color weakColor : weakColors) {
             Set<Pair<TownHall, Integer>> regions = power.get(weakColor);
             regions.forEach(region -> {
                 region.getFirst().setDronesAvailable(true);
@@ -390,7 +373,7 @@ public class MapUtils {
         return 5;
      }
 
-    public Integer getDronesCount(Map<Vector3, Hex> map, HexColor color) {
+    public Integer getDronesCount(Map<Vector3, Hex> map, Color color) {
         return Math.toIntExact(map.values()
                 .stream()
                 .filter(hex -> hex.getEntity() instanceof Drone drone && drone.getOwnerColor() == color)
@@ -428,7 +411,7 @@ public class MapUtils {
         });
     }
 
-    public static Set<Pair<TownHall, Set<Hex>>> getAllRegionsByColor(Map<Vector3, Hex> map, HexColor color) {
+    public static Set<Pair<TownHall, Set<Hex>>> getAllRegionsByColor(Map<Vector3, Hex> map, Color color) {
         return map.values().stream()
                 .filter(hex -> hex.getEntity() instanceof TownHall && hex.getColor() == color)
                 .map(townHall -> findTownHallWithRegion(map, color, townHall))
@@ -436,8 +419,8 @@ public class MapUtils {
     }
 
     public static void checkPlayersCount(GameSession session) {
-        Pair<Integer, Set<HexColor>> currentActiveColors = getPlayersCount(session.getMap());
-        Set<HexColor> leftColors = currentActiveColors.getSecond();
+        Pair<Integer, Set<Color>> currentActiveColors = getPlayersCount(session.getMap());
+        Set<Color> leftColors = currentActiveColors.getSecond();
         session.getPlayers().values().forEach(player -> {
             if (!leftColors.contains(player.getColor())) {
                 if (!player.isIlluminated()) {
@@ -457,11 +440,11 @@ public class MapUtils {
         }
     }
 
-    public static Pair<Integer, Set<HexColor>> getPlayersCount(Map<Vector3, Hex> map) {
-        Set<HexColor> colors = new HashSet<>();
+    public static Pair<Integer, Set<Color>> getPlayersCount(Map<Vector3, Hex> map) {
+        Set<Color> colors = new HashSet<>();
         map.values().forEach(hex -> colors.add(hex.getColor()));
-        colors.remove(HexColor.EMPTY);
-        Set<HexColor> playersColors = colors.stream()
+        colors.remove(Color.EMPTY);
+        Set<Color> playersColors = colors.stream()
                 .filter(color -> {
                     var regions = getAllRegionsByColor(map, color);
                     return !regions.isEmpty() && regions.stream().anyMatch(r -> r.getFirst() != null);
@@ -539,7 +522,7 @@ public class MapUtils {
 
     public static void restoreDrones(GameSession session) {
 
-        Map<HexColor, Boolean> isDronesAvailable = new HashMap<>();
+        Map<Color, Boolean> isDronesAvailable = new HashMap<>();
 
         session.getMap().values()
                 .stream()

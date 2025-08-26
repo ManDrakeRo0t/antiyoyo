@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.game.model.Move;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.entity.Drone;
 import ru.bogatov.antiyoyo.game.model.entity.Field;
 import ru.bogatov.antiyoyo.game.model.entity.Interactable;
@@ -26,7 +26,7 @@ public class MoveValidator {
 
 
     public static void checkPlayerOrder(GameSession gameSession, Move move) {
-        if (!Objects.equals(move.getPlayer(), gameSession.getCurrentPlayerMove())) {
+        if (!Objects.equals(move.getColor(), gameSession.getCurrentMoveColor())) {
             throw new IllegalArgumentException("Wrong move order");
         }
     }
@@ -34,9 +34,9 @@ public class MoveValidator {
 
     public static void checkFromHex(GameSession session, Move move) {
         if (move.getFrom() != null) { // Передвижение
-            HexColor from = session.getMap().get(move.getFrom()).getColor();
-            HexColor player = session.getPlayers().get(move.getPlayer()).getColor();
-            HexColor entityColor = session.getMap().get(move.getFrom()).getEntity() instanceof Drone drone
+            Color from = session.getMap().get(move.getFrom()).getColor();
+            Color player = session.getPlayers().get(move.getPlayer()).getColor();
+            Color entityColor = session.getMap().get(move.getFrom()).getEntity() instanceof Drone drone
                     && drone.getOwnerColor() == player ? drone.getOwnerColor() : null;
             if (from != player && entityColor != player) {
                 throw new IllegalArgumentException("Can't move enemy entity");

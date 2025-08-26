@@ -2,7 +2,7 @@ package ru.bogatov.antiyoyo.game.engine.util;
 
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.Field;
 
@@ -34,7 +34,7 @@ public class HexMapGenerator {
 
     private static Hex createEmptyHex(Vector3 vector) {
         return Hex.builder()
-                .color(HexColor.EMPTY)
+                .color(Color.EMPTY)
                 .vector(vector)
                 .isAvailable(false)
                 .entity(new Field())

@@ -5,15 +5,12 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Document("sessions")
@@ -22,15 +19,17 @@ public class GameSession {
     @MongoId
     private UUID id;
     private UUID winnerId;
+    private Integer lap;
     private String name;
     private Set<String> aliveUsersId;
-    private Map<Integer, Player> players;
+    private List<Alliance> alliances;
+    private Map<Color, Player> players;
     private Map<Vector3, Hex> map;
     private GameSetting setting;
-    private Map<HexColor, Integer> powerByColor;
+    private Map<Color, Integer> powerByColor;
     @JsonIgnore
     private Stack<String> history;
-    private Integer currentPlayerMove;
+    private Color currentMoveColor;
     private OffsetDateTime startTime;
     private OffsetDateTime lastInteraction;
     private OffsetDateTime endTime;
@@ -40,5 +39,5 @@ public class GameSession {
     private UUID skipMoveTaskId;
     private Instant endMoveTime;
     private Integer leftSecondsToMove;
-
+    private Set<Color> moveOrder;
 }

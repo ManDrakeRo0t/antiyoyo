@@ -2,6 +2,7 @@ package ru.bogatov.antiyoyo.game.engine;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import ru.bogatov.antiyoyo.game.engine.util.*;
 import ru.bogatov.antiyoyo.game.model.GameSession;
@@ -9,7 +10,7 @@ import ru.bogatov.antiyoyo.game.model.Move;
 import ru.bogatov.antiyoyo.game.model.Player;
 import ru.bogatov.antiyoyo.game.model.common.Currency;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
@@ -20,7 +21,13 @@ import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.*;
 
 
 @Slf4j
+@Service
 public class GameEngine {
+
+    @SneakyThrows
+    public void handleClick(GameSession session, Move move) {
+
+    }
 
     @SneakyThrows
     public void makeMove(GameSession session, Move move) {
@@ -43,7 +50,7 @@ public class GameEngine {
         session.setHistory(new Stack<>());
         // process map
         Player player = session.getPlayers().get(session.getCurrentPlayerMove());
-        HexColor selfColor = player.getColor();
+        Color selfColor = player.getColor();
         MapUtils.getAllRegionsByColor(session.getMap(), selfColor)
                 .forEach(region -> MapUtils.updateRegionAfterMove(session, region));
         // change player
@@ -98,7 +105,7 @@ public class GameEngine {
 
     public void handleBeforeMoveClick(GameSession session, GameEvent event) {
         session.getMap().values().forEach(h -> h.setGlue(false));
-        HexColor selfColor = session.getPlayers().get(session.getCurrentPlayerMove()).getColor();
+        Color selfColor = session.getPlayers().get(session.getCurrentPlayerMove()).getColor();
 
         if (event.getHex() == null || !HexCalculator.canInteractWithHex(session.getMap().get(event.getHex().getVector()), selfColor)) {
             if (event.getEntityType() == null) {
@@ -162,9 +169,9 @@ public class GameEngine {
 
         Hex from = getHexByCord(session, move.getFrom());
         Hex to = getHexByCord(session, move.getTo());
-        HexColor oldColor = to.getColor();
+        Color oldColor = to.getColor();
         Entity oldEntity = to.getEntity();
-        HexColor selfColor = session.getPlayers().get(move.getPlayer()).getColor();
+        Color selfColor = session.getPlayers().get(move.getPlayer()).getColor();
         boolean skipMove = false;
 
 
@@ -236,9 +243,9 @@ public class GameEngine {
         };
     }
 
-    private void setEntity(GameSession session, Hex hex, Entity newEntity, HexColor newColor) {
+    private void setEntity(GameSession session, Hex hex, Entity newEntity, Color newColor) {
 
-        HexColor oldColor = hex.getColor();
+        Color oldColor = hex.getColor();
         Entity oldEntity = hex.getEntity();
 
         if (oldEntity instanceof Interactable old
@@ -294,7 +301,7 @@ public class GameEngine {
         return session.getMap().get(vector);
     }
 
-    private void validateTownHallsAndRegions(GameSession session, Entity oldEntity, HexColor oldColor) {
+    private void validateTownHallsAndRegions(GameSession session, Entity oldEntity, Color oldColor) {
         Currency oldBalance = Currency.EMPTY.clone();
         Set<TownHall> createdTownHall = new HashSet<>();
         if (oldEntity instanceof TownHall townHall) {
@@ -302,7 +309,7 @@ public class GameEngine {
         }
         Set<Hex> validated = new HashSet<>();
         session.getMap().values().forEach(hex -> {
-            if (hex.getColor() != HexColor.EMPTY && !validated.contains(hex)) {
+            if (hex.getColor() != Color.EMPTY && !validated.contains(hex)) {
 
                 Pair<TownHall, Set<Hex>> region = findTownHallWithRegion(session.getMap(), hex.getColor(), hex);
                 if (region.getFirst() != null) {
@@ -333,8 +340,8 @@ public class GameEngine {
         }
     }
 
-    public Pair<Integer, Set<HexColor>> validateSessionAndGetPlayersCount(GameSession gameSession) {
-        Pair<Integer, Set<HexColor>> playersCount = MapUtils.getPlayersCount(gameSession.getMap());
+    public Pair<Integer, Set<Color>> validateSessionAndGetPlayersCount(GameSession gameSession) {
+        Pair<Integer, Set<Color>> playersCount = MapUtils.getPlayersCount(gameSession.getMap());
         if (playersCount.getFirst() <= 1) {
             throw new IllegalArgumentException("Игроков не достаточно");
         }

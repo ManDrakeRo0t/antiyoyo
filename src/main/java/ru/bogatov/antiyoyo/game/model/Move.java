@@ -1,17 +1,15 @@
 package ru.bogatov.antiyoyo.game.model;
 
 import lombok.Data;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.game.model.entity.EntityType;
 
 @Data
 public class Move {
 
-    private Boolean redactorMode;
-    private Integer player;
-    private Vector3 townHall;
-    private Vector3 from;
-    private Vector3 to;
+    private Color color;
+    private Vector3 clickedHex;
     private EntityType entityType;
 
 }

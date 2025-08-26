@@ -12,7 +12,7 @@ import ru.bogatov.antiyoyo.game.engine.util.MapUtils;
 import ru.bogatov.antiyoyo.game.engine.util.Pair;
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 import ru.bogatov.antiyoyo.server.domain.GameEvent;
 import ru.bogatov.antiyoyo.server.domain.GameMap;
@@ -34,7 +34,7 @@ import java.util.*;
 @AllArgsConstructor
 public class GameService {
 
-    private final GameEngine gameEngine = new GameEngine();
+    private final GameEngine gameEngine;
     private final SessionRepository sessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final GameMapService gameMapService;
@@ -161,7 +161,7 @@ public class GameService {
                     .build());
         });
         gameSession.setMap(map);
-        Pair<Integer, Set<HexColor>> playerCount = gameEngine.validateSessionAndGetPlayersCount(gameSession);
+        Pair<Integer, Set<Color>> playerCount = gameEngine.validateSessionAndGetPlayersCount(gameSession);
         gameMap.setPlayersCount(playerCount.getFirst());
         gameMap.setMapSize(map.size());
         final int[] counter = {0};

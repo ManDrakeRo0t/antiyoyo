@@ -3,7 +3,7 @@ package ru.bogatov.antiyoyo.game.engine.util;
 import lombok.experimental.UtilityClass;
 import ru.bogatov.antiyoyo.game.model.GameSession;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.entity.*;
 
 import java.util.*;
@@ -24,10 +24,10 @@ public class PowerCalculator {
         return result.get();
     }
 
-    public static Map<HexColor, Set<Pair<TownHall, Integer>>> calculateTotalPower(GameSession gameSession) {
-            Set<HexColor> colors = new HashSet<>();
+    public static Map<Color, Set<Pair<TownHall, Integer>>> calculateTotalPower(GameSession gameSession) {
+            Set<Color> colors = new HashSet<>();
             gameSession.getMap().values().forEach(hex -> colors.add(hex.getColor()));
-            Map<HexColor, Set<Pair<TownHall, Integer>>> powerMap = new HashMap<>();
+            Map<Color, Set<Pair<TownHall, Integer>>> powerMap = new HashMap<>();
             colors.forEach(color -> {
                 Set<Pair<TownHall, Set<Hex>>> regions = MapUtils.getAllRegionsByColor(gameSession.getMap(), color);
                 Set<Pair<TownHall, Integer>> powerForRegions = new HashSet<>();

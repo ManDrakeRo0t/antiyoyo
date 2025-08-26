@@ -19,8 +19,7 @@ import java.io.IOException;
 public class Hex {
 
     private Vector3 vector;
-    private Boolean isAvailable;
-    private HexColor color;
+    private Color color;
     @JsonInclude
     @JsonDeserialize(using = IgnoreDeserializer.class)
     private Entity entity;

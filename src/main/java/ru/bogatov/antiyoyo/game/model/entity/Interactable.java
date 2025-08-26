@@ -1,8 +1,9 @@
 package ru.bogatov.antiyoyo.game.model.entity;
 
 import ru.bogatov.antiyoyo.game.engine.util.Pair;
+import ru.bogatov.antiyoyo.game.model.MoveContext;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
-import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.common.Color;
 import ru.bogatov.antiyoyo.game.model.common.Vector3;
 
 import java.util.Map;
@@ -10,15 +11,13 @@ import java.util.Set;
 
 public interface Interactable {
 
-    Integer getLevel();
+    default void onClick(Hex hex, MoveContext context) {
 
-    Integer getAttackRadius();
-
-    Integer getMoveRadius();
+    }
 
     default Set<Hex> customizeAvailableHexesForNew(Map<Vector3, Hex> map,
                                                    Pair<TownHall, Set<Hex>> region,
-                                                       HexColor selfColor,
+                                                       Color selfColor,
                                                        Set<Hex> calculated) {
         return calculated;
     }
