@@ -24,6 +24,11 @@
 | Фабрика сущностей | [`EntityUtils`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/util/EntityUtils.java) |
 | Генерация карты | [`HexMapGenerator`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/util/HexMapGenerator.java) |
 | Правила игры (исходник) | [`rules.html`](../../src/main/resources/static/rules.html) |
+| Новый движок v2 | [`GameEngineV2`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/GameEngineV2.java) |
+| Pipeline v2 | [`MovePipeline`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/MovePipeline.java), [`MoveContext`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/MoveContext.java) |
+| События v2 | [`MoveEvent`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/event/MoveEvent.java) + record'ы в `pipeline/event` |
+| Behavior v2 | [`BehaviorResolver`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/BehaviorResolver.java) |
+| Сервисы v2 | `service/` в `engine/v2` |
 
 ---
 

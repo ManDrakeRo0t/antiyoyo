@@ -7,9 +7,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import ru.bogatov.antiyoyo.game.engine.GameEngine;
+import ru.bogatov.antiyoyo.game.engine.IGameEngine;
 import ru.bogatov.antiyoyo.game.engine.util.EntityUtils;
 import ru.bogatov.antiyoyo.game.engine.util.MapUtils;
 import ru.bogatov.antiyoyo.game.engine.util.Pair;
+import ru.bogatov.antiyoyo.game.engine.v2.GameEngineV2;
 import ru.bogatov.antiyoyo.game.model.*;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
@@ -34,7 +36,7 @@ import java.util.*;
 @AllArgsConstructor
 public class GameService {
 
-    private final GameEngine gameEngine = new GameEngine();
+    private final IGameEngine gameEngine = new GameEngineV2();
     private final SessionRepository sessionRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final GameMapService gameMapService;

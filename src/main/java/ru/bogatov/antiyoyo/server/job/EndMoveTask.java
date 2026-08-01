@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import ru.bogatov.antiyoyo.game.engine.GameEngine;
-import ru.bogatov.antiyoyo.game.model.GameSession;
+import ru.bogatov.antiyoyo.game.engine.IGameEngine;
 import ru.bogatov.antiyoyo.server.repository.SessionRepository;
 import ru.bogatov.antiyoyo.server.service.GameService;
 
@@ -18,7 +17,7 @@ public class EndMoveTask implements Runnable {
 
     private UUID sessionId;
     private SessionRepository sessionRepository;
-    private GameEngine gameEngine;
+    private IGameEngine gameEngine;
     private SimpMessagingTemplate messagingTemplate;
     private GameService gameService;
 

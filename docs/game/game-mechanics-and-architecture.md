@@ -32,10 +32,14 @@
 
 ```
 ru.bogatov.antiyoyo.game
-├── Main.java                    // утилита печати пустой карты, не используется сервером
+├── Main.java                    // standalone-утилита для печати пустой карты, не используется сервером
 ├── engine
 │   ├── GameEngine.java          // фасад движка
 │   └── util                     // калькуляторы, валидаторы, утилиты
+├── engine/v2                    // новый refactored движок (см. 1.4)
+│   ├── GameEngineV2.java
+│   ├── pipeline
+│   └── service
 ├── model
 │   ├── GameSession.java         // корневой агрегат состояния игры
 │   ├── Player.java              // игрок
@@ -48,6 +52,29 @@ ru.bogatov.antiyoyo.game
 │       └── Currency.java        // ресурсы (золото/дерево/камень)
 └── model/entity                 // иерархия сущностей
 ```
+
+### 1.4. Новая архитектура v2 (`game.engine.v2`)
+
+В пакете `ru.bogatov.antiyoyo.game.engine.v2` создана новая версия движка, которая не трогает старый код и повторяет публичный API [`GameEngine`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/GameEngine.java) через [`GameEngineV2`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/GameEngineV2.java).
+
+Основные идеи:
+
+- **Pipeline обработки хода**: [`MovePipeline`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/MovePipeline.java) состоит из стадий:
+  1. [`ValidationStage`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/stage/ValidationStage.java) — проверка хода.
+  2. [`SnapshotStage`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/stage/SnapshotStage.java) — сохранение/очистка истории undo.
+  3. [`EventGenerationStage`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/stage/EventGenerationStage.java) — сущности через behavior-интерфейсы порождают события.
+  4. [`EventApplicationStage`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/stage/EventApplicationStage.java) — применение событий к `GameSession`.
+  5. [`PostProcessStage`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/stage/PostProcessStage.java) — пересчёт защиты, регионов, экономики, мощности.
+
+- **Общий контекст хода**: [`MoveContext`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/MoveContext.java) хранит текущего игрока, тип хода, выбранный `TownHall`, клетки `from`/`to`, фича-флаги и кеш регионов.
+
+- **Иммутабельные события**: [`MoveEvent`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/event/MoveEvent.java) — sealed-интерфейс, реализованный record'ами (`EntityPlacedEvent`, `EntityMovedEvent`, `StorageChangedEvent` и др.). Каждое событие применяется своим [`EventApplier`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/applier/EventApplier.java).
+
+- **Behavior-интерфейсы**: [`Movable`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/Movable.java), [`Purchasable`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/Purchasable.java), [`Upgradable`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/Upgradable.java), [`Harvestable`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/Harvestable.java), [`Demolishable`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/Demolishable.java). [`BehaviorResolver`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/pipeline/behavior/BehaviorResolver.java) сопоставляет старые entity-классы с поведением, не изменяя сами entity.
+
+- **Доменные сервисы**: логика, ранее находившаяся в [`MapUtils`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/util/MapUtils.java), разбита на [`RegionService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/RegionService.java), [`DefenseService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/DefenseService.java), [`EconomyService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/EconomyService.java), [`PowerService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/PowerService.java), [`FarmService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/FarmService.java) и [`MapUIService`](../../src/main/java/ru/bogatov/antiyoyo/game/engine/v2/service/MapUIService.java).
+
+Переключение сервера на новый движок выполняется заменой `new GameEngine()` на `new GameEngineV2()` в [`GameService`](../../src/main/java/ru/bogatov/antiyoyo/server/service/GameService.java).
 
 ---
 

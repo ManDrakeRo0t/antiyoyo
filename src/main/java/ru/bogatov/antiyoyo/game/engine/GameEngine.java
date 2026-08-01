@@ -20,7 +20,7 @@ import static ru.bogatov.antiyoyo.game.engine.util.MapUtils.*;
 
 
 @Slf4j
-public class GameEngine {
+public class GameEngine implements IGameEngine {
 
     @SneakyThrows
     public void makeMove(GameSession session, Move move) {

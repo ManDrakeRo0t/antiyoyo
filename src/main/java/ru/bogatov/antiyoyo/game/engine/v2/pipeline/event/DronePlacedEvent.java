@@ -1,0 +1,8 @@
+package ru.bogatov.antiyoyo.game.engine.v2.pipeline.event;
+
+import ru.bogatov.antiyoyo.game.model.common.Hex;
+import ru.bogatov.antiyoyo.game.model.common.HexColor;
+import ru.bogatov.antiyoyo.game.model.entity.Entity;
+
+public record DronePlacedEvent(Hex target, HexColor ownerColor, Entity entity) implements MoveEvent {
+}

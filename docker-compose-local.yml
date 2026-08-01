@@ -1,19 +1,19 @@
 version: '3.8'
 
 services:
-  server:
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - rabbitmq
-    environment:
-      MONGO_HOST: localhost
-      MONGO_USERNAME: root
-      MONGO_PASSWORD: secret
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USERNAME: myuser
-      RABBITMQ_PASSWORD: secret
+#  server:
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - rabbitmq
+#    environment:
+#      MONGO_HOST: localhost
+#      MONGO_USERNAME: root
+#      MONGO_PASSWORD: secret
+#      RABBITMQ_HOST: rabbitmq
+#      RABBITMQ_USERNAME: myuser
+#      RABBITMQ_PASSWORD: secret
 
   mongodb:
     image: 'mongo:latest'
