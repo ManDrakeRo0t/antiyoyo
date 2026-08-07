@@ -30,6 +30,7 @@ public class EventApplierRegistry {
         registry.register(new EntityMergedApplier());
         registry.register(new EntityDestroyedApplier());
         registry.register(new ResourceHarvestedApplier());
+        registry.register(new ResourceCaptureApplier());
         registry.register(new StorageChangedApplier());
         registry.register(new FireIgnitedApplier());
         registry.register(new DronePlacedApplier());

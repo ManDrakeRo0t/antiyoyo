@@ -88,24 +88,30 @@ public class UnitBehavior implements Movable, Purchasable, Upgradable {
         HexColor selfColor = resolveColor(source);
         List<MoveEvent> events = new ArrayList<>();
 
-        events.add(new EntityRemovedEvent(source, true));
-
         if (BehaviorHelper.isSameColor(target, selfColor) && EntityClassifier.isUnit(target.getEntity())) {
             Entity existing = target.getEntity();
             if (canUpgrade(existing, factory.get())) {
                 Entity merged = merge(existing, factory.get());
                 if (merged != null) {
+                    events.add(new EntityRemovedEvent(source, true));
                     events.add(new EntityMergedEvent(target, merged));
                     return events;
                 }
             }
+
         }
 
         Entity placed = factory.get();
+
         if (target.getEntity() instanceof Mineable) {
             events.add(new ResourceHarvestedEvent(target, ((Mineable) target.getEntity()).getReward()));
+            events.add(new EntityPlacedEvent(target, placed, selfColor, true));
+        } else if (target.getEntity() instanceof Farmable) {
+            events.add(new ResourceCaptureEvent(target, placed, selfColor));
+        } else {
+            events.add(new EntityRemovedEvent(source, true));
+            events.add(new EntityPlacedEvent(target, placed, selfColor, true));
         }
-        events.add(new EntityPlacedEvent(target, placed, selfColor, true));
 
         return events;
     }
