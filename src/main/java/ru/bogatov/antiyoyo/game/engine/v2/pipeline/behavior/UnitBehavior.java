@@ -123,7 +123,7 @@ public class UnitBehavior implements Movable, Purchasable, Upgradable {
         Set<Hex> candidates = new HashSet<>(region);
         for (Hex hex : region) {
             candidates.addAll(BehaviorHelper.neighbors(context, hex, 1, false).stream()
-                    .filter(n -> BehaviorHelper.isEnemy(n, selfColor))
+                    .filter(n -> BehaviorHelper.isEnemy(n, selfColor) || n.getColor() == HexColor.EMPTY)
                     .collect(Collectors.toSet()));
         }
 
@@ -146,6 +146,15 @@ public class UnitBehavior implements Movable, Purchasable, Upgradable {
         Entity placed = factory.get();
         Currency cost = price(context, target);
         Currency debit = Currency.of(-cost.getGold(), -cost.getTree(), -cost.getStone());
+        if (canUpgrade(target.getEntity(), placed)) {
+            Entity merged = merge(target.getEntity(), placed);
+            if (merged != null) {
+                return List.of(
+                        new StorageChangedEvent(townHall.getUuid(), debit),
+                        new EntityMergedEvent(target, merged)
+                );
+            }
+        }
         return List.of(
                 new StorageChangedEvent(townHall.getUuid(), debit),
                 new EntityPlacedEvent(target, placed, context.getSelfColor())

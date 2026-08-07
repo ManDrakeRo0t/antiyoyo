@@ -77,7 +77,7 @@ public class GameEngineV2 implements IGameEngine {
         // reset glue
         session.getMap().values().forEach(hex -> hex.setGlue(false));
 
-        Hex hex = session.getMap().get(event.getHex().getVector());
+        Hex hex = event.getHex() == null ? null : session.getMap().get(event.getHex().getVector());
         boolean canInteract = hex != null && canInteractWithHex(hex, selfColor);
 
         if (canInteract) {

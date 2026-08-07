@@ -42,10 +42,15 @@ public class DroneBehavior implements Movable, Purchasable {
         events.add(new EntityRemovedEvent(source, true));
 
         if (BehaviorHelper.isDraggableTarget(target, ownerColor)) {
-            int fireStage = computeFireStage(target);
-            events.add(new EntityDestroyedEvent(target));
-            events.add(new FireIgnitedEvent(target, fireStage));
-        } else {
+            if (target.getEntity() instanceof Field) {
+                Drone drone = (Drone) EntityUtils.fromType(EntityType.DRONE);
+                events.add(new DronePlacedEvent(target, ownerColor, drone));
+            } else {
+                int fireStage = computeFireStage(target);
+                events.add(new EntityDestroyedEvent(target));
+                events.add(new FireIgnitedEvent(target, fireStage));
+            }
+        } else { //toDo удалить? недостижимо же тк availableDestinations() также фильтрует по isDraggableTarget()
             Drone drone = (Drone) EntityUtils.fromType(EntityType.DRONE);
             events.add(new DronePlacedEvent(target, ownerColor, drone));
         }
