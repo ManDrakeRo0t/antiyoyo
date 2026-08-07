@@ -98,12 +98,12 @@ public class UnitBehavior implements Movable, Purchasable, Upgradable {
                     return events;
                 }
             }
-
         }
 
         Entity placed = factory.get();
 
         if (target.getEntity() instanceof Mineable) {
+            events.add(new EntityRemovedEvent(source, true));
             events.add(new ResourceHarvestedEvent(target, ((Mineable) target.getEntity()).getReward()));
             events.add(new EntityPlacedEvent(target, placed, selfColor, true));
         } else if (target.getEntity() instanceof Farmable) {

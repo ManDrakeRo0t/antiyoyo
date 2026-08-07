@@ -4,6 +4,7 @@ package ru.bogatov.antiyoyo.game.engine.v2.pipeline.applier;
 import ru.bogatov.antiyoyo.game.engine.v2.pipeline.MoveContext;
 import ru.bogatov.antiyoyo.game.engine.v2.pipeline.event.ResourceCaptureEvent;
 import ru.bogatov.antiyoyo.game.engine.v2.service.RegionService;
+import ru.bogatov.antiyoyo.game.engine.v2.util.EntityClassifier;
 import ru.bogatov.antiyoyo.game.model.common.Hex;
 import ru.bogatov.antiyoyo.game.model.common.HexColor;
 import ru.bogatov.antiyoyo.game.model.entity.Entity;
@@ -28,8 +29,12 @@ public class ResourceCaptureApplier implements EventApplier<ResourceCaptureEvent
             hex.setColor(newColor);
         }
 
-        if (event.movedOnThisTurn() != null) {
-            entity.setMovedOnThisTurn(event.movedOnThisTurn());
+        //toDo захватывающий ресурс юнит - может двигаться еще
+        if (EntityClassifier.isMoveableUnit(entity)) {
+            entity.setMovedOnThisTurn(true);
+        }
+        if (event.movedOnThisTurn()) {
+            entity.setMovedOnThisTurn(true);
         }
 
         TownHall townHall = resolveTownHall(context);
